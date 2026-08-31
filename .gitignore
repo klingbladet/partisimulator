@@ -1,0 +1,19 @@
+# Environment variables & secrets (CRITICAL - DO NOT COMMIT)
+.env
+.env*.local
+.env.local
+**/.env*
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Next.js build output
+.next/
+**/.next/
+out/
+**/out/
+
+# OS files
+.DS_Store
+Thumbs.db

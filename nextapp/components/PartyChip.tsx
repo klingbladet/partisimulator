@@ -1,0 +1,92 @@
+"use client";
+
+import Image from "next/image";
+import { PartyPersona } from "@/lib/parties";
+import clsx from "clsx";
+
+interface PartyChipProps {
+  party: PartyPersona;
+  selected: boolean;
+  onClick: () => void;
+  size?: "sm" | "md" | "lg";
+  showName?: boolean;
+}
+
+export default function PartyChip({
+  party,
+  selected,
+  onClick,
+  size = "md",
+  showName = true,
+}: PartyChipProps) {
+  const avatarSize = size === "sm" ? 40 : size === "lg" ? 72 : 56;
+
+  return (
+    <button
+      onClick={onClick}
+      className={clsx("party-chip", selected && "selected")}
+      style={{
+        backgroundColor: selected ? party.color : "white",
+        borderColor: selected ? party.color : "var(--border)",
+        boxShadow: selected
+          ? `5px 5px 0px ${party.color}88`
+          : "3px 3px 0px var(--border)",
+      }}
+      title={`${party.displayName} (${party.partyName})`}
+      aria-pressed={selected}
+      id={`party-chip-${party.id}`}
+    >
+      {/* Party color accent strip */}
+      <div
+        className="absolute top-0 left-0 right-0 h-1.5 rounded-t-[13px]"
+        style={{ backgroundColor: party.color }}
+      />
+
+      {/* Avatar */}
+      <div
+        className="relative rounded-full overflow-hidden border-2 mt-1"
+        style={{
+          width: avatarSize,
+          height: avatarSize,
+          borderColor: selected ? "white" : "var(--border)",
+          boxShadow: selected ? "0 0 0 2px " + party.color : "none",
+          flexShrink: 0,
+        }}
+      >
+        <Image
+          src={`/avatars/${party.avatarFile}`}
+          alt={party.displayName}
+          fill
+          className="object-cover object-top"
+          sizes={`${avatarSize}px`}
+        />
+      </div>
+
+      {/* Text */}
+      {showName && (
+        <div className="text-center w-full">
+          <div
+            className="font-black text-xs leading-tight"
+            style={{ color: selected ? "white" : "var(--color-ink)" }}
+          >
+            {party.abbreviation}
+          </div>
+          <div
+            className="font-semibold leading-tight"
+            style={{
+              fontSize: "0.6rem",
+              color: selected ? "rgba(255,255,255,0.85)" : "#666",
+              maxWidth: "70px",
+              margin: "0 auto",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {party.partyName}
+          </div>
+        </div>
+      )}
+    </button>
+  );
+}
