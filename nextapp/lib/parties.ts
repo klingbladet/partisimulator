@@ -18,6 +18,7 @@ export interface PartyPersona {
   keyIssues: string[];
   manifestSource: string;
   avatarFile: string;
+  logoFile: string;
   color: string;
   textColor: string;
   abbreviation: string;
@@ -35,6 +36,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Välfärd och sjukvårdsköer", "Trygghet/brottsbekämpning", "Arbetsmarknad och jobb"],
     manifestSource: "socialdemokraterna_valmanifest_2026.pdf",
     avatarFile: "S.png",
+    logoFile: "S.png",
     color: "#EE2524",
     textColor: "#ffffff",
     abbreviation: "S",
@@ -50,6 +52,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Lag och ordning", "Skatter och ekonomi", "Energipolitik (kärnkraft)"],
     manifestSource: "moderaterna_valmanifest_2026.pdf",
     avatarFile: "M.png",
+    logoFile: "M.png",
     color: "#1B49A2",
     textColor: "#ffffff",
     abbreviation: "M",
@@ -65,6 +68,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Invandring och integration", "Brottsbekämpning", "Sverige-först-politik"],
     manifestSource: "sverigedemokraterna_valmanifest_2026.pdf",
     avatarFile: "SD.png",
+    logoFile: "SD.png",
     color: "#DDC400",
     textColor: "#1a1a1a",
     abbreviation: "SD",
@@ -80,6 +84,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Vinster i välfärden", "Ekonomisk omfördelning", "Feminism och klimaträttvisa"],
     manifestSource: "vansterpartiet_valmanifest_2026.pdf",
     avatarFile: "V.png",
+    logoFile: "V.png",
     color: "#BE0000",
     textColor: "#ffffff",
     abbreviation: "V",
@@ -95,6 +100,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Landsbygdspolitik", "Företagande och regelförenkling", "Decentralisering"],
     manifestSource: "centerpartiet_valmanifest_2026.pdf",
     avatarFile: "C.png",
+    logoFile: "C.png",
     color: "#009933",
     textColor: "#ffffff",
     abbreviation: "C",
@@ -110,6 +116,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Familjepolitik", "Äldreomsorg", "Energipolitik"],
     manifestSource: "kristdemokraterna_valmanifest_2026.pdf",
     avatarFile: "KD.png",
+    logoFile: "KD.png",
     color: "#231F5C",
     textColor: "#ffffff",
     abbreviation: "KD",
@@ -125,6 +132,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Skola och kunskapsresultat", "Integration genom språk och jobb", "Individens frihet"],
     manifestSource: "liberalerna_valmanifest_2026.pdf",
     avatarFile: "L.png",
+    logoFile: "L.png",
     color: "#006AB3",
     textColor: "#ffffff",
     abbreviation: "L",
@@ -140,6 +148,7 @@ export const PARTIES: PartyPersona[] = [
     keyIssues: ["Klimatomställning", "Biologisk mångfald", "Social och klimaträttvisa"],
     manifestSource: "miljopartiet_valmanifest_2026.pdf",
     avatarFile: "MP.png",
+    logoFile: "MP.png",
     color: "#83CF39",
     textColor: "#1a1a1a",
     abbreviation: "MP",

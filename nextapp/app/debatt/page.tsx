@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useCompletion } from "@ai-sdk/react";
 import { PARTIES, PartyPersona } from "@/lib/parties";
 import { DebateBubble, DebateSpeakerSelector } from "@/components/DebateComponents";
+import DebateStage from "@/components/DebateStage";
 import AppNav from "@/components/AppNav";
 
 interface DebateEntry {
@@ -31,7 +33,7 @@ export default function DebattPage() {
   const currentSpeakerRef = useRef<string | null>(null);
   const [pendingText, setPendingText] = useState("");
   const [userInterjection, setUserInterjection] = useState("");
-  const transcriptEndRef = useRef<HTMLDivElement>(null);
+  const transcriptContainerRef = useRef<HTMLDivElement>(null);
 
   const addSpeechToHistory = (speakerId: string, rawText: string) => {
     const party = PARTIES.find((p) => p.id === speakerId);
@@ -78,9 +80,12 @@ export default function DebattPage() {
     }
   }, [completion, isLoading]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll ONLY inside the chat container so politicians remain visible on screen
   useEffect(() => {
-    transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (transcriptContainerRef.current) {
+      transcriptContainerRef.current.scrollTop =
+        transcriptContainerRef.current.scrollHeight;
+    }
   }, [history, pendingText]);
 
   const toggleParty = (party: PartyPersona) => {
@@ -166,20 +171,37 @@ export default function DebattPage() {
     : null;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
-      <AppNav />
+    <div className="min-h-screen relative overflow-x-hidden" style={{ backgroundColor: "#1e293b" }}>
+      {/* Full-Page Riksdag Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Image
+          src="/backgrounds/riksdag background.jpg"
+          alt="Sveriges Riksdag debattsal"
+          fill
+          priority
+          className="object-cover object-center"
+          sizes="100vw"
+        />
+        {/* Subtle dark backdrop so cards and text remain crystal clear */}
+        <div className="absolute inset-0 bg-slate-950/45 backdrop-blur-[1.5px]" />
+      </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="font-black text-3xl text-black mb-2 flex items-center justify-center gap-3">
-            <span>🎤</span>
-            Debattläge
-          </h1>
-          <p className="text-gray-600 font-semibold">
-            Välj partier, sätt ämne, styr talarordningen själv
-          </p>
-        </div>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <AppNav />
+
+        <main className="max-w-5xl mx-auto px-2 sm:px-4 py-3 sm:py-5 flex-1 w-full">
+          {/* Header (shown during setup) */}
+          {!debateStarted && (
+            <div className="text-center mb-6 bg-white/90 backdrop-blur-sm p-4 rounded-2xl border-2 border-black shadow-[3px_3px_0px_#1a1a1a] max-w-xl mx-auto">
+              <h1 className="font-black text-2xl sm:text-3xl text-black mb-1 flex items-center justify-center gap-3">
+                <span>🎤</span>
+                Debattläge
+              </h1>
+              <p className="text-gray-600 font-semibold text-xs sm:text-sm">
+                Välj partier, sätt ämne, styr talarordningen själv
+              </p>
+            </div>
+          )}
 
         {!debateStarted ? (
           /* Setup panel */
@@ -214,17 +236,36 @@ export default function DebattPage() {
                       aria-pressed={!!selectedParties.find((p) => p.id === party.id)}
                     >
                       <div className="absolute top-0 left-0 right-0 h-1.5 rounded-t-[13px]" style={{ backgroundColor: party.color }} />
-                      <div className="relative rounded-full overflow-hidden border-2 mt-1"
-                        style={{
-                          width: 56, height: 56,
-                          borderColor: selectedParties.find((p) => p.id === party.id) ? "white" : "#1a1a1a"
-                        }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={`/avatars/${party.avatarFile}`}
-                          alt={party.displayName}
-                          className="w-full h-full object-cover object-top"
-                        />
+                      <div className="relative mt-1">
+                        <div
+                          className="relative rounded-full overflow-hidden border-2"
+                          style={{
+                            width: 56,
+                            height: 56,
+                            borderColor: selectedParties.find((p) => p.id === party.id) ? "white" : "#1a1a1a",
+                          }}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`/avatars/${party.avatarFile}`}
+                            alt={party.displayName}
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+                        {party.logoFile && (
+                          <div
+                            className="absolute -bottom-1 -right-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+                            style={{ width: 24, height: 24 }}
+                            title={`${party.partyName} logotyp`}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={`/logos/${party.logoFile}`}
+                              alt={`${party.partyName} logotyp`}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        )}
                       </div>
                       <div className="text-center w-full">
                         <div className="font-black text-xs" style={{ color: selectedParties.find((p) => p.id === party.id) ? "white" : "#1a1a1a" }}>
@@ -284,43 +325,28 @@ export default function DebattPage() {
           </div>
         ) : (
           /* Debate view */
-          <div className="space-y-4">
-            {/* Debate topic banner */}
-            <div
-              className="cartoon-card p-4 flex items-center justify-between"
-              style={{ backgroundColor: "var(--color-ink)", color: "white" }}
-            >
-              <div>
-                <div className="text-xs font-bold opacity-60 uppercase tracking-wide">
-                  Debattämne
-                </div>
-                <div className="font-black text-lg">&quot;{topic}&quot;</div>
-              </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                {selectedParties.map((p) => (
-                  <div
-                    key={p.id}
-                    className="px-2 py-1 rounded-full text-xs font-black border-2 border-white"
-                    style={{ backgroundColor: p.color, color: p.textColor }}
-                  >
-                    {p.abbreviation}
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="space-y-3 max-w-3xl mx-auto w-full">
+            {/* Live Debate Stage with Standing Politicians */}
+            <DebateStage
+              parties={selectedParties}
+              currentSpeakerId={currentSpeakerId}
+              isLoading={isLoading}
+              topic={topic}
+              onSelectSpeaker={handleSelectSpeaker}
+            />
 
-            {/* Chat Transcript Window */}
+            {/* Roomy, Higher & Narrower Chat Transcript Window */}
             <div
-              className="cartoon-card p-4 md:p-6 min-h-80 max-h-[65vh] overflow-y-auto flex flex-col gap-4 border-3"
-              style={{ backgroundColor: "#fbf9f4" }}
+              ref={transcriptContainerRef}
+              className="cartoon-card p-3.5 sm:p-5 h-[340px] sm:h-[400px] md:h-[440px] overflow-y-auto flex flex-col gap-3.5 border-2 bg-white/95 backdrop-blur-sm shadow-[4px_4px_0px_#1a1a1a]"
               id="debate-transcript"
             >
               {history.length === 0 && !isLoading && (
-                <div className="text-center text-gray-400 py-12 flex flex-col items-center justify-center">
-                  <div className="text-3xl mb-2">💬</div>
-                  <p className="font-extrabold text-gray-600">Debatten är redo att börja!</p>
+                <div className="text-center text-gray-400 py-10 flex flex-col items-center justify-center">
+                  <div className="text-3xl mb-1.5">💬</div>
+                  <p className="font-extrabold text-sm text-gray-700">Debatten är redo att börja!</p>
                   <p className="text-xs text-gray-400 font-semibold mt-1">
-                    Ställ en fråga som debattledare nedan, eller välj vilken partiledare som ska öppna debatten 👇
+                    Ställ en fråga som debattledare nedan, eller klicka på den partiledare som ska tala 👇
                   </p>
                 </div>
               )}
@@ -350,7 +376,6 @@ export default function DebattPage() {
                   turnNumber={history.length + 1}
                 />
               )}
-              <div ref={transcriptEndRef} />
             </div>
 
             {/* Compact Chat Input Bar */}
@@ -358,7 +383,7 @@ export default function DebattPage() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  className="cartoon-input flex-1 text-sm bg-white"
+                  className="cartoon-input flex-1 text-sm bg-white/95 border-2 shadow-sm"
                   placeholder="🎙️ Ställ en fråga i debatten (tryck Enter eller klicka på ett parti nedan)..."
                   value={userInterjection}
                   onChange={(e) => setUserInterjection(e.target.value)}
@@ -384,19 +409,21 @@ export default function DebattPage() {
 
             {/* Speaker selector */}
             {!debateFinished && (
-              <DebateSpeakerSelector
-                parties={selectedParties}
-                onSelectSpeaker={handleSelectSpeaker}
-                disabled={isLoading}
-                currentSpeakerId={currentSpeakerId ?? undefined}
-              />
+              <div className="bg-white/85 backdrop-blur-sm p-3 rounded-2xl border-2 border-black shadow-sm">
+                <DebateSpeakerSelector
+                  parties={selectedParties}
+                  onSelectSpeaker={handleSelectSpeaker}
+                  disabled={isLoading}
+                  currentSpeakerId={currentSpeakerId ?? undefined}
+                />
+              </div>
             )}
 
             {/* Control buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-3 pt-1">
               {!debateFinished ? (
                 <button
-                  className="cartoon-btn cartoon-btn-danger flex-1"
+                  className="cartoon-btn cartoon-btn-danger flex-1 shadow-sm"
                   onClick={endDebate}
                   disabled={isLoading}
                   id="end-debate-btn"
@@ -416,7 +443,7 @@ export default function DebattPage() {
                     ✅ Debatten är avslutad! {history.length} repliker totalt.
                   </div>
                   <button
-                    className="cartoon-btn cartoon-btn-ghost w-full"
+                    className="cartoon-btn cartoon-btn-ghost w-full bg-white"
                     onClick={resetDebate}
                     id="new-debate-btn"
                   >
@@ -429,5 +456,6 @@ export default function DebattPage() {
         )}
       </main>
     </div>
+  </div>
   );
 }

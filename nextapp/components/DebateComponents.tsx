@@ -54,18 +54,39 @@ export function DebateBubble({
   return (
     <div className="flex justify-start w-full" id={`debate-turn-${turnNumber}`}>
       <div className="max-w-[88%] md:max-w-[76%] flex items-start gap-2.5">
-        {/* Politician Avatar */}
-        <div
-          className="relative rounded-full overflow-hidden border-2 border-black flex-shrink-0 mt-0.5 shadow-[2px_2px_0px_#1a1a1a]"
-          style={{ width: 40, height: 40, backgroundColor: party.color }}
-        >
-          <Image
-            src={`/avatars/${party.avatarFile}`}
-            alt={party.displayName}
-            fill
-            className="object-cover object-top"
-            sizes="40px"
-          />
+        {/* Politician Avatar with Party Logo Badge */}
+        <div className="relative flex-shrink-0 mt-0.5">
+          <div
+            className="relative rounded-full overflow-hidden border-2 border-black shadow-[2px_2px_0px_#1a1a1a]"
+            style={{ width: 42, height: 42, backgroundColor: party.color }}
+          >
+            <Image
+              src={`/avatars/${party.avatarFile}`}
+              alt={party.displayName}
+              fill
+              className="object-cover object-top"
+              sizes="42px"
+            />
+          </div>
+
+          {/* Official Party Logo Badge */}
+          {party.logoFile && (
+            <div
+              className="absolute -bottom-1 -right-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-xs"
+              style={{ width: 19, height: 19 }}
+              title={party.partyName}
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src={`/logos/${party.logoFile}`}
+                  alt={party.partyName}
+                  fill
+                  className="object-contain"
+                  sizes="19px"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bubble & Metadata */}
@@ -170,17 +191,35 @@ export function DebateSpeakerSelector({
               id={`debate-speaker-btn-${party.id}`}
               aria-pressed={isActive}
             >
-              <div
-                className="relative rounded-full overflow-hidden border border-current flex-shrink-0"
-                style={{ width: 24, height: 24 }}
-              >
-                <Image
-                  src={`/avatars/${party.avatarFile}`}
-                  alt={party.displayName}
-                  fill
-                  className="object-cover object-top"
-                  sizes="24px"
-                />
+              <div className="relative flex-shrink-0">
+                <div
+                  className="relative rounded-full overflow-hidden border border-current"
+                  style={{ width: 26, height: 26 }}
+                >
+                  <Image
+                    src={`/avatars/${party.avatarFile}`}
+                    alt={party.displayName}
+                    fill
+                    className="object-cover object-top"
+                    sizes="26px"
+                  />
+                </div>
+                {party.logoFile && (
+                  <div
+                    className="absolute -bottom-1 -right-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
+                    style={{ width: 13, height: 13 }}
+                  >
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={`/logos/${party.logoFile}`}
+                        alt={party.partyName}
+                        fill
+                        className="object-contain"
+                        sizes="13px"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
               {party.abbreviation}
             </button>

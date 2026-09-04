@@ -33,17 +33,36 @@ export default function AnswerBubble({
         className="answer-bubble-header"
         style={{ backgroundColor: party.color, borderColor: party.color }}
       >
-        <div
-          className="relative rounded-full overflow-hidden border-2 border-white flex-shrink-0"
-          style={{ width: 40, height: 40 }}
-        >
-          <Image
-            src={`/avatars/${party.avatarFile}`}
-            alt={party.displayName}
-            fill
-            className="object-cover object-top"
-            sizes="40px"
-          />
+        <div className="relative flex-shrink-0">
+          <div
+            className="relative rounded-full overflow-hidden border-2 border-white"
+            style={{ width: 42, height: 42 }}
+          >
+            <Image
+              src={`/avatars/${party.avatarFile}`}
+              alt={party.displayName}
+              fill
+              className="object-cover object-top"
+              sizes="42px"
+            />
+          </div>
+          {party.logoFile && (
+            <div
+              className="absolute -bottom-1 -right-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+              style={{ width: 18, height: 18 }}
+              title={party.partyName}
+            >
+              <div className="relative w-full h-full">
+                <Image
+                  src={`/logos/${party.logoFile}`}
+                  alt={`${party.partyName} logotyp`}
+                  fill
+                  className="object-contain"
+                  sizes="18px"
+                />
+              </div>
+            </div>
+          )}
         </div>
         <div>
           <div
@@ -59,7 +78,7 @@ export default function AnswerBubble({
             {party.partyName}
           </div>
         </div>
-        {isStreaming && (
+        {isStreaming ? (
           <div className="ml-auto">
             <span
               className="typing-dots"
@@ -71,6 +90,23 @@ export default function AnswerBubble({
               <span />
             </span>
           </div>
+        ) : (
+          party.logoFile && (
+            <div className="ml-auto flex items-center bg-white/20 px-2 py-1 rounded-lg border border-white/30">
+              <div className="relative w-4 h-4 mr-1">
+                <Image
+                  src={`/logos/${party.logoFile}`}
+                  alt={party.partyName}
+                  fill
+                  className="object-contain"
+                  sizes="16px"
+                />
+              </div>
+              <span className="text-xs font-black" style={{ color: party.textColor }}>
+                {party.abbreviation}
+              </span>
+            </div>
+          )
         )}
       </div>
 

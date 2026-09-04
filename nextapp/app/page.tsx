@@ -252,17 +252,36 @@ export default function HomePage() {
                 style={{ backgroundColor: "#1a1a1a", color: "white" }}
               >
                 <div className="flex items-center gap-3">
-                  <div
-                    className="relative rounded-full overflow-hidden border-2 border-white flex-shrink-0"
-                    style={{ width: 44, height: 44, backgroundColor: selectedParty.color }}
-                  >
-                    <Image
-                      src={`/avatars/${selectedParty.avatarFile}`}
-                      alt={selectedParty.displayName}
-                      fill
-                      className="object-cover object-top"
-                      sizes="44px"
-                    />
+                  <div className="relative flex-shrink-0">
+                    <div
+                      className="relative rounded-full overflow-hidden border-2 border-white"
+                      style={{ width: 46, height: 46, backgroundColor: selectedParty.color }}
+                    >
+                      <Image
+                        src={`/avatars/${selectedParty.avatarFile}`}
+                        alt={selectedParty.displayName}
+                        fill
+                        className="object-cover object-top"
+                        sizes="46px"
+                      />
+                    </div>
+                    {selectedParty.logoFile && (
+                      <div
+                        className="absolute -bottom-1 -right-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+                        style={{ width: 22, height: 22 }}
+                        title={selectedParty.partyName}
+                      >
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={`/logos/${selectedParty.logoFile}`}
+                            alt={`${selectedParty.partyName} logotyp`}
+                            fill
+                            className="object-contain"
+                            sizes="22px"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -270,13 +289,24 @@ export default function HomePage() {
                         {selectedParty.displayName}
                       </span>
                       <span
-                        className="px-2 py-0.5 rounded-full text-xs font-black"
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-black"
                         style={{
                           backgroundColor: selectedParty.color,
                           color: selectedParty.textColor,
                         }}
                       >
-                        {selectedParty.abbreviation}
+                        {selectedParty.logoFile && (
+                          <span className="relative w-3.5 h-3.5 inline-block">
+                            <Image
+                              src={`/logos/${selectedParty.logoFile}`}
+                              alt={selectedParty.partyName}
+                              fill
+                              className="object-contain"
+                              sizes="14px"
+                            />
+                          </span>
+                        )}
+                        <span>{selectedParty.abbreviation}</span>
                       </span>
                     </div>
                     <div className="text-xs text-gray-300 font-semibold">

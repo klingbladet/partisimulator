@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import { Instrument_Serif } from "next/font/google";
 import "./globals.css";
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "PartiSimulator 2026 🗳️ – Fråga riksdagspartierna",
@@ -24,7 +32,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+      <body
+        className={`min-h-screen ${instrumentSerif.variable}`}
+        style={{ backgroundColor: "var(--background)" }}
+      >
         {children}
       </body>
     </html>
