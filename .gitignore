@@ -3,6 +3,8 @@
 .env*.local
 .env.local
 **/.env*
+!.env.example
+!**/.env.example
 
 # Dependencies
 node_modules/
@@ -13,7 +15,26 @@ node_modules/
 **/.next/
 out/
 **/out/
+/build
+
+# testing
+/coverage
+
+# debug logs
+npm-debug.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
 
 # OS files
 .DS_Store
 Thumbs.db
+*.pem
+
+## Claude stuff
+
+.cc-writes

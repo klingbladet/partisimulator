@@ -1,0 +1,208 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-format-code.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/lint-format-markdown.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/spellcheck.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-chmod.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-destructive-sql.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-env-read.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-find-exec.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-git-with-allowlist.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-interactive-bash.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-package-managers.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-pnpm-commands.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-rm.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sensitive-reads.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sensitive-writes.mjs\"",
+            "type": "command"
+          },
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sudo.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "Bash"
+      },
+      {
+        "hooks": [
+          {
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-settings-write.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "Write|Edit"
+      }
+    ]
+  },
+  "includeGitInstructions": false,
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(cd)",
+      "Bash(git log)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git show:*)",
+      "Bash(git grep:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git describe:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git shortlog:*)",
+      "Bash(git cat-file:*)",
+      "Bash(git for-each-ref:*)",
+      "Bash(git name-rev:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git branch -a)",
+      "Bash(git branch --show-current)",
+      "Write",
+      "Edit"
+    ],
+    "ask": [
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(touch:*)",
+      "WebFetch",
+      "WebSearch",
+      "Read(**/.*)",
+      "Edit(**/.*)",
+      "Read(**/.*/**)",
+      "Edit(**/.*/**)",
+      "Bash(python*)",
+      "Bash(*/python*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(sh:*)",
+      "Bash(bash:*)",
+      "Bash(zsh:*)",
+      "Bash(eval:*)",
+      "Read(**/.env*)",
+      "Edit(**/.env*)",
+      "Read(**/.ssh*)",
+      "Edit(**/.ssh*)",
+      "Bash(git push -f *)",
+      "Bash(git push --force *)",
+      "Bash(git reset --hard *)",
+      "Bash(git checkout .)",
+      "Bash(git restore *)",
+      "Bash(git clean -f *)",
+      "Bash(rsync:*)",
+      "Bash(screencapture:*)",
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(wget:*)",
+      "Bash(nc:*)",
+      "Bash(ncat:*)",
+      "Bash(netcat:*)",
+      "Bash(telnet:*)",
+      "Bash(ftp:*)",
+      "Bash(sftp:*)",
+      "Bash(ftps:*)",
+      "Bash(osascript:*)",
+      "Bash(xattr:*)",
+      "Bash(diskutil:*)",
+      "Bash(launchctl:*)",
+      "Bash(crontab:*)",
+      "Bash(defaults:*)",
+      "Bash(security:*)",
+      "Bash(reboot:*)",
+      "Bash(http:*)",
+      "Bash(https:*)",
+      "Edit(**/.zshrc)",
+      "Edit(**/.zprofile)",
+      "Edit(**/.bash_profile)",
+      "Edit(**/.bashrc)",
+      "Edit(**/Library/LaunchAgents/**)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(npq:*)",
+      "Bash(pnpm:*)",
+      "Bash(pnpx:*)",
+      "Bash(yarn:*)",
+      "Bash(pip*)",
+      "Bash(*/pip*)",
+      "Bash(uv*)",
+      "Bash(uvx*)",
+      "Bash(*/uv*)",
+      "Bash(*/uvx*)",
+      "Bash(brew:*)",
+      "Bash(bun:*)",
+      "Edit(~/.claude/settings.json)"
+    ],
+    "disableBypassPermissionsMode": "disable"
+  },
+  "sandbox": {
+    "allowUnsandboxedCommands": false,
+    "autoAllowBashIfSandboxed": false,
+    "enabled": true,
+    "failIfUnavailable": true,
+    "filesystem": {
+      "allowWrite": [
+        "/tmp"
+      ],
+      "denyRead": [],
+      "denyWrite": [
+        "~/.claude/settings.json"
+      ]
+    },
+    "network": {
+      "allowedDomains": [],
+      "allowLocalBinding": false
+    }
+  },
+  "skipWebFetchPreflight": true
+}

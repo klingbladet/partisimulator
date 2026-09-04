@@ -1,0 +1,34 @@
+{
+  "dictionaries": [
+    "project-words",
+    "swedish-words",
+    "sv"
+  ],
+  "dictionaryDefinitions": [
+    {
+      "addWords": true,
+      "name": "project-words",
+      "path": "./project-words.txt"
+    },
+    {
+      "addWords": false,
+      "name": "swedish-words",
+      "path": "./swedish-words.txt"
+    }
+  ],
+  "ignorePaths": [
+    "node_modules/**",
+    "**/node_modules/**",
+    "pnpm-lock.yaml",
+    ".next/**",
+    "public/**",
+    "scripts/manifests/**",
+    "project-words.txt",
+    "swedish-words.txt"
+  ],
+  "import": [
+    "@cspell/dict-sv/cspell-ext.json"
+  ],
+  "language": "en,sv",
+  "version": "0.2"
+}

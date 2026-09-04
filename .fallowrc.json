@@ -1,0 +1,18 @@
+{
+  "$schema": "./node_modules/fallow/schema.json",
+  "entry": [
+    "src/app/layout.tsx",
+    "src/app/page.tsx",
+    "src/app/debatt/page.tsx",
+    "src/app/grid/page.tsx",
+    "src/app/api/ask/route.ts",
+    "src/app/api/ask-all/route.ts",
+    "src/app/api/debate/route.ts",
+    "scripts/seed.ts"
+  ],
+  "ignorePatterns": [
+    ".next/**",
+    "public/**",
+    "scripts/manifests/**"
+  ]
+}

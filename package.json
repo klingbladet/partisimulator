@@ -1,0 +1,48 @@
+{
+  "dependencies": {
+    "@ai-sdk/openai": "^4.0.52",
+    "@ai-sdk/react": "^4.0.88",
+    "@supabase/supabase-js": "^2.112.4",
+    "@xenova/transformers": "^2.17.2",
+    "ai": "^7.0.85",
+    "clsx": "^2.1.1",
+    "next": "16.3.3",
+    "pdf-parse": "^1.1.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.0",
+    "@cspell/dict-sv": "^2.2.3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "cspell": "^10.1.1",
+    "dotenv": "^17.4.2",
+    "fallow": "^3.20.0",
+    "markdownlint-cli2": "^0.23.2",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.13",
+    "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "name": "partisimulator",
+  "private": true,
+  "scripts": {
+    "analyze-code": "fallow",
+    "build": "next build",
+    "dev": "next dev",
+    "lint-format-code": "biome check --write --verbose --max-diagnostics=none --diagnostic-level=info",
+    "lint-format-markdown": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules\"",
+    "seed": "tsx scripts/seed.ts",
+    "spellcheck": "cspell lint --no-progress \"**/*.{md,ts,tsx,mjs,css,html,sql,json,jsonc,yaml}\"",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}

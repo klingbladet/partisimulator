@@ -1,0 +1,187 @@
+{
+  "blanks-around-fences": {
+    // MD031 - Fenced code blocks should be surrounded by blank lines
+    "list_items": true
+  },
+  "blanks-around-headings": {
+    // MD022 - Headings should be surrounded by blank lines
+    "include_front_matter": false,
+    "lines_above": 1,
+    "lines_below": 1
+  },
+  "blanks-around-lists": true, // MD032 - Lists should be surrounded by blank lines
+  "blanks-around-tables": true, // MD058 - Tables should be surrounded by blank lines
+  "code-block-style": {
+    // MD046 - Code block style
+    "style": "fenced"
+  },
+  "code-fence-style": {
+    // MD048 - Code fence style
+    "style": "backtick"
+  },
+  "commands-show-output": true, // MD014 - Dollar signs used before commands without showing output
+  "default": true,
+  "descriptive-link-text": {
+    // MD059 - Link text should be descriptive
+    "prohibited_texts": [
+      "click here",
+      "here",
+      "link",
+      "more",
+      "här",
+      "läs mer",
+      "länk"
+    ]
+  },
+  "emphasis-style": {
+    // MD049 - Emphasis style
+    "style": "consistent"
+  },
+  "fenced-code-language": {
+    // MD040 - Fenced code blocks should have a language specified
+    "allowed_languages": [],
+    "language_only": false
+  },
+  "first-line-h1": {
+    // MD041 - First line in a file should be a top-level heading
+    "allow_preamble": false,
+    "front_matter_title": "^\\s*title\\s*[:=]",
+    "level": 1
+  },
+  "heading-increment": {
+    // MD001 - Heading levels should only increment by one level at a time
+    "front_matter_title": "^\\s*title\\s*[:=]"
+  },
+  "heading-start-left": true, // MD023 - Headings must start at the beginning of the line
+  "heading-style": {
+    // MD003 - Heading style
+    "style": "atx"
+  },
+  "hr-style": {
+    // MD035 - Horizontal rule style
+    "style": "consistent"
+  },
+  "line-length": false, // MD013
+  "link-fragments": {
+    // MD051 - Link fragments should be valid
+    "ignore_case": false,
+    "ignored_pattern": ""
+  },
+  "link-image-reference-definitions": {
+    // MD053 - Link and image reference definitions should be needed
+    "ignored_definitions": [
+      "//"
+    ]
+  },
+  "link-image-style": {
+    // MD054 - Link and image style
+    "autolink": true,
+    "collapsed": true,
+    "full": true,
+    "inline": true,
+    "shortcut": true,
+    "url_inline": true
+  },
+  "list-indent": true, // MD005 - Inconsistent indentation for list items at the same level
+  "list-marker-space": {
+    // MD030 - Spaces after list markers
+    "ol_multi": 1,
+    "ol_single": 1,
+    "ul_multi": 1,
+    "ul_single": 1
+  },
+  "no-alt-text": true, // MD045 - Images should have alternate text (alt text)
+  "no-bare-urls": true, // MD034 - Bare URL used
+  "no-blanks-blockquote": true, // MD028 - Blank line inside blockquote
+  "no-duplicate-heading": {
+    // MD024 - Multiple headings with the same content
+    "siblings_only": true
+  },
+  "no-emphasis-as-heading": {
+    // MD036 - Emphasis used instead of a heading
+    "punctuation": ".,;:" // What counts as punctuation (aka not allowed)
+  },
+  "no-empty-links": true, // MD042 - No empty links
+  "no-hard-tabs": {
+    // MD010 - Hard tabs
+    "code_blocks": false,
+    "ignore_code_languages": [],
+    "spaces_per_tab": 4
+  },
+  "no-inline-html": {
+    // MD033 - Inline HTML
+    "allowed_elements": [],
+    "table_allowed_elements": []
+  },
+  "no-missing-space-atx": true, // MD018 - No space after hash on atx style heading
+  "no-missing-space-closed-atx": true, // MD020 - No space inside hashes on closed atx style heading
+  "no-multiple-blanks": {
+    // MD012 - Multiple consecutive blank lines
+    "maximum": 1
+  },
+  "no-multiple-space-atx": true, // MD019 - Multiple spaces after hash on atx style heading
+  "no-multiple-space-blockquote": {
+    // MD027 - Multiple spaces after blockquote symbol
+    "list_items": true
+  },
+  "no-multiple-space-closed-atx": true, // MD021 - Multiple spaces inside hashes on closed atx style heading
+  "no-reversed-links": true, // MD011 - Reversed link syntax
+  "no-space-in-code": true, // MD038 - Spaces inside code span elements
+  "no-space-in-emphasis": true, // MD037 - Spaces inside emphasis markers
+  "no-space-in-links": true, // MD039 - Spaces inside link text
+  "no-trailing-punctuation": {
+    // MD026 - Trailing punctuation in heading
+    "punctuation": ".,;:" // What counts as punctuation (aka not allowed)
+  },
+  "no-trailing-spaces": {
+    // MD009 - Trailing spaces
+    "br_spaces": 0,
+    "code_blocks": false,
+    "list_item_empty_lines": false,
+    "strict": true
+  },
+  "ol-prefix": {
+    // MD029 - Ordered list item prefix
+    "style": "ordered"
+  },
+  "proper-names": {
+    // MD044 - Proper names should have the correct capitalization
+    "code_blocks": true,
+    "html_elements": true,
+    "names": []
+  },
+  "reference-links-images": {
+    // MD052 - Reference links and images should use a label that is defined
+    "shortcut_syntax": false
+  },
+  "required-headings": false, // MD043 - Required heading structure
+  "single-h1": {
+    // MD025 - Multiple top-level headings in the same document
+    "front_matter_title": "^\\s*title\\s*[:=]",
+    "level": 1
+  },
+  "single-trailing-newline": true, // MD047 - Files should end with a single newline character
+  "strong-style": {
+    // MD050 - Strong style
+    "style": "consistent"
+  },
+  "table-column-count": true, // MD056 - Table column count
+  "table-column-style": {
+    // MD060 - Table column style
+    "style": "aligned"
+  },
+  "table-pipe-style": {
+    // MD055 - Table pipe style
+    "style": "consistent"
+  },
+  "ul-indent": {
+    // MD007 - Unordered list indentation
+    "indent": 4, // Each nested level
+    "start_indent": 4, // Top-level list items are not indented
+    "start_indented": false // Only matters if "start_indented" were true
+  },
+  "ul-style": {
+    // MD004 - Unordered list style
+    "style": "dash"
+  }
+}
