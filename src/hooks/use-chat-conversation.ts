@@ -1,8 +1,9 @@
 import { useCompletion } from "@ai-sdk/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { isDuplicateOfLastEntry } from "@/lib/history";
-import { cleanText, extractSources } from "@/lib/sources";
+import { getParty } from "@/lib/parties";
+import { cleanText, extractSources, extractStance, stripStanceMarker } from "@/lib/sources";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
 
@@ -11,9 +12,9 @@ interface UseChatConversationResult {
   chatHistory: ChatMessage[];
   error: Error | undefined;
   followUpQuestion: string;
-  handleAllParties: () => void;
   handleResetConversation: () => void;
   handleSendQuestion: (textToSend: string) => Promise<void>;
+  handleStop: () => void;
   isLoading: boolean;
   pendingText: string;
   question: string;
@@ -26,6 +27,7 @@ interface UseChatConversationResult {
 /** Owns all state and streaming logic for the single-party chat on the home page; the page itself only renders. */
 export function useChatConversation(): UseChatConversationResult {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedParty, setSelectedParty] = useState<PartyPersona | null>(null);
   const [question, setQuestion] = useState("");
   const [followUpQuestion, setFollowUpQuestion] = useState("");
@@ -33,8 +35,28 @@ export function useChatConversation(): UseChatConversationResult {
   const [pendingText, setPendingText] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Seed the conversation from a "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
+  // router.replace("/") clears party/q/a, so the re-run this triggers hits the guard below and no-ops.
+  useEffect(() => {
+    const partyId = searchParams.get("party");
+    const seedQuestion = searchParams.get("q");
+    const seedAnswer = searchParams.get("a");
+    if (!partyId || !seedQuestion || !seedAnswer) return;
+
+    const party = getParty(partyId);
+    if (!party) return;
+
+    setSelectedParty(party);
+    setChatHistory([
+      { id: crypto.randomUUID(), role: "user", text: seedQuestion },
+      { id: crypto.randomUUID(), role: "assistant", text: seedAnswer },
+    ]);
+    router.replace("/");
+  }, [router, searchParams]);
+
   const addAssistantMessage = (rawText: string): void => {
-    const cleaned = cleanText(rawText);
+    const stance = extractStance(rawText);
+    const cleaned = cleanText(stripStanceMarker(rawText));
     if (!cleaned) return;
     const sources = extractSources(rawText);
 
@@ -49,6 +71,7 @@ export function useChatConversation(): UseChatConversationResult {
           id: crypto.randomUUID(),
           role: "assistant",
           sources,
+          stance,
           text: cleaned,
         },
       ];
@@ -56,7 +79,7 @@ export function useChatConversation(): UseChatConversationResult {
     setPendingText("");
   };
 
-  const { completion, complete, isLoading, error } = useCompletion({
+  const { completion, complete, isLoading, error, stop } = useCompletion({
     api: "/api/ask",
     onFinish: (_prompt, completionText) => {
       if (completionText) {
@@ -73,12 +96,14 @@ export function useChatConversation(): UseChatConversationResult {
     }
   }, [completion, isLoading]);
 
-  // Auto-scroll chat to bottom, but only once there's something to scroll to
+  // Auto-scroll to the newest turn, but only when one is added — not on every streamed chunk,
+  // so scrolling up to re-read earlier messages during generation isn't fought.
+  const chatHistoryLength = chatHistory.length;
   useEffect(() => {
-    if (chatHistory.length > 0 || pendingText) {
+    if (chatHistoryLength > 0) {
       chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [chatHistory, pendingText]);
+  }, [chatHistoryLength]);
 
   // Send a question (either initial or follow-up)
   const handleSendQuestion = async (textToSend: string): Promise<void> => {
@@ -111,9 +136,15 @@ export function useChatConversation(): UseChatConversationResult {
     }
   };
 
-  const handleAllParties = (): void => {
-    if (!question.trim()) return;
-    router.push(`/grid?q=${encodeURIComponent(question)}`);
+  // Cancel a running answer: abort the stream, keep whatever text arrived so far as the final
+  // message (onFinish never fires on an aborted stream), then snap the view back to the bottom.
+  const handleStop = (): void => {
+    if (!isLoading) return;
+    stop();
+    if (completion) {
+      addAssistantMessage(completion);
+    }
+    chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
   const handleResetConversation = (): void => {
@@ -128,9 +159,9 @@ export function useChatConversation(): UseChatConversationResult {
     chatHistory,
     error,
     followUpQuestion,
-    handleAllParties,
     handleResetConversation,
     handleSendQuestion,
+    handleStop,
     isLoading,
     pendingText,
     question,

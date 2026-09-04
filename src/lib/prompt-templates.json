@@ -1,0 +1,63 @@
+{
+  "mode": {
+    "ask-all": {
+      "lengthConstraint": "max 2 korta meningar - detta är en vy där 8 partier svarar sida vid sida och ska gå snabbt att skanna",
+      "longAnswerLengthConstraint": "5-7 meningar",
+      "longAnswerMaxSentences": 7,
+      "maxSentences": 2,
+      "outputSteps": [
+        "Mening 1: partiets ståndpunkt i frågan, extremt kort och konkret.",
+        "Mening 2 (valfri, bara om den tillför något nytt): EN konkret åtgärd i få ord.",
+        "KÄLLA (om tillämpligt, inom samma mening): [KÄLLA: Avsnitt \"X\", Sida Y].",
+        "Efter det korta svaret, på en NY RAD: skriv EXAKT markören [LÅNGT SVAR], och fortsätt sedan med ett djupare svar enligt längdregeln för långt svar, med egna källhänvisningar om tillämpligt."
+      ]
+    },
+    "debate": {
+      "lengthConstraint": "2-3 meningar - detta är en debattreplik, inte en föreläsning",
+      "maxSentences": 3,
+      "outputSteps": [
+        "Mening 1: ÖPPNINGSSTÅNDPUNKT, rakt på sak.",
+        "Mening 2-3: ETT skarpt argument eller en rak känga mot en motståndare, inget mer.",
+        "KÄLLA (om tillämpligt, inom samma mening): [KÄLLA: Avsnitt \"X\", Sida Y]."
+      ]
+    },
+    "one-shot": {
+      "lengthConstraint": "1-2 meningar - inget mer",
+      "maxSentences": 2,
+      "outputSteps": [
+        "Mening 1: partiets ståndpunkt i frågan, rakt på sak.",
+        "Mening 2 (bara om den tillför något nytt): EN konkret åtgärd. Annars sluta efter mening 1.",
+        "KÄLLA (om tillämpligt, inom samma mening): [KÄLLA: Avsnitt \"X\", Sida Y]."
+      ]
+    }
+  },
+  "shared": {
+    "debateHistory": {
+      "emptyFallback": "(Debatten börjar nu - du har första repliken)",
+      "header": "DEBATTHISTORIK HITTILLS"
+    },
+    "manifestContext": {
+      "header": "MANIFEST-KONTEXT"
+    },
+    "outputFormat": {
+      "header": "SVARSFORMAT, I DENNA ORDNING",
+      "lengthLabel": "Längd"
+    },
+    "personality": {
+      "closingNote": "Låt DENNA profil färga varje ordval, exempel och prioritering. Undvik generiskt politikerspråk som skulle kunna sägas av vilket parti som helst.",
+      "header": "PERSONLIGHET",
+      "keyIssuesLabel": "Dina viktigaste hjärtefrågor",
+      "rhetoricalStyleLabel": "Retorisk stil",
+      "toneLabel": "Ton"
+    },
+    "rules": {
+      "alwaysAnswer": "DU MÅSTE ALLTID ENGAGERA DIG OCH SVARA. Vägra ALDRIG, och säg ALDRIG att frågan/ämnet \"inte tas upp i manifestet\" - som rikspolitiker har du alltid en tydlig ståndpunkt och lösning.",
+      "citeSources": "Om du stödjer ett påstående med ett manifest-utdrag: avsluta det stycket med en källhänvisning i formatet [KÄLLA: Avsnitt \"X\", Sida Y].",
+      "header": "REGLER"
+    },
+    "stance": {
+      "header": "STÅNDPUNKTSMARKÖR (OBLIGATORISK, FÖRST I SVARET)",
+      "instruction": "Skriv EXAKT en av dessa rader FÖRST, innan något annat: [STÅNDPUNKT: FÖR], [STÅNDPUNKT: EMOT] eller [STÅNDPUNKT: NEUTRALT] - din bedömning av om partiets svar på frågan är för, emot, eller neutralt/blandat. Skriv inget annat på den raden."
+    }
+  }
+}

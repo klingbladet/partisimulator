@@ -11,11 +11,11 @@ const instrumentSerif = Instrument_Serif({
 
 export const metadata: Metadata = {
   description:
-    "Ställ frågor till AI-simulerade svenska partiledare inför valet 2026. Svaren grundas i partiernas valmanifest. En utbildningssimulering – ej verkliga citat.",
+    "Ställ frågor till AI-simulerade svenska partiledare inför valet 2026. Svaren grundas i partiernas valmanifest. En utbildningssimulering - ej verkliga citat.",
   keywords: "riksdag, val 2026, partiledare, AI, simulering, valmanifest, svenska partier",
   openGraph: {
     description: "AI-simulerade svenska partiledare inför valet 2026",
-    title: "PartiSimulator 2026 🗳️",
+    title: "PartiSimulator 2026",
     type: "website",
   },
   robots: {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     noimageindex: true,
     nosnippet: true,
   },
-  title: "PartiSimulator 2026 🗳️ – Fråga riksdagspartierna",
+  title: "PartiSimulator 2026 - Fråga riksdagspartierna",
 };
 
 export default function RootLayout({

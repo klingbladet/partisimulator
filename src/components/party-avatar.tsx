@@ -20,7 +20,7 @@ export default function PartyAvatar({
   badgeSize = Math.max(13, Math.round(size * 0.44)),
   className = "relative rounded-full overflow-hidden border-2 border-black",
   style,
-  badgeClassName = "absolute -bottom-1 -right-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5",
+  badgeClassName = "absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5",
 }: PartyAvatarProps): React.JSX.Element {
   return (
     <div className="relative flex-shrink-0">

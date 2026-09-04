@@ -3,8 +3,9 @@ import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
-import { buildDirectQuestionPrompt } from "@/lib/prompts";
+import { buildOneShotPrompt, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { createSentenceLimitTransform } from "@/lib/sentence-limit";
 
 export const maxDuration = 60;
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const context = await retrieveContext(partyId, question);
 
     // Build the system prompt with party persona + manifest context
-    const systemPrompt = buildDirectQuestionPrompt(party, context);
+    const systemPrompt = buildOneShotPrompt(party, context);
 
     // Build message list with prior conversation history for continuity
     const messages = [
@@ -39,9 +40,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       { content: question, role: "user" as const },
     ];
 
-    // Stream the response via OpenRouter
+    // Stream the response via OpenRouter. maxOutputTokens is a generous safety net; the
+    // sentence-limit transform is what actually enforces the length regardless of the model.
     const result = streamText({
-      maxOutputTokens: 1024,
+      experimental_transform: createSentenceLimitTransform(getMaxSentences("one-shot")),
+      maxOutputTokens: 200,
       messages,
       model: getModel(),
       system: systemPrompt,

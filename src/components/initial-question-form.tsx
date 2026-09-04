@@ -11,7 +11,7 @@ interface InitialQuestionFormProps {
   question: string;
   onQuestionChange: (question: string) => void;
   onSubmit: () => void;
-  onAskAll: () => void;
+  onStop: () => void;
   isLoading: boolean;
 }
 
@@ -21,17 +21,27 @@ export default function InitialQuestionForm({
   question,
   onQuestionChange,
   onSubmit,
-  onAskAll,
+  onStop,
   isLoading,
 }: InitialQuestionFormProps): React.JSX.Element {
   return (
-    <div className="space-y-6">
-      {/* Party selection */}
-      <section className="cartoon-card p-6">
-        <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-          <span>🎯</span>
-          <span>Steg 1: Välj parti att samtala med</span>
-        </h2>
+    <section className="cartoon-card space-y-5 p-6">
+      <QuestionInput
+        buttonLabel={`Fråga ${selectedParty?.abbreviation ?? "partiet"}!`}
+        id="direct-question-input"
+        isLoading={isLoading}
+        onChange={onQuestionChange}
+        onStop={onStop}
+        onSubmit={onSubmit}
+        placeholder={
+          selectedParty ? `Fråga ${selectedParty.displayName}...` : "Skriv din fråga, välj sedan parti nedan..."
+        }
+        submitDisabled={!selectedParty}
+        value={question}
+      />
+
+      <div className="border-gray-200 border-t-2 pt-5">
+        <h2 className="mb-4 font-black text-lg">Välj parti att samtala med</h2>
 
         <div className="party-grid">
           {PARTIES.map((party) => (
@@ -59,42 +69,7 @@ export default function InitialQuestionForm({
             <span className="text-gray-500">Hjärtefrågor: {selectedParty.keyIssues.join(", ")}</span>
           </div>
         )}
-      </section>
-
-      {/* Question input */}
-      <section className="cartoon-card p-6">
-        <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-          <span>💬</span>
-          <span>Steg 2: Skriv din fråga</span>
-        </h2>
-
-        <QuestionInput
-          buttonLabel={`Fråga ${selectedParty?.abbreviation ?? "partiet"}! 🎤`}
-          disabled={!selectedParty}
-          id="direct-question-input"
-          isLoading={isLoading}
-          onChange={onQuestionChange}
-          onSubmit={onSubmit}
-          placeholder={selectedParty ? `Fråga ${selectedParty.displayName}...` : "Välj ett parti ovan först..."}
-          value={question}
-        />
-
-        <div className="mt-3 flex items-center gap-2">
-          <div className="flex-1 border-gray-200 border-t-2 border-dashed" />
-          <span className="font-bold text-gray-400 text-sm">eller</span>
-          <div className="flex-1 border-gray-200 border-t-2 border-dashed" />
-        </div>
-
-        <button
-          className="cartoon-btn cartoon-btn-ghost mt-3 w-full"
-          disabled={!question.trim() || isLoading}
-          id="ask-all-btn"
-          onClick={onAskAll}
-          type="button"
-        >
-          🔲 Fråga alla 8 partier på en gång!
-        </button>
-      </section>
-    </div>
+      </div>
+    </section>
   );
 }

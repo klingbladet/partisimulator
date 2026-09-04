@@ -1,8 +1,9 @@
 "use client";
 
+import { RotateCcw, Send, Square } from "lucide-react";
 import Image from "next/image";
 import type { RefObject } from "react";
-import { DebateBubble } from "@/components/debate-components";
+import ChatBubble from "@/components/chat-bubble";
 import PartyAvatar from "@/components/party-avatar";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
@@ -17,6 +18,7 @@ interface ChatViewProps {
   onFollowUpChange: (value: string) => void;
   onSendFollowUp: () => void;
   onReset: () => void;
+  onStop: () => void;
 }
 
 export default function ChatView({
@@ -29,6 +31,7 @@ export default function ChatView({
   onFollowUpChange,
   onSendFollowUp,
   onReset,
+  onStop,
 }: ChatViewProps): React.JSX.Element {
   return (
     <div className="space-y-4">
@@ -40,7 +43,7 @@ export default function ChatView({
         >
           <div className="flex items-center gap-3">
             <PartyAvatar
-              badgeClassName="absolute -bottom-1 -right-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+              badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
               badgeSize={22}
               className="relative overflow-hidden rounded-full border-2 border-white"
               party={selectedParty}
@@ -84,7 +87,8 @@ export default function ChatView({
             onClick={onReset}
             type="button"
           >
-            🔄 Byt parti / Ny fråga
+            <RotateCcw className="h-3.5 w-3.5" />
+            Byt parti / Ny fråga
           </button>
         </div>
       )}
@@ -97,15 +101,7 @@ export default function ChatView({
       >
         {chatHistory.map((message, index) => {
           if (message.role === "user") {
-            return (
-              <DebateBubble
-                isUser={true}
-                key={message.id}
-                speakerName="Du"
-                text={message.text}
-                turnNumber={index + 1}
-              />
-            );
+            return <ChatBubble isUser={true} key={message.id} text={message.text} turnNumber={index + 1} />;
           }
 
           if (!selectedParty) {
@@ -113,11 +109,12 @@ export default function ChatView({
           }
 
           return (
-            <DebateBubble
+            <ChatBubble
               isStreaming={false}
               key={message.id}
               party={selectedParty}
               sources={message.sources}
+              stance={message.stance}
               text={message.text}
               turnNumber={index + 1}
             />
@@ -126,20 +123,15 @@ export default function ChatView({
 
         {/* Streaming reply */}
         {isLoading && selectedParty && (
-          <DebateBubble
-            isStreaming={true}
-            party={selectedParty}
-            text={pendingText}
-            turnNumber={chatHistory.length + 1}
-          />
+          <ChatBubble isStreaming={true} party={selectedParty} text={pendingText} turnNumber={chatHistory.length + 1} />
         )}
         <div ref={chatEndRef} />
       </div>
 
       {/* Compact Follow-up Input Bar */}
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2">
         <input
-          className="cartoon-input flex-1 bg-white text-sm"
+          className="cartoon-input bg-white text-sm"
           disabled={isLoading}
           id="followup-question-input"
           onChange={(event) => onFollowUpChange(event.target.value)}
@@ -155,15 +147,30 @@ export default function ChatView({
           type="text"
           value={followUpQuestion}
         />
-        <button
-          className="cartoon-btn cartoon-btn-primary whitespace-nowrap px-5 text-sm"
-          disabled={!followUpQuestion.trim() || isLoading}
-          id="followup-question-submit"
-          onClick={onSendFollowUp}
-          type="button"
-        >
-          💬 Skicka
-        </button>
+        {isLoading ? (
+          <button
+            className="cartoon-btn cartoon-btn-danger text-sm"
+            id="followup-question-stop"
+            onClick={onStop}
+            style={{ inlineSize: "100%" }}
+            type="button"
+          >
+            <Square className="h-4 w-4" />
+            Avbryt
+          </button>
+        ) : (
+          <button
+            className="cartoon-btn cartoon-btn-primary text-sm"
+            disabled={!followUpQuestion.trim()}
+            id="followup-question-submit"
+            onClick={onSendFollowUp}
+            style={{ inlineSize: "100%" }}
+            type="button"
+          >
+            <Send className="h-4 w-4" />
+            Skicka
+          </button>
+        )}
       </div>
     </div>
   );

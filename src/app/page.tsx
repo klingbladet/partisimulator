@@ -1,11 +1,15 @@
 "use client";
 
+import { XCircle } from "lucide-react";
+import { Suspense } from "react";
 import AppNav from "@/components/app-nav";
 import ChatView from "@/components/chat-view";
 import InitialQuestionForm from "@/components/initial-question-form";
+import PageContainer from "@/components/page-container";
+import SiteFooter from "@/components/site-footer";
 import { useChatConversation } from "@/hooks/use-chat-conversation";
 
-export default function HomePage(): React.JSX.Element {
+function HomeContent(): React.JSX.Element {
   const {
     selectedParty,
     setSelectedParty,
@@ -19,48 +23,30 @@ export default function HomePage(): React.JSX.Element {
     isLoading,
     error,
     handleSendQuestion,
-    handleAllParties,
     handleResetConversation,
+    handleStop,
   } = useChatConversation();
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+    <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
       <AppNav />
 
-      <main className="mx-auto max-w-4xl px-4 py-8">
-        {/* Hero */}
-        <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex items-center gap-3">
-            <span className="text-5xl">🗳️</span>
-            <div className="text-left">
-              <h1 className="font-black text-4xl text-black leading-tight">PartiSimulator</h1>
-              <p className="font-bold text-gray-500 text-lg">Valet 2026</p>
-            </div>
-          </div>
-          <p className="mx-auto max-w-xl font-semibold text-gray-600">
-            Välj ett parti och starta en dialog – ställ din fråga och fortsätt med följdfrågor! Svaren baseras på
-            partiernas valmanifest och ideologi.
+      <PageContainer className="px-4 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="font-black text-3xl text-black leading-tight">Direktfråga</h1>
+          <p className="mt-1 font-semibold text-gray-600">
+            Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.
           </p>
-          <div
-            className="mt-3 inline-flex items-center gap-2 rounded-full border-2 px-4 py-1.5 font-bold text-xs"
-            style={{
-              backgroundColor: "#fff3cd",
-              borderColor: "#f0a500",
-              color: "#7a4f00",
-            }}
-          >
-            <span>⚠️</span>
-            <span>AI-simulering – ej verkliga citat från partiledarna</span>
-          </div>
         </div>
 
         {/* View 1: Initial Question Form (when no chat has started yet) */}
         {chatHistory.length === 0 && !isLoading ? (
           <InitialQuestionForm
             isLoading={isLoading}
-            onAskAll={handleAllParties}
             onQuestionChange={setQuestion}
             onSelectParty={setSelectedParty}
+            onStop={handleStop}
             onSubmit={() => handleSendQuestion(question)}
             question={question}
             selectedParty={selectedParty}
@@ -75,6 +61,7 @@ export default function HomePage(): React.JSX.Element {
             onFollowUpChange={setFollowUpQuestion}
             onReset={handleResetConversation}
             onSendFollowUp={() => handleSendQuestion(followUpQuestion)}
+            onStop={handleStop}
             pendingText={pendingText}
             selectedParty={selectedParty}
           />
@@ -83,20 +70,34 @@ export default function HomePage(): React.JSX.Element {
         {/* Error state */}
         {error && (
           <div
-            className="cartoon-card mt-6 border-red-400 p-4"
+            className="cartoon-card mt-6 flex items-center gap-2 border-red-400 p-4"
             style={{ backgroundColor: "#fff5f5", borderColor: "#f44336" }}
           >
-            <p className="font-bold text-red-700">❌ Något gick fel: {error.message}</p>
+            <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#b91c1c" }} />
+            <p className="font-bold text-red-700">Något gick fel: {error.message}</p>
           </div>
         )}
-      </main>
+      </PageContainer>
 
-      {/* Footer */}
-      <footer className="mt-16 border-t-3 py-6 text-center" style={{ borderTop: "3px solid var(--color-ink)" }}>
-        <p className="font-semibold text-gray-500 text-sm">
-          🤖 PartiSimulator 2026 – AI-simulering baserad på valmanifest. Ej officiell.
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
+  );
+}
+
+export default function HomePage(): React.JSX.Element {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="typing-dots">
+            <span />
+            <span />
+            <span />
+          </div>
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

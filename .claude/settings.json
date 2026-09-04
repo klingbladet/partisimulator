@@ -47,14 +47,6 @@
             "type": "command"
           },
           {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-package-managers.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-pnpm-commands.mjs\"",
-            "type": "command"
-          },
-          {
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-rm.mjs\"",
             "type": "command"
           },
@@ -170,8 +162,6 @@
       "Bash(npm:*)",
       "Bash(npx:*)",
       "Bash(npq:*)",
-      "Bash(pnpm:*)",
-      "Bash(pnpx:*)",
       "Bash(yarn:*)",
       "Bash(pip*)",
       "Bash(*/pip*)",

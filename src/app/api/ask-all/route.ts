@@ -3,8 +3,10 @@ import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { getModel } from "@/lib/model";
 import { PARTIES } from "@/lib/parties";
-import { buildDirectQuestionPrompt } from "@/lib/prompts";
+import { buildAskAllPrompt, getLongAnswerMaxSentences, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { limitToSentences } from "@/lib/sentence-limit";
+import { cleanText, extractSources, extractStance, splitShortLong, stripStanceMarker } from "@/lib/sources";
 
 export const maxDuration = 120;
 
@@ -23,23 +25,31 @@ export async function POST(req: NextRequest): Promise<Response> {
       const promises = PARTIES.map(async (party) => {
         try {
           const context = await retrieveContext(party.id, question);
-          const systemPrompt = buildDirectQuestionPrompt(party, context);
+          const systemPrompt = buildAskAllPrompt(party, context);
 
           const { text } = await generateText({
-            maxOutputTokens: 512,
+            maxOutputTokens: 400,
             messages: [{ content: question, role: "user" }],
             model: getModel(),
             system: systemPrompt,
             temperature: 0.3,
           });
 
-          // Extract source citations from the response
-          const sourceMatch = text.match(/\[KÄLLA:[^\]]+\]/g);
+          const stance = extractStance(text);
+          const { long, short } = splitShortLong(stripStanceMarker(text));
+
+          // Enforce the length caps in code, since not every model follows them from the prompt alone
+          const limitedShort = limitToSentences(short, getMaxSentences("ask-all"));
+          const limitedLong = long ? limitToSentences(long, getLongAnswerMaxSentences()) : undefined;
+
+          const sources = [...extractSources(limitedShort), ...(limitedLong ? extractSources(limitedLong) : [])];
 
           const event = JSON.stringify({
+            longAnswer: limitedLong ? cleanText(limitedLong) : undefined,
             partyId: party.id,
-            sources: sourceMatch || [],
-            text: text.replace(/\[KÄLLA:[^\]]+\]/g, "").trim(),
+            sources,
+            stance,
+            text: cleanText(limitedShort),
             type: "answer",
           });
           controller.enqueue(encoder.encode(`data: ${event}\n\n`));

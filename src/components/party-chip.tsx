@@ -10,6 +10,9 @@ interface PartyChipProps {
   onClick: () => void;
   size?: "sm" | "md" | "lg";
   showName?: boolean;
+  disabled?: boolean;
+  /** Grows to fill its flex row instead of sizing to content — for a flex-wrap layout with few items. */
+  fullWidth?: boolean;
 }
 
 export default function PartyChip({
@@ -18,6 +21,8 @@ export default function PartyChip({
   onClick,
   size = "md",
   showName = true,
+  disabled = false,
+  fullWidth = false,
 }: PartyChipProps): React.JSX.Element {
   let avatarSize: number;
   if (size === "sm") {
@@ -31,24 +36,27 @@ export default function PartyChip({
   return (
     <button
       aria-pressed={selected}
-      className={clsx("party-chip", selected && "selected")}
+      className={clsx("party-chip", selected && "selected", fullWidth && "flex-1 basis-32")}
+      disabled={disabled}
       id={`party-chip-${party.id}`}
       onClick={onClick}
       style={{
         backgroundColor: selected ? party.color : "white",
         borderColor: selected ? party.color : "var(--border)",
         boxShadow: selected ? `5px 5px 0px ${party.color}88` : "3px 3px 0px var(--border)",
+        cursor: disabled ? "not-allowed" : "pointer",
+        opacity: disabled ? 0.6 : 1,
       }}
       title={`${party.displayName} (${party.partyName})`}
       type="button"
     >
       {/* Party color accent strip */}
-      <div className="absolute top-0 right-0 left-0 h-1.5 rounded-t-[13px]" style={{ backgroundColor: party.color }} />
+      <div className="absolute start-0 end-0 top-0 h-1.5 rounded-t-[13px]" style={{ backgroundColor: party.color }} />
 
       {/* Avatar with Party Logo Badge */}
       <div className="mt-1">
         <PartyAvatar
-          badgeClassName="absolute -bottom-1 -right-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+          badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
           badgeSize={Math.max(20, Math.round(avatarSize * 0.44))}
           className="relative overflow-hidden rounded-full border-2"
           party={party}
@@ -67,15 +75,11 @@ export default function PartyChip({
             {party.abbreviation}
           </div>
           <div
-            className="font-semibold leading-tight"
+            className="truncate font-semibold leading-tight"
             style={{
               color: selected ? "rgba(255,255,255,0.85)" : "#666",
               fontSize: "0.6rem",
               margin: "0 auto",
-              maxWidth: "70px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
             }}
           >
             {party.partyName}

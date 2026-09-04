@@ -32,9 +32,6 @@
   --color-cream-dark: #f5edd8;
   --color-ink: #1a1a1a;
   --color-white: #ffffff;
-  --color-disclaimer-bg: #fff3cd;
-  --color-disclaimer-border: #f0a500;
-  --color-disclaimer-text: #7a4f00;
   --color-source-bg: #e8f4fd;
   --color-source-border: #2196f3;
   --color-source-text: #0d47a1;
@@ -48,6 +45,8 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* Themed gavel cursor everywhere, overriding every other cursor rule (buttons, disabled states, text inputs) */
+  cursor: url("/assets/icons/gavel_32.png"), auto !important;
 }
 
 html {
@@ -71,7 +70,7 @@ body {
   font-weight: 600;
   line-height: 1.6;
   color: var(--foreground);
-  cursor: url("/assets/icons/hammer.svg"), auto;
+  cursor: url("/assets/icons/gavel_32.png"), auto;
   background-color: var(--background);
   background-image:
     radial-gradient(circle at 20% 50%, rgba(238, 37, 36, 0.04) 0%, transparent 50%),
@@ -177,12 +176,12 @@ body {
   transition: all 0.12s ease;
 }
 
-.party-chip:hover {
+.party-chip:hover:not(:disabled) {
   box-shadow: 5px 5px 0px var(--border);
   transform: translate(-2px, -2px);
 }
 
-.party-chip:active {
+.party-chip:active:not(:disabled) {
   box-shadow: 1px 1px 0px var(--border);
   transform: translate(1px, 1px);
 }
@@ -197,6 +196,9 @@ body {
    ============================================ */
 
 .answer-bubble {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
@@ -211,29 +213,17 @@ body {
   align-items: center;
   padding: 0.75rem 1rem;
   font-weight: 800;
-  border-bottom: 2px solid var(--border);
+  border-block-end: 2px solid var(--border);
 }
 
 .answer-bubble-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 80px;
   padding: 1rem;
   font-size: 0.95rem;
   line-height: 1.7;
-}
-
-.answer-bubble-disclaimer {
-  display: flex;
-  gap: 0.4rem;
-  align-items: flex-start;
-  padding: 0.6rem 0.8rem;
-  margin: 0.75rem 0 0;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.4;
-  color: var(--color-disclaimer-text);
-  background: var(--color-disclaimer-bg);
-  border: 2px solid var(--color-disclaimer-border);
-  border-radius: var(--radius-sm);
 }
 
 .answer-bubble-source {
@@ -241,7 +231,7 @@ body {
   gap: 0.4rem;
   align-items: flex-start;
   padding: 0.5rem 0.8rem;
-  margin: 0.5rem 0 0;
+  margin-block-start: 0.5rem;
   font-size: 0.75rem;
   font-weight: 700;
   line-height: 1.4;
@@ -249,6 +239,19 @@ body {
   background: var(--color-source-bg);
   border: 2px solid var(--color-source-border);
   border-radius: var(--radius-sm);
+}
+
+.answer-bubble-footer {
+  padding: 0.75rem 1rem;
+  border-block-start: 2px solid var(--border);
+}
+
+.answer-bubble-footer .answer-bubble-source {
+  margin-block-start: 0;
+}
+
+.answer-bubble-footer .answer-bubble-source + .answer-bubble-source {
+  margin-block-start: 0.5rem;
 }
 
 /* ============================================
@@ -351,7 +354,7 @@ body {
    ============================================ */
 
 .streaming-cursor::after {
-  margin-left: 2px;
+  margin-inline-start: 2px;
   font-size: 0.9em;
   content: "▊";
   animation: blink 0.8s step-end infinite;
@@ -442,55 +445,6 @@ body {
 }
 
 /* ============================================
-   MODAL
-   ============================================ */
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 560px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background: var(--color-white);
-  border: var(--border-width) solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 8px 8px 0px var(--border);
-  animation: slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* ============================================
    SCROLLBAR
    ============================================ */
 
@@ -507,6 +461,23 @@ body {
   background: var(--color-ink);
   border: 2px solid var(--color-cream-dark);
   border-radius: 4px;
+}
+
+/* ============================================
+   STATUS BANNER
+   ============================================ */
+
+.status-banner-success {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  color: #15803d;
+  text-align: center;
+  background: #f0fff4;
+  border: 2px solid #22c55e;
+  border-radius: var(--radius-sm);
 }
 
 /* ============================================

@@ -1,23 +1,30 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { CheckCircle2, LayoutGrid } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import AnswerBubble from "@/components/answer-bubble";
 import AppNav from "@/components/app-nav";
+import PageContainer from "@/components/page-container";
 import QuestionInput from "@/components/question-input";
+import SiteFooter from "@/components/site-footer";
 import { PARTIES } from "@/lib/parties";
+import type { Stance } from "@/lib/sources";
 import { streamAskAll } from "@/lib/stream-ask-all";
 import type { AskAllEvent } from "@/types/stream";
 
 interface PartyAnswer {
   partyId: string;
   text: string;
+  longAnswer?: string;
   sources: string[];
+  stance?: Stance;
   isDone: boolean;
   hasError: boolean;
 }
 
 function GridContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const initialQ = searchParams.get("q") || "";
 
@@ -25,6 +32,7 @@ function GridContent() {
   const [answers, setAnswers] = useState<Record<string, PartyAnswer>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [allDone, setAllDone] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleAskAllEvent = useCallback((event: AskAllEvent) => {
     if (event.type === "answer" && event.partyId) {
@@ -34,8 +42,10 @@ function GridContent() {
         [partyId]: {
           hasError: false,
           isDone: true,
+          longAnswer: event.longAnswer,
           partyId,
           sources: event.sources ?? [],
+          stance: event.stance,
           text: event.text ?? "",
         },
       }));
@@ -75,15 +85,32 @@ function GridContent() {
     setIsLoading(true);
     setAllDone(false);
 
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
     try {
-      await streamAskAll(question, handleAskAllEvent);
+      await streamAskAll(question, handleAskAllEvent, abortController.signal);
     } catch (error) {
-      console.error(error);
-      setIsLoading(false);
+      if (!abortController.signal.aborted) {
+        console.error(error);
+      }
     } finally {
       setIsLoading(false);
     }
   }, [question, handleAskAllEvent]);
+
+  // Cancel every still-running party stream: whatever partial text each one has already
+  // received stays on screen, marked done, instead of being discarded.
+  const handleStopAll = (): void => {
+    abortControllerRef.current?.abort();
+    setAnswers((prev) => {
+      const next: Record<string, PartyAnswer> = {};
+      for (const [partyId, answer] of Object.entries(prev)) {
+        next[partyId] = answer.isDone ? answer : { ...answer, isDone: true };
+      }
+      return next;
+    });
+  };
 
   // Auto-trigger once if the question came from the URL
   const hasAutoTriggered = useRef(false);
@@ -98,26 +125,26 @@ function GridContent() {
   const hasStarted = Object.keys(answers).length > 0;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "var(--background)" }}>
+    <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
       <AppNav />
 
-      <main className="mx-auto max-w-7xl px-4 py-8">
+      <PageContainer className="px-4 py-8">
         {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 flex items-center justify-center gap-3 font-black text-3xl text-black">
-            <span>🔲</span>
-            Alla partier svarar
-          </h1>
-          <p className="font-semibold text-gray-600">Ställ en fråga – alla 8 partiledare svarar parallellt</p>
+        <div className="mb-8">
+          <h1 className="font-black text-3xl text-black leading-tight">Alla partier</h1>
+          <p className="mt-1 font-semibold text-gray-600">
+            Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt.
+          </p>
         </div>
 
         {/* Question input */}
-        <div className="cartoon-card mx-auto mb-8 max-w-2xl p-5">
+        <div className="cartoon-card mb-8 p-5">
           <QuestionInput
-            buttonLabel="Fråga alla 8! 🔲"
+            buttonLabel="Fråga alla 8!"
             id="grid-question-input"
             isLoading={isLoading}
             onChange={setQuestion}
+            onStop={handleStopAll}
             onSubmit={handleAskAll}
             placeholder="Vad tycker partierna om sjukvården?"
             value={question}
@@ -137,51 +164,57 @@ function GridContent() {
               <span className="flex-shrink-0 font-black text-gray-600 text-sm">{answeredCount}/8 klara</span>
             </div>
           )}
+
+          {allDone && (
+            <div className="status-banner-success mt-3 font-bold text-sm">
+              <CheckCircle2 className="h-4 w-4" />
+              Alla 8 partier har svarat! Fråga gärna något annat.
+            </div>
+          )}
         </div>
 
         {/* Grid of answers */}
         {hasStarted && (
-          <>
-            <div className="grid-answers mb-4">
-              {PARTIES.map((party) => {
-                const answer = answers[party.id];
-                return (
-                  <AnswerBubble
-                    compact
-                    isEmpty={!answer?.text && !answer?.isDone}
-                    isStreaming={!answer?.isDone}
-                    key={party.id}
-                    party={party}
-                    sources={answer?.sources ?? []}
-                    text={answer?.text ?? ""}
-                  />
-                );
-              })}
-            </div>
-
-            {allDone && (
-              <div
-                className="rounded-xl border-2 p-4 text-center font-bold text-sm"
-                style={{
-                  backgroundColor: "#f0fff4",
-                  borderColor: "#22c55e",
-                  color: "#15803d",
-                }}
-              >
-                ✅ Alla 8 partier har svarat! Fråga gärna något annat.
-              </div>
-            )}
-          </>
+          <div className="grid-answers mb-4">
+            {PARTIES.map((party) => {
+              const answer = answers[party.id];
+              return (
+                <AnswerBubble
+                  compact
+                  isEmpty={!answer?.text && !answer?.isDone}
+                  isStreaming={!answer?.isDone}
+                  key={party.id}
+                  longAnswer={answer?.longAnswer}
+                  onContinueChat={
+                    answer?.isDone && !answer.hasError
+                      ? () => {
+                          const seedAnswer = answer.longAnswer ?? answer.text;
+                          router.push(
+                            `/?party=${party.id}&q=${encodeURIComponent(question)}&a=${encodeURIComponent(seedAnswer)}`,
+                          );
+                        }
+                      : undefined
+                  }
+                  party={party}
+                  sources={answer?.sources ?? []}
+                  stance={answer?.stance}
+                  text={answer?.text ?? ""}
+                />
+              );
+            })}
+          </div>
         )}
 
         {!hasStarted && (
           <div className="py-16 text-center text-gray-400">
-            <div className="mb-4 text-6xl">🔲</div>
+            <LayoutGrid className="mx-auto mb-4 h-16 w-16" />
             <p className="font-bold text-lg">Skriv en fråga ovan och klicka på &quot;Fråga alla 8!&quot;</p>
             <p className="mt-2 text-sm">Alla åtta riksdagspartiers AI-simuleringar svarar parallellt</p>
           </div>
         )}
-      </main>
+      </PageContainer>
+
+      <SiteFooter />
     </div>
   );
 }

@@ -1,0 +1,164 @@
+[
+  {
+    "abbreviation": "S",
+    "avatarFile": "s.webp",
+    "color": "#EE2524",
+    "id": "parti-s",
+    "keyIssues": [
+      "Välfärd och sjukvårdsköer",
+      "Trygghet/brottsbekämpning",
+      "Arbetsmarknad och jobb"
+    ],
+    "leader": "Magdalena Andersson",
+    "logoFile": "s.png",
+    "manifestSource": "socialdemokraterna_valmanifest_2026.pdf",
+    "name": "Socialdemokraterna",
+    "rhetoricalStyle": "Talar ofta i finansministertermer även utanför ekonomifrågor, håller sig till manus, undviker känsloutbrott i debatt men kan bli skarp mot regeringen och SD:s inflytande.",
+    "textColor": "#ffffff",
+    "tone": "saklig, kontrollerad, ekonomiskt disciplinerad"
+  },
+  {
+    "abbreviation": "M",
+    "avatarFile": "m.webp",
+    "color": "#1B49A2",
+    "id": "parti-m",
+    "keyIssues": [
+      "Lag och ordning",
+      "Skatter och ekonomi",
+      "Energipolitik (kärnkraft)"
+    ],
+    "leader": "Ulf Kristersson",
+    "logoFile": "m.png",
+    "manifestSource": "moderaterna_valmanifest_2026.pdf",
+    "name": "Moderaterna",
+    "rhetoricalStyle": "Lugn statsministerstil, lutar sig mot siffror och regeringsansvar, undviker attacker rakt av men försvarar samarbetet med SD.",
+    "textColor": "#ffffff",
+    "tone": "formell, återhållsam, teknokratisk"
+  },
+  {
+    "abbreviation": "SD",
+    "avatarFile": "sd.webp",
+    "color": "#DDC400",
+    "id": "parti-sd",
+    "keyIssues": [
+      "Invandring och integration",
+      "Brottsbekämpning",
+      "Sverige-först-politik"
+    ],
+    "leader": "Jimmie Åkesson",
+    "logoFile": "sd.png",
+    "manifestSource": "sverigedemokraterna_valmanifest_2026.pdf",
+    "name": "Sverigedemokraterna",
+    "rhetoricalStyle": "Odramatisk leveransstil trots kontroversiella budskap ('statsmannamässig' framtoning), upprepar kärnbudskap, ställer invandring mot välfärd/trygghet retoriskt.",
+    "textColor": "#1a1a1a",
+    "tone": "lugn men bestämd, disciplinerad"
+  },
+  {
+    "abbreviation": "V",
+    "avatarFile": "v.webp",
+    "color": "#BE0000",
+    "id": "parti-v",
+    "keyIssues": [
+      "Vinster i välfärden",
+      "Ekonomisk omfördelning",
+      "Feminism och klimaträttvisa"
+    ],
+    "leader": "Nooshi Dadgostar",
+    "logoFile": "v.png",
+    "manifestSource": "vansterpartiet_valmanifest_2026.pdf",
+    "name": "Vänsterpartiet",
+    "rhetoricalStyle": "Tydlig vänsterretorik med skarpa angrepp mot högerregeringen och vinster i välfärden, väver ofta in personliga erfarenheter (flyktingbakgrund) i argumentationen.",
+    "textColor": "#ffffff",
+    "tone": "passionerad, konfrontativ"
+  },
+  {
+    "abbreviation": "C",
+    "avatarFile": "c.webp",
+    "color": "#009933",
+    "id": "parti-c",
+    "keyIssues": [
+      "Landsbygdspolitik",
+      "Företagande och regelförenkling",
+      "Decentralisering"
+    ],
+    "leader": "Elisabeth Thand Ringqvist",
+    "logoFile": "c.png",
+    "manifestSource": "centerpartiet_valmanifest_2026.pdf",
+    "name": "Centerpartiet",
+    "rhetoricalStyle": "Relativt ny som partiledare (sedan nov 2025) så offentlig debattstil är mindre etablerad ännu; bakgrund som företagare/Företagarna-ordförande syns i marknadsliberal ton och fokus på regelförenkling.",
+    "textColor": "#ffffff",
+    "tone": "pragmatisk, entreprenörsinriktad"
+  },
+  {
+    "abbreviation": "KD",
+    "avatarFile": "kd.webp",
+    "color": "#231F5C",
+    "id": "parti-kd",
+    "keyIssues": [
+      "Familjepolitik",
+      "Äldreomsorg",
+      "Energipolitik"
+    ],
+    "leader": "Ebba Busch",
+    "logoFile": "kd.png",
+    "manifestSource": "kristdemokraterna_valmanifest_2026.pdf",
+    "name": "Kristdemokraterna",
+    "rhetoricalStyle": "Skarp och stundtals aggressiv debattör, snabb i replikskiften, blandar värderingsargument med konkreta sakfrågor.",
+    "textColor": "#ffffff",
+    "tone": "konfrontativ, känslomässigt engagerad"
+  },
+  {
+    "abbreviation": "L",
+    "avatarFile": "l.webp",
+    "color": "#006AB3",
+    "id": "parti-l",
+    "keyIssues": [
+      "Skola och kunskapsresultat",
+      "Integration genom språk och jobb",
+      "Individens frihet"
+    ],
+    "leader": "Simona Mohamsson",
+    "logoFile": "l.png",
+    "manifestSource": "liberalerna_valmanifest_2026.pdf",
+    "name": "Liberalerna",
+    "rhetoricalStyle": "Ny partiledare (sedan juni 2025), tidigare integrations-/utbildningsminister; driver skol- och integrationsfrågor med konkreta exempel snarare än ideologiska utläggningar.",
+    "textColor": "#ffffff",
+    "tone": "rak, ung profil"
+  },
+  {
+    "abbreviation": "MP",
+    "avatarFile": "mp.webp",
+    "color": "#83CF39",
+    "id": "parti-mp",
+    "keyIssues": [
+      "Klimatomställning",
+      "Biologisk mångfald",
+      "Social och klimaträttvisa"
+    ],
+    "leader": "Amanda Lind & Daniel Helldén",
+    "logoFile": "mp.png",
+    "manifestSource": "miljopartiet_valmanifest_2026.pdf",
+    "name": "Miljöpartiet",
+    "rhetoricalStyle": "MP har inte en ensam partiledare utan två språkrör som delar på rollen; retoriken är ofta förklarande/pedagogisk snarare än konfrontativ, med fokus på långsiktiga konsekvenser.",
+    "textColor": "#1a1a1a",
+    "tone": "idealistisk, pedagogisk"
+  },
+  {
+    "abbreviation": "SH",
+    "avatarFile": "sh.webp",
+    "color": "#5F8B3B",
+    "id": "parti-shrek",
+    "keyIssues": [
+      "Träsk- och våtmarksskydd",
+      "Avbyråkratisering - bort med krånglet och blanketterna",
+      "Rätt till privatliv och avskildhet"
+    ],
+    "leader": "Shrek",
+    "logoFile": "sh.webp",
+    "manifestSource": "traskpartiet_valmanifest_2026.pdf",
+    "name": "Träskpartiet",
+    "rhetoricalStyle": "Talar rakt på sak med träskvisdom och liknelser om lökar och lager; blir irriterad av krångliga regelverk och 'fint folk' som lägger sig i andras träsk, men visar oväntad omtanke om utsatta grupper.",
+    "textColor": "#ffffff",
+    "tone": "vresig men hjärtevarm, folklig, misstänksam mot byråkrati"
+  }
+]

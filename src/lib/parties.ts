@@ -1,135 +1,42 @@
 import type { PartyId, PartyPersona } from "@/types/party";
+import partiesData from "./parties.json";
 
-export const PARTIES: PartyPersona[] = [
-  {
-    abbreviation: "S",
-    avatarFile: "s.webp",
-    color: "#EE2524",
-    displayName: "Magdalena Andersson",
-    id: "parti-s",
-    keyIssues: ["Välfärd och sjukvårdsköer", "Trygghet/brottsbekämpning", "Arbetsmarknad och jobb"],
-    logoFile: "s.png",
-    manifestSource: "socialdemokraterna_valmanifest_2026.pdf",
-    partyName: "Socialdemokraterna",
-    rhetoricalStyle:
-      "Talar ofta i finansministertermer även utanför ekonomifrågor, håller sig till manus, undviker känsloutbrott i debatt men kan bli skarp mot regeringen och SD:s inflytande.",
-    shortName: "Magdalena Andersson",
-    textColor: "#ffffff",
-    tone: "saklig, kontrollerad, ekonomiskt disciplinerad",
-  },
-  {
-    abbreviation: "M",
-    avatarFile: "m.webp",
-    color: "#1B49A2",
-    displayName: "Ulf Kristersson",
-    id: "parti-m",
-    keyIssues: ["Lag och ordning", "Skatter och ekonomi", "Energipolitik (kärnkraft)"],
-    logoFile: "m.png",
-    manifestSource: "moderaterna_valmanifest_2026.pdf",
-    partyName: "Moderaterna",
-    rhetoricalStyle:
-      "Lugn statsministerstil, lutar sig mot siffror och regeringsansvar, undviker attacker rakt av men försvarar samarbetet med SD.",
-    shortName: "Ulf Kristersson",
-    textColor: "#ffffff",
-    tone: "formell, återhållsam, teknokratisk",
-  },
-  {
-    abbreviation: "SD",
-    avatarFile: "sd.webp",
-    color: "#DDC400",
-    displayName: "Jimmie Åkesson",
-    id: "parti-sd",
-    keyIssues: ["Invandring och integration", "Brottsbekämpning", "Sverige-först-politik"],
-    logoFile: "sd.png",
-    manifestSource: "sverigedemokraterna_valmanifest_2026.pdf",
-    partyName: "Sverigedemokraterna",
-    rhetoricalStyle:
-      "Odramatisk leveransstil trots kontroversiella budskap ('statsmannamässig' framtoning), upprepar kärnbudskap, ställer invandring mot välfärd/trygghet retoriskt.",
-    shortName: "Jimmie Åkesson",
-    textColor: "#1a1a1a",
-    tone: "lugn men bestämd, disciplinerad",
-  },
-  {
-    abbreviation: "V",
-    avatarFile: "v.webp",
-    color: "#BE0000",
-    displayName: "Nooshi Dadgostar",
-    id: "parti-v",
-    keyIssues: ["Vinster i välfärden", "Ekonomisk omfördelning", "Feminism och klimaträttvisa"],
-    logoFile: "v.png",
-    manifestSource: "vansterpartiet_valmanifest_2026.pdf",
-    partyName: "Vänsterpartiet",
-    rhetoricalStyle:
-      "Tydlig vänsterretorik med skarpa angrepp mot högerregeringen och vinster i välfärden, väver ofta in personliga erfarenheter (flyktingbakgrund) i argumentationen.",
-    shortName: "Nooshi Dadgostar",
-    textColor: "#ffffff",
-    tone: "passionerad, konfrontativ",
-  },
-  {
-    abbreviation: "C",
-    avatarFile: "c.webp",
-    color: "#009933",
-    displayName: "Elisabeth Thand Ringqvist",
-    id: "parti-c",
-    keyIssues: ["Landsbygdspolitik", "Företagande och regelförenkling", "Decentralisering"],
-    logoFile: "c.png",
-    manifestSource: "centerpartiet_valmanifest_2026.pdf",
-    partyName: "Centerpartiet",
-    rhetoricalStyle:
-      "Relativt ny som partiledare (sedan nov 2025) så offentlig debattstil är mindre etablerad ännu; bakgrund som företagare/Företagarna-ordförande syns i marknadsliberal ton och fokus på regelförenkling.",
-    shortName: "Elisabeth Thand Ringqvist",
-    textColor: "#ffffff",
-    tone: "pragmatisk, entreprenörsinriktad",
-  },
-  {
-    abbreviation: "KD",
-    avatarFile: "kd.webp",
-    color: "#231F5C",
-    displayName: "Ebba Busch",
-    id: "parti-kd",
-    keyIssues: ["Familjepolitik", "Äldreomsorg", "Energipolitik"],
-    logoFile: "kd.png",
-    manifestSource: "kristdemokraterna_valmanifest_2026.pdf",
-    partyName: "Kristdemokraterna",
-    rhetoricalStyle:
-      "Skarp och stundtals aggressiv debattör, snabb i replikskiften, blandar värderingsargument med konkreta sakfrågor.",
-    shortName: "Ebba Busch",
-    textColor: "#ffffff",
-    tone: "konfrontativ, känslomässigt engagerad",
-  },
-  {
-    abbreviation: "L",
-    avatarFile: "l.webp",
-    color: "#006AB3",
-    displayName: "Simona Mohamsson",
-    id: "parti-l",
-    keyIssues: ["Skola och kunskapsresultat", "Integration genom språk och jobb", "Individens frihet"],
-    logoFile: "l.png",
-    manifestSource: "liberalerna_valmanifest_2026.pdf",
-    partyName: "Liberalerna",
-    rhetoricalStyle:
-      "Ny partiledare (sedan juni 2025), tidigare integrations-/utbildningsminister; driver skol- och integrationsfrågor med konkreta exempel snarare än ideologiska utläggningar.",
-    shortName: "Simona Mohamsson",
-    textColor: "#ffffff",
-    tone: "rak, ung profil",
-  },
-  {
-    abbreviation: "MP",
-    avatarFile: "mp.webp",
-    color: "#83CF39",
-    displayName: "Amanda Lind & Daniel Helldén",
-    id: "parti-mp",
-    keyIssues: ["Klimatomställning", "Biologisk mångfald", "Social och klimaträttvisa"],
-    logoFile: "mp.png",
-    manifestSource: "miljopartiet_valmanifest_2026.pdf",
-    partyName: "Miljöpartiet",
-    rhetoricalStyle:
-      "MP har inte en ensam partiledare utan två språkrör som delar på rollen; retoriken är ofta förklarande/pedagogisk snarare än konfrontativ, med fokus på långsiktiga konsekvenser.",
-    shortName: "Amanda Lind & Daniel Helldén",
-    textColor: "#1a1a1a",
-    tone: "idealistisk, pedagogisk",
-  },
+const VALID_PARTY_IDS: readonly string[] = [
+  "parti-s",
+  "parti-m",
+  "parti-sd",
+  "parti-v",
+  "parti-c",
+  "parti-kd",
+  "parti-l",
+  "parti-mp",
+  "parti-shrek",
 ];
+
+/** Test-only parties, hidden from the default experience unless SHREK=true. */
+const TEST_PARTY_IDS: ReadonlySet<PartyId> = new Set(["parti-shrek"]);
+const showTestParties = process.env.SHREK === "true";
+
+function isPartyId(id: string): id is PartyId {
+  return VALID_PARTY_IDS.includes(id);
+}
+
+/**
+ * Validates and narrows a raw parties.json entry's id against PartyId, so a typo fails fast at startup.
+ * Also maps parties.json's reader-facing field names ("name", "leader") onto PartyPersona's
+ * ("partyName", "displayName"), which the rest of the app already depends on.
+ */
+function parseParty(raw: (typeof partiesData)[number]): PartyPersona {
+  if (!isPartyId(raw.id)) {
+    throw new Error(`Okänt parti-id i parties.json: "${raw.id}"`);
+  }
+  const { name, leader, ...rest } = raw;
+  return { ...rest, displayName: leader, id: raw.id, partyName: name };
+}
+
+export const PARTIES: PartyPersona[] = partiesData
+  .map(parseParty)
+  .filter((party) => showTestParties || !TEST_PARTY_IDS.has(party.id));
 
 export const PARTY_MAP: Record<PartyId, PartyPersona> = Object.fromEntries(
   PARTIES.map((party) => [party.id, party]),

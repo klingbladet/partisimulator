@@ -1,26 +1,34 @@
 "use client";
 
+import { FileText, Send } from "lucide-react";
 import Image from "next/image";
 import PartyAvatar from "@/components/party-avatar";
-import SimulationDisclaimer from "@/components/simulation-disclaimer";
+import StanceMeter from "@/components/stance-meter";
+import type { Stance } from "@/lib/sources";
 import type { PartyPersona } from "@/types/party";
 
 interface AnswerBubbleProps {
   party: PartyPersona;
   text: string;
+  longAnswer?: string;
   sources?: string[];
+  stance?: Stance;
   isStreaming?: boolean;
   isEmpty?: boolean;
   compact?: boolean;
+  onContinueChat?: () => void;
 }
 
 export default function AnswerBubble({
   party,
   text,
+  longAnswer,
   sources = [],
+  stance,
   isStreaming = false,
   isEmpty = false,
   compact = false,
+  onContinueChat,
 }: AnswerBubbleProps): React.JSX.Element {
   const isLoading = isEmpty && isStreaming;
 
@@ -29,7 +37,7 @@ export default function AnswerBubble({
       {/* Header */}
       <div className="answer-bubble-header" style={{ backgroundColor: party.color, borderColor: party.color }}>
         <PartyAvatar
-          badgeClassName="absolute -bottom-1 -right-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+          badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
           badgeSize={18}
           className="relative overflow-hidden rounded-full border-2 border-white"
           party={party}
@@ -44,7 +52,7 @@ export default function AnswerBubble({
           </div>
         </div>
         {isStreaming ? (
-          <div className="ml-auto">
+          <div className="ms-auto">
             <span
               aria-label="Genererar svar..."
               className="typing-dots"
@@ -58,8 +66,8 @@ export default function AnswerBubble({
           </div>
         ) : (
           party.logoFile && (
-            <div className="ml-auto flex items-center rounded-lg border border-white/30 bg-white/20 px-2 py-1">
-              <div className="relative mr-1 h-4 w-4">
+            <div className="ms-auto flex items-center rounded-lg border border-white/30 bg-white/20 px-2 py-1">
+              <div className="relative me-1 h-4 w-4">
                 <Image
                   alt={party.partyName}
                   className="object-contain"
@@ -89,30 +97,64 @@ export default function AnswerBubble({
           </div>
         ) : (
           <>
-            <p
-              className={`whitespace-pre-wrap ${isStreaming ? "streaming-cursor" : ""}`}
-              style={{ color: "var(--color-ink)" }}
-            >
-              {text || ""}
-            </p>
+            <div className="flex-1">
+              {stance && (
+                <div className="mb-2">
+                  <StanceMeter stance={stance} />
+                </div>
+              )}
 
-            {/* Sources */}
-            {sources.length > 0 && (
-              <div className="mt-3 space-y-1">
-                {sources.map((source) => (
-                  <div className="answer-bubble-source" key={source}>
-                    <span className="flex-shrink-0">📄</span>
-                    <span>{source}</span>
-                  </div>
-                ))}
-              </div>
+              <p
+                className={`whitespace-pre-wrap ${isStreaming ? "streaming-cursor" : ""}`}
+                style={{ color: "var(--color-ink)" }}
+              >
+                {text || ""}
+              </p>
+
+              {longAnswer && (
+                <details className="mt-2.5 text-sm">
+                  <summary className="cursor-pointer font-bold" style={{ color: party.color }}>
+                    Läs mer
+                  </summary>
+                  <p className="mt-1.5 whitespace-pre-wrap" style={{ color: "var(--color-ink)" }}>
+                    {longAnswer}
+                  </p>
+                </details>
+              )}
+            </div>
+
+            {onContinueChat && (text || longAnswer) && (
+              <button
+                className="cartoon-btn cartoon-btn-primary mt-3 w-full text-xs"
+                onClick={onContinueChat}
+                type="button"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Fortsätt chatta
+              </button>
             )}
-
-            {/* MANDATORY DISCLAIMER — NEVER HIDDEN */}
-            {(text || isStreaming) && <SimulationDisclaimer party={party} />}
           </>
         )}
       </div>
+
+      {/* Footer — sources always last, at the very end of the card */}
+      {!isLoading && (
+        <div className="answer-bubble-footer">
+          {sources.length > 0 ? (
+            sources.map((source) => (
+              <div className="answer-bubble-source" key={source}>
+                <FileText className="h-3.5 w-3.5 flex-shrink-0" />
+                <span>{source}</span>
+              </div>
+            ))
+          ) : (
+            <div className="answer-bubble-source">
+              <FileText className="h-3.5 w-3.5 flex-shrink-0" />
+              <span>Ingen källa finns</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

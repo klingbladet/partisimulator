@@ -14,7 +14,7 @@ This is an experiment in what AI can do.
 It's purely a school project, built for fun and games, not a production application.
 That means it can get a bit over-the-top.
 
-A notice about this must appear both globally and after each LLM response.
+A notice about this must appear once, globally, in the site footer on every page.
 
 ## Tech stack
 
@@ -121,10 +121,12 @@ Don't use shell operators such as &&, ;, ||, or | to do this.
 
 Git is only allowed with "read-only" commands.
 
+## No npm, use pnpm
+
 ## Where to start?
 
 See the [TODO list](../TODO.md)
 
 ## After each change and before a commit
 
-Write to the [Changlog](../CHANGELOG.md)
+Write to the [Changlog](../CHANGELOG.md). Please be extremely concise.

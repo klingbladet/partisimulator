@@ -3,8 +3,9 @@ import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
-import { buildDebatePrompt } from "@/lib/prompts";
+import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { createSentenceLimitTransform } from "@/lib/sentence-limit";
 import type { DebateEntry } from "@/types/debate";
 
 export const maxDuration = 60;
@@ -50,7 +51,8 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const result = streamText({
-    maxOutputTokens: 512,
+    experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
+    maxOutputTokens: 250,
     messages: [{ content: userMessageContent, role: "user" }],
     model: getModel(),
     system: systemPrompt,

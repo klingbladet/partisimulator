@@ -1,16 +1,16 @@
-export interface AskAllEvent {
-  type: "answer" | "error" | "done";
-  partyId?: string;
-  text?: string;
-  sources?: string[];
-}
+import type { AskAllEvent } from "@/types/stream";
 
 /** Posts a question to /api/ask-all and invokes onEvent for each SSE "data:" line as it streams in. */
-export async function streamAskAll(question: string, onEvent: (event: AskAllEvent) => void): Promise<void> {
+export async function streamAskAll(
+  question: string,
+  onEvent: (event: AskAllEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
   const res = await fetch("/api/ask-all", {
     body: JSON.stringify({ question }),
     headers: { "Content-Type": "application/json" },
     method: "POST",
+    signal,
   });
 
   if (!res.body) throw new Error("Inget svar från servern");

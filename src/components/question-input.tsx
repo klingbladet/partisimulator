@@ -1,11 +1,17 @@
 "use client";
 
+import { Shuffle, Square } from "lucide-react";
+import { getRandomExampleQuestion } from "@/lib/example-questions";
+
 interface QuestionInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onStop?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  /** Disables just the submit button (e.g. no party picked yet) without disabling the textarea itself. */
+  submitDisabled?: boolean;
   isLoading?: boolean;
   maxLength?: number;
   buttonLabel?: string;
@@ -16,15 +22,17 @@ export default function QuestionInput({
   value,
   onChange,
   onSubmit,
+  onStop,
   placeholder = "Skriv din fråga här...",
   disabled = false,
+  submitDisabled = false,
   isLoading = false,
   maxLength = 500,
-  buttonLabel = "Fråga! 🎤",
+  buttonLabel = "Fråga!",
   id = "question-input",
 }: QuestionInputProps): React.JSX.Element {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
-    if (event.key === "Enter" && !event.shiftKey && !disabled && !isLoading && value.trim()) {
+    if (event.key === "Enter" && !event.shiftKey && !disabled && !submitDisabled && !isLoading && value.trim()) {
       event.preventDefault();
       onSubmit();
     }
@@ -38,7 +46,7 @@ export default function QuestionInput({
       <div className="relative">
         <textarea
           aria-label="Skriv din fråga"
-          className="cartoon-input"
+          className="cartoon-input pb-7"
           disabled={disabled || isLoading}
           id={id}
           maxLength={maxLength}
@@ -49,20 +57,45 @@ export default function QuestionInput({
           value={value}
         />
         <div
-          className="absolute right-3 bottom-2 font-semibold text-xs"
+          className="absolute end-4 bottom-3 rounded bg-white px-1.5 py-0.5 font-semibold text-xs"
           style={{ color: isNearLimit ? "#f0a500" : "#aaa" }}
         >
           {charCount}/{maxLength}
         </div>
       </div>
-      <div className="flex items-center justify-between gap-3">
-        <p className="font-semibold text-gray-400 text-xs">⌨️ Enter för att skicka · Shift+Enter för ny rad</p>
+
+      <button
+        className="cartoon-btn cartoon-btn-ghost text-xs"
+        disabled={disabled || isLoading}
+        id={`${id}-random`}
+        onClick={() => onChange(getRandomExampleQuestion())}
+        style={{ inlineSize: "100%" }}
+        type="button"
+      >
+        <Shuffle className="h-3.5 w-3.5" />
+        Slumpa fråga
+      </button>
+
+      {isLoading && onStop ? (
+        <button
+          aria-label="Avbryt"
+          className="cartoon-btn cartoon-btn-danger"
+          id={`${id}-stop`}
+          onClick={onStop}
+          style={{ inlineSize: "100%" }}
+          type="button"
+        >
+          <Square className="h-4 w-4" />
+          Avbryt
+        </button>
+      ) : (
         <button
           aria-label={buttonLabel}
-          className="cartoon-btn cartoon-btn-primary flex-shrink-0"
-          disabled={disabled || isLoading || !value.trim()}
+          className="cartoon-btn cartoon-btn-primary"
+          disabled={disabled || submitDisabled || isLoading || !value.trim()}
           id={`${id}-submit`}
           onClick={onSubmit}
+          style={{ inlineSize: "100%" }}
           type="button"
         >
           {isLoading ? (
@@ -78,7 +111,7 @@ export default function QuestionInput({
             buttonLabel
           )}
         </button>
-      </div>
+      )}
     </div>
   );
 }
