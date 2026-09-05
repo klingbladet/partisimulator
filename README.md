@@ -76,6 +76,13 @@ Claude Code registers them from `.claude/settings.json`.
 
 Restart Claude Code after changing a hook or the settings file.
 
+## Pre-commit hooks
+
+Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spellcheck` on staged files before each commit.
+
+`pnpm install` wires this up automatically through the `prepare` script.
+No extra setup step is needed.
+
 ## Good to know
 
 ### Model provider

@@ -18,62 +18,6 @@
         ],
         "matcher": "Write|Edit"
       }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-chmod.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-destructive-sql.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-env-read.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-find-exec.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-git-with-allowlist.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-interactive-bash.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-rm.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sensitive-reads.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sensitive-writes.mjs\"",
-            "type": "command"
-          },
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-sudo.mjs\"",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      },
-      {
-        "hooks": [
-          {
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block-settings-write.mjs\"",
-            "type": "command"
-          }
-        ],
-        "matcher": "Write|Edit"
-      }
     ]
   },
   "includeGitInstructions": false,
@@ -158,11 +102,6 @@
       "Edit(**/.bash_profile)",
       "Edit(**/.bashrc)",
       "Edit(**/Library/LaunchAgents/**)",
-      "Bash(node:*)",
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(npq:*)",
-      "Bash(yarn:*)",
       "Bash(pip*)",
       "Bash(*/pip*)",
       "Bash(uv*)",

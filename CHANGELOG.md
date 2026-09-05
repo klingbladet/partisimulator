@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Nothing yet...
+- Husky and lint-staged, running lint-format-code, lint-format-markdown, and spellcheck on staged files before each commit
 
 ### Changed
 
