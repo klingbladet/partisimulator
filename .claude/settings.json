@@ -1,4 +1,29 @@
 {
+  "allowedHttpHookUrls": [],
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "autoUploadSessions": false,
+  "cleanupPeriodDays": 1,
+  "crossSessionInbound": "hold",
+  "disableRemoteControl": true,
+  "disableSkillShellExecution": true,
+  "effortLevel": "high",
+  "enableAllProjectMcpServers": false,
+  "env": {
+    "CLAUDE_CODE_ATTRIBUTION_HEADER": "0",
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_SKIP_PROMPT_HISTORY": "1",
+    "CLAUDE_CODE_SUBPROCESS_ENV_SCRUB": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "DISABLE_ERROR_REPORTING": "1",
+    "DISABLE_FEEDBACK_COMMAND": "1",
+    "DISABLE_TELEMETRY": "1",
+    "DISABLE_UPDATES": "1",
+    "DO_NOT_TRACK": "1"
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -20,7 +45,9 @@
       }
     ]
   },
+  "httpHookAllowedEnvVars": [],
   "includeGitInstructions": false,
+  "isolatePeerMachines": true,
   "permissions": {
     "allow": [
       "Bash(grep:*)",
@@ -56,11 +83,17 @@
       "Read(**/.*/**)",
       "Edit(**/.*/**)",
       "Bash(python*)",
-      "Bash(*/python*)"
+      "Bash(*/python*)",
+      "Bash(pkill:*)",
+      "Bash(kill:*)",
+      "Bash(killall:*)",
+      "Bash(docker:*)",
+      "Bash(orb:*)"
     ],
     "deny": [
       "Bash(rm:*)",
       "Bash(sudo:*)",
+      "Bash(su *)",
       "Bash(sh:*)",
       "Bash(bash:*)",
       "Bash(zsh:*)",
@@ -69,6 +102,7 @@
       "Edit(**/.env*)",
       "Read(**/.ssh*)",
       "Edit(**/.ssh*)",
+      "Bash(ssh:*)",
       "Bash(git push -f *)",
       "Bash(git push --force *)",
       "Bash(git reset --hard *)",
@@ -97,11 +131,20 @@
       "Bash(reboot:*)",
       "Bash(http:*)",
       "Bash(https:*)",
+      "Bash(dig:*)",
+      "Bash(nslookup:*)",
+      "Bash(host:*)",
       "Edit(**/.zshrc)",
       "Edit(**/.zprofile)",
       "Edit(**/.bash_profile)",
       "Edit(**/.bashrc)",
       "Edit(**/Library/LaunchAgents/**)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(npq:*)",
+      "Bash(pnpx:*)",
+      "Bash(yarn:*)",
       "Bash(pip*)",
       "Bash(*/pip*)",
       "Bash(uv*)",
@@ -110,20 +153,59 @@
       "Bash(*/uvx*)",
       "Bash(brew:*)",
       "Bash(bun:*)",
-      "Edit(~/.claude/settings.json)"
+      "Edit(~/.claude/settings.json)",
+      "Bash(openssl:*)",
+      "Bash(dd:*)",
+      "Bash(mkfs*)",
+      "Bash(shutdown:*)",
+      "Bash(halt:*)",
+      "Bash(poweroff:*)",
+      "Bash(csrutil:*)",
+      "Bash(spctl:*)",
+      "Bash(dscl:*)",
+      "Bash(gh:*)"
     ],
+    "disableAutoMode": "disable",
     "disableBypassPermissionsMode": "disable"
   },
   "sandbox": {
     "allowUnsandboxedCommands": false,
     "autoAllowBashIfSandboxed": false,
+    "credentials": {
+      "envVars": [
+        {
+          "mode": "deny",
+          "name": "GITHUB_TOKEN"
+        },
+        {
+          "mode": "deny",
+          "name": "GH_TOKEN"
+        }
+      ],
+      "files": [
+        {
+          "mode": "deny",
+          "path": "~/.git-credentials"
+        },
+        {
+          "mode": "deny",
+          "path": "~/.pgpass"
+        }
+      ]
+    },
     "enabled": true,
     "failIfUnavailable": true,
     "filesystem": {
       "allowWrite": [
         "/tmp"
       ],
-      "denyRead": [],
+      "denyRead": [
+        "~/.ssh",
+        "~/.bash_history",
+        "~/.zsh_history",
+        "~/.npmrc",
+        "~/.config/gh/hosts.yml"
+      ],
       "denyWrite": [
         "~/.claude/settings.json"
       ]

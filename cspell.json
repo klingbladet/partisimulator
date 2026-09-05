@@ -21,10 +21,12 @@
     "**/node_modules/**",
     "pnpm-lock.yaml",
     ".next/**",
+    "*.tsbuildinfo",
     "public/**",
     "scripts/manifests/**",
     "project-words.txt",
-    "swedish-words.txt"
+    "swedish-words.txt",
+    ".claude/settings.json"
   ],
   "import": [
     "@cspell/dict-sv/cspell-ext.json"
