@@ -1,14 +1,12 @@
 # Partisimulator
 
-Partisimulator lets you talk to your favorite (or un-favorite) politician.
-Chat, discuss, and ask questions.
+Partisimulator lets you talk to your favorite (or un-favorite) politician. Chat, discuss, and ask questions.
+
 If you're feeling up for it, you can even host your own panel debate.
 
 Each party answers only from its own election manifesto.
 
-Partisimulator embeds and retrieves each manifesto per party with RAG.
-That keeps each voice grounded in its own source.
-It doesn't borrow another party's positions.
+Partisimulator embeds and retrieves each manifesto per party with RAG. That keeps each voice grounded in its own source. It doesn't borrow another party's positions.
 
 ## Tech stack
 
@@ -83,6 +81,10 @@ Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spell
 `pnpm install` wires this up automatically through the `prepare` script.
 No extra setup step is needed.
 
+Only the staged content is committed.
+
+If a hook reports an issue, fix it manually (if it isn't fixed automatically), then stage the file again before committing.
+
 ## Good to know
 
 ### Model provider
@@ -91,15 +93,36 @@ Chat generation goes through one of two backends.
 `LLM_PROVIDER` in `.env` picks which one.
 `getModel()` in [src/lib/model.ts](src/lib/model.ts) resolves the backend on every request.
 
-`openrouter` is the default.
-The app uses it when `LLM_PROVIDER` is unset or set to anything other than `mlx`.
-It routes through [OpenRouter](https://openrouter.ai), which proxies most frontier models behind a single API key.
+#### OpenRouter, the default
+
+The app uses `openrouter` when `LLM_PROVIDER` is unset or set to anything other than `mlx`.
+It routes through [OpenRouter](https://openrouter.ai), which proxies most frontier models behind one API key.
 This includes Anthropic and OpenAI models.
 It works anywhere you deploy the app, including on Vercel.
+
+#### Local models with oMLX
 
 `mlx` routes to a local model that [oMLX](https://github.com/jundot/omlx) serves on your own machine.
 It requires Apple Silicon.
 It only works for local development, since a deployed instance can't reach a server running on your laptop.
+
+#### Your Claude or ChatGPT login won't work here
+
+Claude Pro, ChatGPT Plus, Claude Code CLI, and IDE plugins like a Copilot extension can't power this app.
+They authenticate with an OAuth session tied to that one product.
+Their terms of service block using that session to run a separate app's backend.
+
+Anthropic and OpenAI sell API keys separately from those subscriptions.
+Get one at [console.anthropic.com](https://console.anthropic.com) or [platform.openai.com](https://platform.openai.com).
+API usage bills per token, apart from any subscription you already pay for.
+
+OpenRouter already gives you both, which is why it's the default here.
+
+For example, setting `OPENROUTER_MODEL=anthropic/claude-sonnet-4.5` does run this app on Claude.
+It uses OpenRouter's metered access to that model, billed to your `OPENROUTER_API_KEY`.
+Your Claude Pro seat and your Claude Code CLI login stay out of it entirely.
+
+#### Environment variables
 
 These environment variables control the model provider.
 

@@ -7,7 +7,10 @@
 ## Design and UX
 
 - [ ] Interactive landing page: a clear welcome page with large CTAs leading straight to the main modes, All parties and Debate mode
-- [ ] Themed custom cursors: a playful cursor that matches the context, for example a gavel when the user is in Debate mode
+- [ ] Introduce 4/8 point design system
+- [ ] Design overhaul - focus on minimizing the "AI look"
+- [ ] Dark mode, light mode, system - yes?
+- [ ] Adapt app to smaller screens
 
 ## General and prompt tuning (AI quality)
 

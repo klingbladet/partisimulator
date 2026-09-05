@@ -27,7 +27,16 @@ A notice about this must appear once, globally, in the site footer on every page
 ### Data and retrieval
 
 - Supabase (Postgres with pgvector)
-- Vercel AI SDK, with Anthropic and OpenAI providers
+- Vercel AI SDK
+
+### Model provider
+
+Chat generation routes through `getModel()` in [src/lib/model.ts](../src/lib/model.ts), which picks a backend per request based on `LLM_PROVIDER`.
+
+- `openrouter`, the default, proxies Anthropic and OpenAI models through [OpenRouter](https://openrouter.ai)
+- `mlx` routes to a local model served by oMLX, for local development only
+
+Embeddings for the manifesto RAG always run locally via `@xenova/transformers`, regardless of `LLM_PROVIDER`.
 
 ## Writing prose or comments
 
@@ -123,10 +132,24 @@ Git is only allowed with "read-only" commands.
 
 ## No npm, use pnpm
 
+## Tooling
+
+- `pnpm lint-format-markdown` lints and formats markdown
+- `pnpm spellcheck` spellchecks
+- `pnpm analyze-code` checks for unused code, circular dependencies, duplication, and complexity
+
+Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spellcheck` on staged files before each commit, wired up automatically by `pnpm install`.
+
+## Claude Code hooks
+
+The guards in `.claude/hooks` run on Node, so they need no extra tooling and no setup step.
+Claude Code registers them from `.claude/settings.json`.
+Restart Claude Code after changing a hook or the settings file.
+
 ## Where to start?
 
 See the [TODO list](../TODO.md)
 
 ## After each change and before a commit
 
-Write to the [Changlog](../CHANGELOG.md). Please be extremely concise.
+Write to the [Changelog](../CHANGELOG.md). Please be extremely concise.

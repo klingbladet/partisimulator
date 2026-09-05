@@ -1,7 +1,7 @@
 "use client";
 
 import { Lightbulb, Mic, Shuffle, Users } from "lucide-react";
-import PartyChip from "@/components/party-chip";
+import PartyChip from "@/components/shared/party-chip";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
 import { PARTIES } from "@/lib/parties";
 import type { PartyPersona } from "@/types/party";
@@ -41,7 +41,7 @@ export default function DebateSetupPanel({
               onStartDebate();
             }
           }}
-          placeholder="T.ex. 'Hur ska Sverige bekämpa brottsligheten?'"
+          placeholder={`T.ex. "Hur ska Sverige bekämpa brottsligheten?"`}
           type="text"
           value={topic}
         />
