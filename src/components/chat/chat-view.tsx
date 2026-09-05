@@ -1,10 +1,9 @@
 "use client";
 
 import { RotateCcw, Send, Square } from "lucide-react";
-import Image from "next/image";
 import type { RefObject } from "react";
-import ChatBubble from "@/components/chat-bubble";
-import PartyAvatar from "@/components/party-avatar";
+import Bubble from "@/components/shared/bubble";
+import PartyAvatar from "@/components/shared/party-avatar";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
 
@@ -51,29 +50,7 @@ export default function ChatView({
               style={{ backgroundColor: selectedParty.color }}
             />
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-black text-lg text-white">{selectedParty.displayName}</span>
-                <span
-                  className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-black text-xs"
-                  style={{
-                    backgroundColor: selectedParty.color,
-                    color: selectedParty.textColor,
-                  }}
-                >
-                  {selectedParty.logoFile && (
-                    <span className="relative inline-block h-3.5 w-3.5">
-                      <Image
-                        alt={selectedParty.partyName}
-                        className="object-contain"
-                        fill
-                        sizes="14px"
-                        src={`/assets/logos/${selectedParty.logoFile}`}
-                      />
-                    </span>
-                  )}
-                  <span>{selectedParty.abbreviation}</span>
-                </span>
-              </div>
+              <div className="font-black text-lg text-white">{selectedParty.displayName}</div>
               <div className="font-semibold text-gray-300 text-xs">
                 {selectedParty.partyName} · {selectedParty.keyIssues.join(", ")}
               </div>
@@ -101,7 +78,7 @@ export default function ChatView({
       >
         {chatHistory.map((message, index) => {
           if (message.role === "user") {
-            return <ChatBubble isUser={true} key={message.id} text={message.text} turnNumber={index + 1} />;
+            return <Bubble isUser={true} key={message.id} text={message.text} turnNumber={index + 1} variant="chat" />;
           }
 
           if (!selectedParty) {
@@ -109,7 +86,7 @@ export default function ChatView({
           }
 
           return (
-            <ChatBubble
+            <Bubble
               isStreaming={false}
               key={message.id}
               party={selectedParty}
@@ -117,13 +94,20 @@ export default function ChatView({
               stance={message.stance}
               text={message.text}
               turnNumber={index + 1}
+              variant="chat"
             />
           );
         })}
 
         {/* Streaming reply */}
         {isLoading && selectedParty && (
-          <ChatBubble isStreaming={true} party={selectedParty} text={pendingText} turnNumber={chatHistory.length + 1} />
+          <Bubble
+            isStreaming={true}
+            party={selectedParty}
+            text={pendingText}
+            turnNumber={chatHistory.length + 1}
+            variant="chat"
+          />
         )}
         <div ref={chatEndRef} />
       </div>

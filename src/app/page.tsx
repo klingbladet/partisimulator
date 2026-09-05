@@ -2,11 +2,12 @@
 
 import { XCircle } from "lucide-react";
 import { Suspense } from "react";
-import AppNav from "@/components/app-nav";
-import ChatView from "@/components/chat-view";
-import InitialQuestionForm from "@/components/initial-question-form";
-import PageContainer from "@/components/page-container";
-import SiteFooter from "@/components/site-footer";
+import ChatView from "@/components/chat/chat-view";
+import InitialQuestionForm from "@/components/chat/initial-question-form";
+import AppNav from "@/components/shared/app-nav";
+import PageContainer from "@/components/shared/page-container";
+import SiteFooter from "@/components/shared/site-footer";
+import TypingDots from "@/components/shared/typing-dots";
 import { useChatConversation } from "@/hooks/use-chat-conversation";
 
 function HomeContent(): React.JSX.Element {
@@ -89,11 +90,7 @@ export default function HomePage(): React.JSX.Element {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="typing-dots">
-            <span />
-            <span />
-            <span />
-          </div>
+          <TypingDots />
         </div>
       }
     >

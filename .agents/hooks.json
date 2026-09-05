@@ -1,0 +1,41 @@
+{
+  "lint-format-code": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node \".agents/hooks/lint-format-code.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content"
+      }
+    ]
+  },
+  "lint-format-markdown": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node \".agents/hooks/lint-format-markdown.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content"
+      }
+    ]
+  },
+  "spellcheck": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "node \".agents/hooks/spellcheck.mjs\"",
+            "type": "command"
+          }
+        ],
+        "matcher": "write_to_file|replace_file_content"
+      }
+    ]
+  }
+}

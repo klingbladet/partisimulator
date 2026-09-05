@@ -1,7 +1,7 @@
 "use client";
 
-import PartyChip from "@/components/party-chip";
-import QuestionInput from "@/components/question-input";
+import PartyChip from "@/components/shared/party-chip";
+import QuestionInput from "@/components/shared/question-input";
 import { PARTIES } from "@/lib/parties";
 import type { PartyPersona } from "@/types/party";
 
@@ -27,7 +27,11 @@ export default function InitialQuestionForm({
   return (
     <section className="cartoon-card space-y-5 p-6">
       <QuestionInput
-        buttonLabel={`Fråga ${selectedParty?.abbreviation ?? "partiet"}!`}
+        buttonLabel={
+          selectedParty
+            ? `Fråga ${selectedParty.displayName.split(" ")[0]} från ${selectedParty.partyName}!`
+            : "Fråga partiet!"
+        }
         id="direct-question-input"
         isLoading={isLoading}
         onChange={onQuestionChange}
@@ -54,21 +58,6 @@ export default function InitialQuestionForm({
             />
           ))}
         </div>
-
-        {selectedParty && (
-          <div
-            className="mt-4 animate-in rounded-xl border-2 p-3 font-semibold text-sm"
-            style={{
-              backgroundColor: `${selectedParty.color}15`,
-              borderColor: selectedParty.color,
-              color: "var(--color-ink)",
-            }}
-          >
-            <strong style={{ color: selectedParty.color }}>{selectedParty.displayName}</strong> (
-            {selectedParty.partyName}) är vald.{" "}
-            <span className="text-gray-500">Hjärtefrågor: {selectedParty.keyIssues.join(", ")}</span>
-          </div>
-        )}
       </div>
     </section>
   );

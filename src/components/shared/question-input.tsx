@@ -1,6 +1,7 @@
 "use client";
 
 import { Shuffle, Square } from "lucide-react";
+import TypingDots from "@/components/shared/typing-dots";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
 
 interface QuestionInputProps {
@@ -100,11 +101,7 @@ export default function QuestionInput({
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <span className="typing-dots">
-                <span style={{ background: "white" }} />
-                <span style={{ background: "white" }} />
-                <span style={{ background: "white" }} />
-              </span>
+              <TypingDots dotColor="white" />
               Tänker...
             </span>
           ) : (

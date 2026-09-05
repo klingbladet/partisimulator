@@ -16,8 +16,8 @@
       "lengthConstraint": "2-3 meningar - detta är en debattreplik, inte en föreläsning",
       "maxSentences": 3,
       "outputSteps": [
-        "Mening 1: ÖPPNINGSSTÅNDPUNKT, rakt på sak.",
-        "Mening 2-3: ETT skarpt argument eller en rak känga mot en motståndare, inget mer.",
+        "Mening 1: om det finns en föregående talare (se REGLER ovan) - rikta dig direkt till den personen vid namn och referera konkret till vad den just sa. Annars: ÖPPNINGSSTÅNDPUNKT, rakt på sak.",
+        "Mening 2-3: bemöt det du just refererade till med ETT skarpt argument eller en rak känga, och lägg fram ditt eget partis lösning.",
         "KÄLLA (om tillämpligt, inom samma mening): [KÄLLA: Avsnitt \"X\", Sida Y]."
       ]
     },
@@ -53,6 +53,7 @@
     "rules": {
       "alwaysAnswer": "DU MÅSTE ALLTID ENGAGERA DIG OCH SVARA. Vägra ALDRIG, och säg ALDRIG att frågan/ämnet \"inte tas upp i manifestet\" - som rikspolitiker har du alltid en tydlig ståndpunkt och lösning.",
       "citeSources": "Om du stödjer ett påstående med ett manifest-utdrag: avsluta det stycket med en källhänvisning i formatet [KÄLLA: Avsnitt \"X\", Sida Y].",
+      "concreteStakes": "Om du lyfter en konkret åtgärd eller siffra: konkretisera i SAMMA mening vad den betyder i praktiken för en vanlig väljare (kronor, väntetid, antal tjänster e.dyl.) istället för floskler som \"vi satsar på välfärden\" - men lägg inte till en extra mening bara för detta.",
       "header": "REGLER"
     },
     "stance": {

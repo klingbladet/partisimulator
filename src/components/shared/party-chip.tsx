@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import PartyAvatar from "@/components/party-avatar";
+import PartyAvatar from "@/components/shared/party-avatar";
 import type { PartyPersona } from "@/types/party";
 
 interface PartyChipProps {
@@ -45,7 +45,7 @@ export default function PartyChip({
         borderColor: selected ? party.color : "var(--border)",
         boxShadow: selected ? `5px 5px 0px ${party.color}88` : "3px 3px 0px var(--border)",
         cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
+        opacity: disabled && !selected ? 0.6 : 1,
       }}
       title={`${party.displayName} (${party.partyName})`}
       type="button"
@@ -71,16 +71,15 @@ export default function PartyChip({
       {/* Text */}
       {showName && (
         <div className="w-full text-center">
-          <div className="font-black text-xs leading-tight" style={{ color: selected ? "white" : "var(--color-ink)" }}>
-            {party.abbreviation}
+          <div
+            className="truncate font-black text-sm leading-tight"
+            style={{ color: selected ? "white" : "var(--color-ink)" }}
+          >
+            {party.displayName}
           </div>
           <div
-            className="truncate font-semibold leading-tight"
-            style={{
-              color: selected ? "rgba(255,255,255,0.85)" : "#666",
-              fontSize: "0.6rem",
-              margin: "0 auto",
-            }}
+            className="font-semibold text-xs leading-tight"
+            style={{ color: selected ? "rgba(255,255,255,0.85)" : "#666" }}
           >
             {party.partyName}
           </div>

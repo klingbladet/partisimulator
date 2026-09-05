@@ -19,7 +19,15 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   // Set up SSE stream
   const encoder = new TextEncoder();
+  // A ReadableStream's own start() executor keeps running to completion even after the client
+  // disconnects — only its cancel() callback tells us that happened, so a dedicated controller
+  // (rather than req.signal, which tracks the already-fully-read request body, not the response
+  // being read) is what actually stops the in-flight generateText calls for every party.
+  const abortController = new AbortController();
   const stream = new ReadableStream({
+    cancel(reason) {
+      abortController.abort(reason);
+    },
     async start(controller) {
       // Run all 8 parties in parallel
       const promises = PARTIES.map(async (party) => {
@@ -28,6 +36,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           const systemPrompt = buildAskAllPrompt(party, context);
 
           const { text } = await generateText({
+            abortSignal: abortController.signal,
             maxOutputTokens: 400,
             messages: [{ content: question, role: "user" }],
             model: getModel(),
@@ -52,8 +61,11 @@ export async function POST(req: NextRequest): Promise<Response> {
             text: cleanText(limitedShort),
             type: "answer",
           });
-          controller.enqueue(encoder.encode(`data: ${event}\n\n`));
+          if (!abortController.signal.aborted) {
+            controller.enqueue(encoder.encode(`data: ${event}\n\n`));
+          }
         } catch (error) {
+          if (abortController.signal.aborted) return;
           const errorEvent = JSON.stringify({
             partyId: party.id,
             text: "Kunde inte generera svar för detta parti.",
@@ -66,8 +78,10 @@ export async function POST(req: NextRequest): Promise<Response> {
 
       await Promise.all(promises);
 
-      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`));
-      controller.close();
+      if (!abortController.signal.aborted) {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`));
+        controller.close();
+      }
     },
   });
 

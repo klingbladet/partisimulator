@@ -6,19 +6,69 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Nothing yet...
+- None yet...
 
 ### Changed
 
-- Nothing yet...
+- None yet...
 
 ### Removed
 
-- Nothing yet...
+- None yet...
 
 ### Fixed
 
-- Nothing yet...
+- None yet...
+
+## [0.1.2] - 2026-09-06
+
+### Added
+
+- Husky and lint-staged, running lint-format-code, lint-format-markdown, and spellcheck on staged files before each commit
+- Add tool hooks for Antigravity and perhaps ChatGPT? I don't know with all these FRIGGING files and folders and scripts. Please agree on a standard!!!!!!!!!!!!!!!!!!!!
+
+### Changed
+
+- Reorganized `src/components` into `chat/`, `debate/`, `grid/`, and `shared/` feature folders
+- Extracted shared `SourcesList` and `TypingDots` components, removing duplicated markup from the chat/debate/answer bubbles
+- Extracted `DebateControls` from `debatt/page.tsx`
+- Renamed `debate-components.tsx` to `debate-bubble.tsx` for naming consistency
+- Merged `ChatBubble` and `DebateBubble` into one shared `Bubble` component (`src/components/shared/bubble.tsx`) with a `variant` prop
+- `PartyChip`: shows the party leader's full name (bold, bigger) above the party name instead of the abbreviation; no longer fades the selected card when `disabled`
+- One-shot page: submit button reads "Fråga {leader's first name} från {party name}!"; removed the "är vald" banner below the party grid
+- Grid mode: removed the empty-state "Skriv en fråga..." block; answer cards no longer swap to a typing-dots indicator in the header while streaming, and no longer repeat the party abbreviation next to the logo badge
+- `Bubble`: avatar/name row moved below the bubble for both variants, with more breathing room and a tail that points down at it; removed the per-turn "#N" badge; user/moderator bubble now has a small circular avatar (matching party avatars) instead of a bare icon
+- Debate mode redesigned into three regions: a slim `DebateStage` header strip (topic + every debater's avatar, current speaker ringed in their color) on top, the transcript given the dominant share of vertical space in the middle, and a single-row `DebateControls` composer (input, send, stop, pause/resume, end) at the bottom — matching the one-shot page's header/transcript/input convention
+- Debate mode: "Avsluta debatten" now asks for confirmation before ending
+- Debate mode: replies now open by addressing the previous speaker by name and referencing something concrete they just said, instead of stating a generic stance first
+- Debate mode: replies may now call out a genuine self-contradiction from anywhere earlier in the debate, not just the immediately preceding speaker
+- Anti-tampering fallback line is now improvised per-party instead of one fixed sentence repeated by every party
+- All modes: policy claims must be paired with a concrete, tangible consequence for an ordinary voter instead of generic phrasing
+- Debate mode: manifesto retrieval now queries on the topic plus the most recent exchange instead of the static topic alone, so cited chunks stay pinned to the specific claim being argued as the debate drills in
+- Debate mode's finished state redesigned into a "game over"-style card (message + single "Ny debatt" button), replacing the stat-line banner
+- Corrected CLAUDE.md's model provider description and added missing tooling, pre-commit, and Claude Code hooks info from README.md
+
+### Removed
+
+- One-shot page's "är vald" banner and Grid mode's empty-state block (see Changed)
+- `src/components/chat/chat-bubble.tsx` and `src/components/debate/debate-bubble.tsx`, replaced by the shared `Bubble` component
+
+### Fixed
+
+- Debate mode: a stale snapshot of `history` was rebuilt after every reply instead of reading the latest state, which could silently drop or reorder a user interjection sent while a reply was streaming (occasionally making it vanish entirely); each turn now reserves its slot in history immediately and fills it in when done, so ordering holds regardless of when an interjection is sent
+- Debate mode's interjection composer was effectively unusable during auto mode (input disabled and the send button hidden behind "Avbryt" almost the entire time, since replies chain back to back); the input is always typeable now and send/stop are separate, always-available buttons
+- Debate auto mode could pick the same party to open a new round that had just closed the previous one; the next speaker's queue now avoids repeating the last speaker
+- Debate transcript auto-scroll now also snaps to bottom the instant a new speaker starts, not just when a turn completes
+- `DebateStage`'s debater avatar row now wraps instead of overflowing its container on small screens
+- Removed the global `html { scroll-behavior: smooth }` rule in `globals.css`, which fought the new instant-snap-to-bottom scrolling added for chained auto-mode debate turns (see above); scroll-to-bottom calls that do want an animation already pass `behavior: "smooth"` explicitly per call
+- Navigating away from an in-progress reply (one-shot, grid, or debate) no longer leaves it streaming in the background — the request is now aborted on unmount
+- Debate mode: the reply prompt's closing instruction always referenced the debate's static opening topic, even when the last entry was a user interjection asking something else, making parties drift back to the original question instead of answering the new one; it now points at the interjected question directly when that's what's being answered
+- Debate mode: any draft text sitting in the interjection input, not yet submitted, was silently swept into the transcript and sent the moment the next speaker's turn started (auto mode's chained turns in particular); removed the duplicate auto-submit path in `generateSpeech` so only explicitly submitting (Send/Enter) ever adds an interjection
+- Grid mode's answer cards could overflow their column when a party name had no natural line-break point (e.g. "Sverigedemokraterna"), pushing the whole page (nav and footer included) into a horizontal scrollbar; party name/abbreviation now truncate in the card header, and `.grid-answers`' columns use `minmax(0, 1fr)` so this class of overflow can't recur
+- One-shot's active-party banner showed a redundant abbreviation pill next to the name, inconsistent with grid mode's card header; removed it
+- None of `/api/ask`, `/api/ask-all`, or `/api/debate` forwarded the request's abort signal into `streamText`/`generateText`, so aborting the fetch client-side (e.g. navigating away) never actually stopped the LLM call server-side — it kept running and streaming into nothing; all three now pass `abortSignal: req.signal` through
+- Debate auto mode's chained turns could keep firing after the debate page unmounted: the unmount cleanup only aborted the in-flight fetch, but `generateSpeech`'s post-await check for whether to continue to the next speaker only reads `autoModeRef`/`debateFinishedRef`, never the fact that the hook itself had unmounted; the cleanup now also marks the debate finished so the chain stops
+- Navigating away from Grid mode while all 8 parties were still answering didn't actually stop their generation server-side: `/api/ask-all`'s hand-rolled SSE stream had no `cancel()` handler, so its `Promise.all` of `generateText` calls kept running to completion regardless of whether the client was still reading — `req.signal` only reflects the already-fully-read request body, not the response being abandoned; a dedicated `AbortController` wired to the stream's `cancel()` now actually stops every in-flight party call
 
 ## [0.1.1] - 2026-09-05
 

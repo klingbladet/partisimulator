@@ -23,6 +23,8 @@
     "cspell": "^10.1.1",
     "dotenv": "^17.4.2",
     "fallow": "^3.20.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
     "markdownlint-cli2": "^0.23.2",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
@@ -30,6 +32,11 @@
   },
   "engines": {
     "node": ">=22.18.0"
+  },
+  "lint-staged": {
+    "**/*.{md,ts,tsx,mjs,css,html,sql,json,jsonc,yaml}": "cspell lint --no-progress",
+    "**/*.{ts,tsx,mjs,js,jsx,json,jsonc,css,html}": "biome check --write --verbose --max-diagnostics=none --diagnostic-level=info",
+    "**/*.md": "markdownlint-cli2 --fix"
   },
   "name": "partisimulator",
   "private": true,
@@ -39,6 +46,7 @@
     "dev": "next dev",
     "lint-format-code": "biome check --write --verbose --max-diagnostics=none --diagnostic-level=info",
     "lint-format-markdown": "markdownlint-cli2 --fix \"**/*.md\" \"!**/node_modules\"",
+    "prepare": "husky",
     "seed": "tsx scripts/seed.ts",
     "spellcheck": "cspell lint --no-progress \"**/*.{md,ts,tsx,mjs,css,html,sql,json,jsonc,yaml}\"",
     "start": "next start",
