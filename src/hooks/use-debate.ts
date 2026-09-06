@@ -40,7 +40,7 @@ interface UseDebateResult {
   selectedParties: PartyPersona[];
   setTopic: (topic: string) => void;
   setUserInterjection: (value: string) => void;
-  startDebate: (mode?: "auto" | "manual") => void;
+  startDebate: () => void;
   streamingEntryId: string | null;
   toggleAutoMode: () => void;
   toggleParty: (party: PartyPersona) => void;
@@ -295,15 +295,15 @@ export function useDebate(): UseDebateResult {
 
   // Starts in auto mode with a randomly picked opening speaker, so the debate runs on its own
   // from the moment it starts instead of waiting for the user to press play.
-  const startDebate = (mode: "auto" | "manual" = "auto"): void => {
+  const startDebate = (): void => {
     if (selectedParties.length < 2 || !topic.trim()) return;
     setDebateStarted(true);
     setHistory([]);
     historyRef.current = [];
     setDebateFinished(false);
-    setDebateMode(mode);
-    setAutoMode(mode === "auto");
-    autoModeRef.current = mode === "auto";
+    setDebateMode("auto");
+    setAutoMode(true);
+    autoModeRef.current = true;
     autoModeSpeakerQueueRef.current = [];
     turnCountRef.current = 0;
 
