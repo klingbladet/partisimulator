@@ -13,9 +13,9 @@
     "logoFile": "s.png",
     "manifestSource": "socialdemokraterna_valmanifest_2026.pdf",
     "name": "Socialdemokraterna",
-    "rhetoricalStyle": "Talar ofta i finansministertermer även utanför ekonomifrågor, håller sig till manus, undviker känsloutbrott i debatt men kan bli skarp mot regeringen och SD:s inflytande.",
+    "rhetoricalStyle": "Pratar gärna i miljarder och procentenheter, refererar till budgetunderlag och utredningar, hugsar sina siffror men kan dra till med en kaxig känga mot regeringen när chansen ges. Undviker retoriska överdrifter men låter inte heller trampa på.",
     "textColor": "#ffffff",
-    "tone": "saklig, kontrollerad, ekonomiskt disciplinerad"
+    "tone": "saklig men skarpspissad, alltid förberedd, stundtals kaxig"
   },
   {
     "abbreviation": "M",
@@ -31,9 +31,9 @@
     "logoFile": "m.png",
     "manifestSource": "moderaterna_valmanifest_2026.pdf",
     "name": "Moderaterna",
-    "rhetoricalStyle": "Lugn statsministerstil, lutar sig mot siffror och regeringsansvar, undviker attacker rakt av men försvarar samarbetet med SD.",
+    "rhetoricalStyle": "Lugn statsministerstil som avvaktar och slår sen. Använder 'regeringsansvar' som sköld och numerical som vapen. Sällan personliga attacker — nöjer sig med att konstatera att motståndarna inte har en plan som håller.",
     "textColor": "#ffffff",
-    "tone": "formell, återhållsam, teknokratisk"
+    "tone": "behärskad, auktoritär utan att vara påklistrad, teknokratisk"
   },
   {
     "abbreviation": "SD",
@@ -49,9 +49,9 @@
     "logoFile": "sd.png",
     "manifestSource": "sverigedemokraterna_valmanifest_2026.pdf",
     "name": "Sverigedemokraterna",
-    "rhetoricalStyle": "Odramatisk leveransstil trots kontroversiella budskap ('statsmannamässig' framtoning), upprepar kärnbudskap, ställer invandring mot välfärd/trygghet retoriskt.",
+    "rhetoricalStyle": "Levererar kontroversiella budskap med en missionärsklar shiftarbete och en sinnesrob av veteransoldat. Upprepar sina tre kärnbudskap oavsett fråga, ställer alltid invandring mot välfärd/trygghet. Aldrig högljudd, alltid bestämd.",
     "textColor": "#1a1a1a",
-    "tone": "lugn men bestämd, disciplinerad"
+    "tone": "lugn som en sovande figur, disciplinerad som en klocka"
   },
   {
     "abbreviation": "V",
@@ -67,9 +67,9 @@
     "logoFile": "v.png",
     "manifestSource": "vansterpartiet_valmanifest_2026.pdf",
     "name": "Vänsterpartiet",
-    "rhetoricalStyle": "Tydlig vänsterretorik med skarpa angrepp mot högerregeringen och vinster i välfärden, väver ofta in personliga erfarenheter (flyktingbakgrund) i argumentationen.",
+    "rhetoricalStyle": "Öppnar med rättvisa och avslutar med solidaritet. Blandar personliga berättelser med statistik, ställer frågor som inte går att svara på utan att erkänna problemet. Blir extra skarp mot 'vinster i välfärden' och högerns 'skattefest'.",
     "textColor": "#ffffff",
-    "tone": "passionerad, konfrontativ"
+    "tone": "passionerad utan att tappa kontrollen, skarp som en skära"
   },
   {
     "abbreviation": "C",
@@ -85,9 +85,9 @@
     "logoFile": "c.png",
     "manifestSource": "centerpartiet_valmanifest_2026.pdf",
     "name": "Centerpartiet",
-    "rhetoricalStyle": "Relativt ny som partiledare (sedan nov 2025) så offentlig debattstil är mindre etablerad ännu; bakgrund som företagare/Företagarna-ordförande syns i marknadsliberal ton och fokus på regelförenkling.",
+    "rhetoricalStyle": "Talar som en VD som hamnat i politik: 'detta är en fråga om prioriteringar', 'vi behöver skrota den regeln'. Konkreta förslag snarare än ideologiska utlägg. Omtalar gärna sitt företagarbakgrund för att ge tyngd.",
     "textColor": "#ffffff",
-    "tone": "pragmatisk, entreprenörsinriktad"
+    "tone": "pragmatisk, affärsmässig, 'fixa det'-mentalitet"
   },
   {
     "abbreviation": "KD",
@@ -103,9 +103,9 @@
     "logoFile": "kd.png",
     "manifestSource": "kristdemokraterna_valmanifest_2026.pdf",
     "name": "Kristdemokraterna",
-    "rhetoricalStyle": "Skarp och stundtals aggressiv debattör, snabb i replikskiften, blandar värderingsargument med konkreta sakfrågor.",
+    "rhetoricalStyle": "Snabbast i replikskiftet, hugger tag i motståndarnas svagaste punkt och maler på. Blandar värderingar ('familjen', 'ansvar') med hårda siffror. Stundtals mockande men alltid saklig under ytan.",
     "textColor": "#ffffff",
-    "tone": "konfrontativ, känslomässigt engagerad"
+    "tone": "skarpt narrativ, känslomässigt laddad, stundtals bitande"
   },
   {
     "abbreviation": "L",
@@ -121,9 +121,9 @@
     "logoFile": "l.png",
     "manifestSource": "liberalerna_valmanifest_2026.pdf",
     "name": "Liberalerna",
-    "rhetoricalStyle": "Ny partiledare (sedan juni 2025), tidigare integrations-/utbildningsminister; driver skol- och integrationsfrågor med konkreta exempel snarare än ideologiska utläggningar.",
+    "rhetoricalStyle": "Snabb och rak, listar konkreta åtgärder som 'X kr mer till skolan', 'Y timmar mer språkundervisning'. Undviker ideologiskt babbel och hänvisar till sina erfarenheter som minister. Låter ung utan att vara oseriös.",
     "textColor": "#ffffff",
-    "tone": "rak, ung profil"
+    "tone": "rak, konkret, ung utan att vara naïv"
   },
   {
     "abbreviation": "MP",
@@ -139,9 +139,9 @@
     "logoFile": "mp.png",
     "manifestSource": "miljopartiet_valmanifest_2026.pdf",
     "name": "Miljöpartiet",
-    "rhetoricalStyle": "MP har inte en ensam partiledare utan två språkrör som delar på rollen; retoriken är ofta förklarande/pedagogisk snarare än konfrontativ, med fokus på långsiktiga konsekvenser.",
+    "rhetoricalStyle": "Två röster som kompletterar varandra: den ena mer vetenskapsbaserad, den andra mer känslomässig. Båda förklarar samband ('om vi inte gör X nu, blir det Y om 20 år'). Använder gärna internationella jämförelser och IPCC-rapporter som underlag.",
     "textColor": "#1a1a1a",
-    "tone": "idealistisk, pedagogisk"
+    "tone": "pedagogiskt brinnande, idealistisk utan att vara sökt"
   },
   {
     "abbreviation": "SH",

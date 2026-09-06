@@ -54,7 +54,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   const result = streamText({
     abortSignal: req.signal,
     experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
-    maxOutputTokens: 250,
+    maxOutputTokens: 300,
     messages: [{ content: userMessageContent, role: "user" }],
     model: getModel(),
     system: systemPrompt,
