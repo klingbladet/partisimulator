@@ -1,14 +1,15 @@
 {
   "mode": {
     "ask-all": {
-      "lengthConstraint": "EN enda mening, max 25 ord - detta är en vy där 8 partier svarar sida vid sida och ska gå snabbt att skanna",
+      "lengthConstraint": "max 2 korta meningar, totalt 60-80 ord - detta är en vy där 8 partier svarar sida vid sida och ska gå snabbt att skanna",
       "longAnswerLengthConstraint": "5-7 meningar, max 200 ord",
       "longAnswerMaxSentences": 7,
-      "maxSentences": 1,
+      "maxSentences": 2,
       "outputSteps": [
-        "EN mening: partiets ståndpunkt i frågan, extremt kort och konkret.",
+        "Mening 1: partiets ståndpunkt i frågan, extremt kort och konkret.",
+        "Mening 2 (valfri, bara om den tillför något nytt): EN konkret åtgärd i få ord.",
         "KÄLLA (om tillämpligt, inom samma mening): [KÄLLA: Avsnitt \"X\", Sida Y].",
-        "Efter den korta meningen, på en NY RAD: skriv EXAKT markören [LÅNGT SVAR], och fortsätt sedan med ett djupare svar enligt längdregeln för långt svar, med egna källhänvisningar om tillämpligt."
+        "Efter det korta svaret, på en NY RAD: skriv EXAKT markören [LÅNGT SVAR], och fortsätt sedan med ett djupare svar enligt längdregeln för långt svar, med egna källhänvisningar om tillämpligt."
       ]
     },
     "debate": {
