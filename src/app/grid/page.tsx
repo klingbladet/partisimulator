@@ -1,13 +1,14 @@
 "use client";
 
-import { CheckCircle2, LayoutGrid } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
-import AnswerBubble from "@/components/answer-bubble";
-import AppNav from "@/components/app-nav";
-import PageContainer from "@/components/page-container";
-import QuestionInput from "@/components/question-input";
-import SiteFooter from "@/components/site-footer";
+import AnswerBubble from "@/components/grid/answer-bubble";
+import AppNav from "@/components/shared/app-nav";
+import PageContainer from "@/components/shared/page-container";
+import QuestionInput from "@/components/shared/question-input";
+import SiteFooter from "@/components/shared/site-footer";
+import TypingDots from "@/components/shared/typing-dots";
 import { PARTIES } from "@/lib/parties";
 import type { Stance } from "@/lib/sources";
 import { streamAskAll } from "@/lib/stream-ask-all";
@@ -112,6 +113,14 @@ function GridContent() {
     });
   };
 
+  // Abort any in-flight party streams when the user navigates away — otherwise they keep running
+  // server-side with nothing left to render them.
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   // Auto-trigger once if the question came from the URL
   const hasAutoTriggered = useRef(false);
   useEffect(() => {
@@ -204,14 +213,6 @@ function GridContent() {
             })}
           </div>
         )}
-
-        {!hasStarted && (
-          <div className="py-16 text-center text-gray-400">
-            <LayoutGrid className="mx-auto mb-4 h-16 w-16" />
-            <p className="font-bold text-lg">Skriv en fråga ovan och klicka på &quot;Fråga alla 8!&quot;</p>
-            <p className="mt-2 text-sm">Alla åtta riksdagspartiers AI-simuleringar svarar parallellt</p>
-          </div>
-        )}
       </PageContainer>
 
       <SiteFooter />
@@ -224,11 +225,7 @@ export default function GridPage(): React.JSX.Element {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center">
-          <div className="typing-dots">
-            <span />
-            <span />
-            <span />
-          </div>
+          <TypingDots />
         </div>
       }
     >

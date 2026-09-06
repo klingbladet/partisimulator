@@ -30,6 +30,10 @@ npm-debug.log*
 # typescript
 *.tsbuildinfo
 
+# pnpm
+
+.pnpm-store/
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -38,3 +42,20 @@ Thumbs.db
 ## Claude stuff
 
 .cc-writes
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+/default.profraw
+Icon?
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash
+Temporary Items
+.apdisk

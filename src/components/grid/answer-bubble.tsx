@@ -1,9 +1,11 @@
 "use client";
 
-import { FileText, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import Image from "next/image";
-import PartyAvatar from "@/components/party-avatar";
-import StanceMeter from "@/components/stance-meter";
+import PartyAvatar from "@/components/shared/party-avatar";
+import SourcesList from "@/components/shared/sources-list";
+import StanceMeter from "@/components/shared/stance-meter";
+import TypingDots from "@/components/shared/typing-dots";
 import type { Stance } from "@/lib/sources";
 import type { PartyPersona } from "@/types/party";
 
@@ -43,44 +45,29 @@ export default function AnswerBubble({
           party={party}
           size={42}
         />
-        <div>
-          <div className="font-black text-sm leading-tight" style={{ color: party.textColor }}>
+        <div className="min-w-0 flex-1">
+          <div className="truncate font-black text-sm leading-tight" style={{ color: party.textColor }}>
             {party.displayName}
           </div>
-          <div className="font-semibold text-xs leading-tight" style={{ color: party.textColor, opacity: 0.85 }}>
+          <div
+            className="truncate font-semibold text-xs leading-tight"
+            style={{ color: party.textColor, opacity: 0.85 }}
+          >
             {party.partyName}
           </div>
         </div>
-        {isStreaming ? (
-          <div className="ms-auto">
-            <span
-              aria-label="Genererar svar..."
-              className="typing-dots"
-              role="status"
-              style={{ color: party.textColor }}
-            >
-              <span />
-              <span />
-              <span />
-            </span>
-          </div>
-        ) : (
-          party.logoFile && (
-            <div className="ms-auto flex items-center rounded-lg border border-white/30 bg-white/20 px-2 py-1">
-              <div className="relative me-1 h-4 w-4">
-                <Image
-                  alt={party.partyName}
-                  className="object-contain"
-                  fill
-                  sizes="16px"
-                  src={`/assets/logos/${party.logoFile}`}
-                />
-              </div>
-              <span className="font-black text-xs" style={{ color: party.textColor }}>
-                {party.abbreviation}
-              </span>
+        {party.logoFile && (
+          <div className="ms-auto flex items-center rounded-lg border border-white/30 bg-white/20 p-1.5">
+            <div className="relative h-4 w-4">
+              <Image
+                alt={party.partyName}
+                className="object-contain"
+                fill
+                sizes="16px"
+                src={`/assets/logos/${party.logoFile}`}
+              />
             </div>
-          )
+          </div>
         )}
       </div>
 
@@ -88,11 +75,7 @@ export default function AnswerBubble({
       <div className={`answer-bubble-body ${compact ? "text-sm" : ""}`}>
         {isLoading ? (
           <div className="flex items-center gap-2 text-gray-400">
-            <span className="typing-dots" style={{ color: party.color }}>
-              <span />
-              <span />
-              <span />
-            </span>
+            <TypingDots color={party.color} />
             <span className="font-semibold text-sm">Hämtar manifest-kontext...</span>
           </div>
         ) : (
@@ -140,19 +123,7 @@ export default function AnswerBubble({
       {/* Footer — sources always last, at the very end of the card */}
       {!isLoading && (
         <div className="answer-bubble-footer">
-          {sources.length > 0 ? (
-            sources.map((source) => (
-              <div className="answer-bubble-source" key={source}>
-                <FileText className="h-3.5 w-3.5 flex-shrink-0" />
-                <span>{source}</span>
-              </div>
-            ))
-          ) : (
-            <div className="answer-bubble-source">
-              <FileText className="h-3.5 w-3.5 flex-shrink-0" />
-              <span>Ingen källa finns</span>
-            </div>
-          )}
+          <SourcesList emptyLabel="Ingen källa finns" sources={sources} />
         </div>
       )}
     </div>

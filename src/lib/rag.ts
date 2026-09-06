@@ -3,6 +3,20 @@ import { createEmbedding } from "./embeddings";
 import { getSupabaseAdmin } from "./supabase";
 
 /**
+ * Builds the semantic search query for a debate turn.
+ * The static topic alone keeps retrieval anchored to whatever the debate opened with, even many turns in
+ * once the exchange has drilled into a specific claim - folding in the most recent exchange keeps the
+ * retrieved manifest chunks pinned to what's actually being argued right now.
+ */
+export function buildRetrievalQuery(topic: string, history: { text: string }[], recentTurns: number = 2): string {
+  const recentText = history
+    .slice(-recentTurns)
+    .map((entry) => entry.text)
+    .join("\n");
+  return recentText ? `${topic}\n${recentText}` : topic;
+}
+
+/**
  * Retrieves the most relevant manifest chunks for a given party and question
  * using cosine similarity search via Supabase pgvector.
  */

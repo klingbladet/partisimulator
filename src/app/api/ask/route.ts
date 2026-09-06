@@ -43,6 +43,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // Stream the response via OpenRouter. maxOutputTokens is a generous safety net; the
     // sentence-limit transform is what actually enforces the length regardless of the model.
     const result = streamText({
+      abortSignal: req.signal,
       experimental_transform: createSentenceLimitTransform(getMaxSentences("one-shot")),
       maxOutputTokens: 200,
       messages,

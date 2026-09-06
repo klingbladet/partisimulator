@@ -4,7 +4,7 @@ import { errorResponse } from "@/lib/api-response";
 import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
-import { retrieveContext } from "@/lib/rag";
+import { buildRetrievalQuery, retrieveContext } from "@/lib/rag";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
 import type { DebateEntry } from "@/types/debate";
 
@@ -32,12 +32,13 @@ export async function POST(req: NextRequest): Promise<Response> {
     return errorResponse(`Okänt parti: ${nextSpeakerId}`, 404);
   }
 
-  const context = await retrieveContext(nextSpeakerId, topic);
-
   const conversationHistory = history.map((historyEntry) => ({
     speaker: historyEntry.speakerName,
     text: historyEntry.text,
   }));
+
+  const retrievalQuery = buildRetrievalQuery(topic, conversationHistory);
+  const context = await retrieveContext(nextSpeakerId, retrievalQuery);
 
   const systemPrompt = buildDebatePrompt(party, topic, context, conversationHistory);
 
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   }
 
   const result = streamText({
+    abortSignal: req.signal,
     experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
     maxOutputTokens: 250,
     messages: [{ content: userMessageContent, role: "user" }],

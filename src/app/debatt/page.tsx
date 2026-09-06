@@ -1,12 +1,13 @@
 "use client";
 
-import { CheckCircle2, Flag, MessageCircle, Pause, Play, RotateCcw, Send, Square } from "lucide-react";
-import AppNav from "@/components/app-nav";
-import { DebateBubble } from "@/components/debate-components";
-import DebateSetupPanel from "@/components/debate-setup-panel";
-import DebateStage from "@/components/debate-stage";
-import PageContainer from "@/components/page-container";
-import SiteFooter from "@/components/site-footer";
+import { MessageCircle } from "lucide-react";
+import DebateControls from "@/components/debate/debate-controls";
+import DebateSetupPanel from "@/components/debate/debate-setup-panel";
+import DebateStage from "@/components/debate/debate-stage";
+import AppNav from "@/components/shared/app-nav";
+import Bubble from "@/components/shared/bubble";
+import PageContainer from "@/components/shared/page-container";
+import SiteFooter from "@/components/shared/site-footer";
 import { useDebate } from "@/hooks/use-debate";
 import { PARTIES } from "@/lib/parties";
 
@@ -19,8 +20,8 @@ export default function DebattPage(): React.JSX.Element {
     debateFinished,
     history,
     currentSpeakerId,
-    currentSpeakerParty,
     pendingText,
+    streamingEntryId,
     userInterjection,
     setUserInterjection,
     transcriptContainerRef,
@@ -35,6 +36,12 @@ export default function DebattPage(): React.JSX.Element {
     endDebate,
     resetDebate,
   } = useDebate();
+
+  const handleEndDebate = (): void => {
+    if (window.confirm("Vill du verkligen avsluta debatten?")) {
+      endDebate();
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
@@ -59,105 +66,8 @@ export default function DebattPage(): React.JSX.Element {
           />
         ) : (
           /* Debate view */
-          <div className="w-full space-y-3">
-            {/* Compact Chat Input Bar */}
-            {!debateFinished && (
-              <div className="flex flex-col gap-2">
-                <input
-                  className="cartoon-input text-sm"
-                  disabled={isLoading}
-                  id="user-interjection-input"
-                  onChange={(event) => setUserInterjection(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      handleUserInterjection();
-                    }
-                  }}
-                  placeholder="Ställ en fråga i debatten (tryck Enter eller klicka på ett parti nedan)..."
-                  type="text"
-                  value={userInterjection}
-                />
-                {isLoading ? (
-                  <button
-                    className="cartoon-btn cartoon-btn-danger text-sm"
-                    id="debate-stop-btn"
-                    onClick={handleStop}
-                    style={{ inlineSize: "100%" }}
-                    type="button"
-                  >
-                    <Square className="h-4 w-4" />
-                    Avbryt
-                  </button>
-                ) : (
-                  <button
-                    className="cartoon-btn cartoon-btn-primary text-sm"
-                    disabled={!userInterjection.trim()}
-                    id="user-interjection-submit"
-                    onClick={handleUserInterjection}
-                    style={{ inlineSize: "100%" }}
-                    type="button"
-                  >
-                    <Send className="h-4 w-4" />
-                    Skicka
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Control buttons */}
-            <div className="flex gap-3">
-              {!debateFinished ? (
-                <>
-                  <button
-                    className="cartoon-btn cartoon-btn-primary flex-1 shadow-sm"
-                    id="auto-mode-toggle-btn"
-                    onClick={toggleAutoMode}
-                    type="button"
-                  >
-                    {autoMode ? (
-                      <>
-                        <Pause className="h-4 w-4" />
-                        Pausa debatt
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        Fortsätt debatt
-                      </>
-                    )}
-                  </button>
-                  <button
-                    className="cartoon-btn cartoon-btn-danger flex-1 shadow-sm"
-                    disabled={isLoading}
-                    id="end-debate-btn"
-                    onClick={endDebate}
-                    type="button"
-                  >
-                    <Flag className="h-4 w-4" />
-                    Avsluta debatten
-                  </button>
-                </>
-              ) : (
-                <div className="flex-1 space-y-3">
-                  <div className="status-banner-success font-bold text-sm">
-                    <CheckCircle2 className="h-4 w-4" />
-                    Debatten är avslutad! {history.length} repliker totalt.
-                  </div>
-                  <button
-                    className="cartoon-btn cartoon-btn-ghost w-full bg-white"
-                    id="new-debate-btn"
-                    onClick={resetDebate}
-                    type="button"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                    Ny debatt
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Party cards — pick who speaks next */}
+          <div className="w-full space-y-4">
+            {/* Topic + who's debating, in one slim strip — the active speaker gets a colored ring */}
             <DebateStage
               currentSpeakerId={currentSpeakerId}
               isLoading={isLoading}
@@ -178,37 +88,42 @@ export default function DebattPage(): React.JSX.Element {
                   <MessageCircle className="mb-1.5 h-8 w-8" />
                   <p className="font-extrabold text-gray-700 text-sm">Debatten är redo att börja!</p>
                   <p className="mt-1 font-semibold text-gray-400 text-xs">
-                    Ställ en fråga som debattledare ovan, eller klicka på den partiledare som ska tala.
+                    Ställ en fråga som debattledare nedan, eller klicka på den partiledare som ska tala ovan.
                   </p>
                 </div>
               )}
               {history.map((entry, index) => {
+                const isEntryStreaming = entry.id === streamingEntryId;
                 const party = PARTIES.find((candidateParty) => candidateParty.id === entry.speakerId);
                 const isUser = entry.speakerId === "user";
                 return (
-                  <DebateBubble
-                    isStreaming={false}
+                  <Bubble
+                    isStreaming={isEntryStreaming}
                     isUser={isUser}
                     key={entry.id}
                     party={party}
                     sources={entry.sources}
                     speakerName={entry.speakerName}
-                    text={entry.text}
+                    text={isEntryStreaming ? pendingText : entry.text}
                     turnNumber={index + 1}
+                    variant="debate"
                   />
                 );
               })}
-
-              {/* Streaming reply */}
-              {isLoading && currentSpeakerParty && (
-                <DebateBubble
-                  isStreaming={true}
-                  party={currentSpeakerParty}
-                  text={pendingText}
-                  turnNumber={history.length + 1}
-                />
-              )}
             </div>
+
+            <DebateControls
+              autoMode={autoMode}
+              debateFinished={debateFinished}
+              isLoading={isLoading}
+              onEndDebate={handleEndDebate}
+              onResetDebate={resetDebate}
+              onStop={handleStop}
+              onToggleAutoMode={toggleAutoMode}
+              onUserInterjectionChange={setUserInterjection}
+              onUserInterjectionSubmit={handleUserInterjection}
+              userInterjection={userInterjection}
+            />
           </div>
         )}
       </PageContainer>

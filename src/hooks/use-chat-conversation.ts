@@ -89,6 +89,14 @@ export function useChatConversation(): UseChatConversationResult {
     streamProtocol: "text",
   });
 
+  // Abort an in-flight answer when the user navigates away — otherwise the stream keeps running
+  // server-side with nothing left to render it.
+  const stopRef = useRef(stop);
+  stopRef.current = stop;
+  useEffect(() => {
+    return () => stopRef.current();
+  }, []);
+
   // Stream live text into pendingText
   useEffect(() => {
     if (isLoading && completion) {
