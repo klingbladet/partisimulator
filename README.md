@@ -44,6 +44,12 @@ pnpm dev
 
 ## Tooling
 
+### Lint and format code
+
+```sh
+pnpm lint-format-code
+```
+
 ### Lint and format markdown
 
 ```sh
