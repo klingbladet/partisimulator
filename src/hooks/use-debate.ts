@@ -2,6 +2,7 @@ import { useCompletion } from "@ai-sdk/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { PARTIES } from "@/lib/parties";
 import { cleanText, extractSources } from "@/lib/sources";
+import { sanitizeSpeech } from "@/lib/sanitize";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyId, PartyPersona } from "@/types/party";
 
@@ -146,7 +147,7 @@ export function useDebate(): UseDebateResult {
   // Update pending text as completion streams
   useEffect(() => {
     if (isLoading && completion) {
-      setPendingText(cleanText(completion));
+      setPendingText(cleanText(sanitizeSpeech(completion)));
     }
   }, [completion, isLoading]);
 
@@ -247,8 +248,9 @@ export function useDebate(): UseDebateResult {
       },
     });
 
+    const activeSpeaker = partyId;
     if (finalResult) {
-      resolveStreamingEntry(partyId, finalResult);
+      resolveStreamingEntry(activeSpeaker, sanitizeSpeech(finalResult));
     } else {
       // Nothing came back (e.g. network error) — drop the empty placeholder instead of leaving a
       // permanent blank bubble in the transcript.

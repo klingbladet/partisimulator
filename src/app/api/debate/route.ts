@@ -10,6 +10,30 @@ import type { DebateEntry } from "@/types/debate";
 
 export const maxDuration = 60;
 
+/**
+ * Strippa all engelsk thinking-metadata, instruktionsblock och debug-rader
+ * från AI-svar innan de sparas i historik eller skickas till frontend.
+ */
+function sanitizeSpeech(rawText: string): string {
+  if (!rawText) return "";
+
+  let clean = rawText.replace(
+    /Here's a thinking process:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/gi,
+    "",
+  );
+  clean = clean.replace(
+    /Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/gi,
+    "",
+  );
+  clean = clean.replace(/User Safety:[\s\S]*?$/gi, "");
+  clean = clean.replace(/We need to produce[\s\S]*?\n/gi, "");
+  clean = clean.replace(/^\d+\.\s+.*$/gm, "");
+  clean = clean.replace(/^[a-zA-Z\s.,:'"()-]{15,}\n/gm, "");
+  clean = clean.replace(/\n{3,}/g, "\n\n").trim();
+
+  return clean;
+}
+
 export async function POST(req: NextRequest): Promise<Response> {
   const {
     selectedParties,
@@ -32,29 +56,31 @@ export async function POST(req: NextRequest): Promise<Response> {
     return errorResponse(`Okänt parti: ${nextSpeakerId}`, 404);
   }
 
-  const conversationHistory = history.map((historyEntry) => ({
-    speaker: historyEntry.speakerName,
-    text: historyEntry.text,
+  const conversationHistory = history.map((entry) => ({
+    speaker: entry.speakerName,
+    text: sanitizeSpeech(entry.text),
   }));
 
-  const retrievalQuery = buildRetrievalQuery(topic, conversationHistory);
+  const recentHistory = conversationHistory.slice(-2);
+
+  const retrievalQuery = buildRetrievalQuery(topic, recentHistory);
   const context = await retrieveContext(nextSpeakerId, retrievalQuery);
 
-  const systemPrompt = buildDebatePrompt(party, topic, context, conversationHistory);
+  const systemPrompt = buildDebatePrompt(party, topic, context, recentHistory);
 
-  const lastHistoryEntry = conversationHistory[conversationHistory.length - 1];
+  const lastEntry = recentHistory[recentHistory.length - 1];
 
   let userMessageContent: string;
-  if (lastHistoryEntry?.speaker.includes("Debattledare")) {
-    userMessageContent = `Debattledaren har ställt frågan: "${lastHistoryEntry.text}". Ge ${party.displayName}s direkta replik på denna fråga i debatten om "${topic}".`;
+  if (lastEntry?.speaker.includes("Debattledare")) {
+    userMessageContent = `Debattledaren har ställt frågan: "${lastEntry.text}". Ge ${party.displayName}s direkta replik.`;
   } else {
-    userMessageContent = `Det är dags för ${party.displayName} att ta ordet och svara i debatten om "${topic}".`;
+    userMessageContent = `Det är dags för ${party.displayName} att ta ordet i debatten om "${topic}".`;
   }
 
   const result = streamText({
     abortSignal: req.signal,
     experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
-    maxOutputTokens: 300,
+    maxOutputTokens: 150,
     messages: [{ content: userMessageContent, role: "user" }],
     model: getModel(),
     system: systemPrompt,
