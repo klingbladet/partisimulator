@@ -73,7 +73,7 @@ pnpm analyze-code
 Read the [coding guide](docs/CODING-GUIDE.md), the [tone of voice guide](docs/TONE-OF-VOICE.md), and the [markdown guide](docs/MARKDOWN-GUIDE.md) before contributing.
 
 Write code, comments, commit messages, and documentation in English.
-The app's own output stays Swedish — that's by design, not an exception to work around.
+The app's own output stays Swedish - that's by design, not an exception to work around.
 
 ## Claude Code hooks
 
@@ -187,7 +187,7 @@ Useful where bundling the local model isn't practical, for example some serverle
 
 #### Examples
 
-Local embeddings, the default — `EMBEDDINGS_PROVIDER=local` is what `.env.example` ships with, though the variable is optional and can be left unset entirely:
+Local embeddings, the default - `EMBEDDINGS_PROVIDER=local` is what `.env.example` ships with, though the variable is optional and can be left unset entirely:
 
 ```sh
 EMBEDDINGS_PROVIDER=local
