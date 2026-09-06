@@ -97,10 +97,11 @@ export default function DebateControls({
         {autoMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
       </button>
 
-      {!autoMode && !isLoading && (
+      {!autoMode && (
         <button
           aria-label="Nästa replik"
           className="cartoon-btn"
+          disabled={isLoading}
           id="next-speaker-btn"
           onClick={onNextSpeaker}
           title="Nästa replik"

@@ -3,7 +3,6 @@
 import { MessageCircle } from "lucide-react";
 import DebateControls from "@/components/debate/debate-controls";
 import DebateSetupPanel from "@/components/debate/debate-setup-panel";
-import type { DebateMode } from "@/components/debate/debate-setup-panel";
 import DebateStage from "@/components/debate/debate-stage";
 import AppNav from "@/components/shared/app-nav";
 import Bubble from "@/components/shared/bubble";
@@ -11,7 +10,6 @@ import PageContainer from "@/components/shared/page-container";
 import SiteFooter from "@/components/shared/site-footer";
 import { useDebate } from "@/hooks/use-debate";
 import { PARTIES } from "@/lib/parties";
-import { useState } from "react";
 
 export default function DebattPage(): React.JSX.Element {
   const {
@@ -40,12 +38,6 @@ export default function DebattPage(): React.JSX.Element {
     resetDebate,
   } = useDebate();
 
-  const [setupMode, setSetupMode] = useState<DebateMode>("auto");
-
-  const handleStartDebate = (): void => {
-    startDebate(setupMode);
-  };
-
   const handleEndDebate = (): void => {
     if (window.confirm("Vill du verkligen avsluta debatten?")) {
       endDebate();
@@ -67,9 +59,7 @@ export default function DebattPage(): React.JSX.Element {
 
         {!debateStarted ? (
           <DebateSetupPanel
-            debateMode={setupMode}
-            onDebateModeChange={setSetupMode}
-            onStartDebate={handleStartDebate}
+            onStartDebate={startDebate}
             onToggleParty={toggleParty}
             onTopicChange={setTopic}
             selectedParties={selectedParties}
