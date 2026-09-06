@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Pause, Play, RotateCcw, Send, Square, XCircle } from "lucide-react";
+import { Flag, Pause, Play, RotateCcw, Send, SkipForward, Square, XCircle } from "lucide-react";
 
 interface DebateControlsProps {
   debateFinished: boolean;
@@ -100,13 +100,14 @@ export default function DebateControls({
       {!autoMode && !isLoading && (
         <button
           aria-label="Nästa replik"
-          className="cartoon-btn cartoon-btn-ghost"
+          className="cartoon-btn"
           id="next-speaker-btn"
           onClick={onNextSpeaker}
           title="Nästa replik"
           type="button"
+          style={{ backgroundColor: "var(--color-ink)", color: "var(--color-white)" }}
         >
-          <Play className="h-4 w-4" />
+          <SkipForward className="h-4 w-4" />
         </button>
       )}
 

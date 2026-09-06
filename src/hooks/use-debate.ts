@@ -26,6 +26,7 @@ interface UseDebateResult {
   currentSpeakerId: string | null;
   currentSpeakerParty: PartyPersona | null | undefined;
   debateFinished: boolean;
+  debateMode: "auto" | "manual";
   debateStarted: boolean;
   endDebate: () => void;
   handleSelectSpeaker: (partyId: string) => Promise<void>;
@@ -39,7 +40,7 @@ interface UseDebateResult {
   selectedParties: PartyPersona[];
   setTopic: (topic: string) => void;
   setUserInterjection: (value: string) => void;
-  startDebate: () => void;
+  startDebate: (mode?: "auto" | "manual") => void;
   streamingEntryId: string | null;
   toggleAutoMode: () => void;
   toggleParty: (party: PartyPersona) => void;
@@ -54,6 +55,7 @@ export function useDebate(): UseDebateResult {
   const [topic, setTopic] = useState("");
   const [debateStarted, setDebateStarted] = useState(false);
   const [debateFinished, setDebateFinished] = useState(false);
+  const [debateMode, setDebateMode] = useState<"auto" | "manual">("auto");
   const [history, setHistory] = useState<DebateEntry[]>([]);
   const [currentSpeakerId, setCurrentSpeakerId] = useState<string | null>(null);
   const currentSpeakerRef = useRef<string | null>(null);
@@ -125,12 +127,6 @@ export function useDebate(): UseDebateResult {
 
   const { completion, complete, isLoading, stop } = useCompletion({
     api: "/api/debate",
-    onFinish: (_prompt, completionText) => {
-      const speaker = currentSpeakerRef.current;
-      if (speaker && completionText) {
-        resolveStreamingEntry(speaker, completionText);
-      }
-    },
     streamProtocol: "text",
   });
 
@@ -299,13 +295,15 @@ export function useDebate(): UseDebateResult {
 
   // Starts in auto mode with a randomly picked opening speaker, so the debate runs on its own
   // from the moment it starts instead of waiting for the user to press play.
-  const startDebate = (): void => {
+  const startDebate = (mode: "auto" | "manual" = "auto"): void => {
     if (selectedParties.length < 2 || !topic.trim()) return;
     setDebateStarted(true);
     setHistory([]);
     historyRef.current = [];
     setDebateFinished(false);
-    setAutoMode(true);
+    setDebateMode(mode);
+    setAutoMode(mode === "auto");
+    autoModeRef.current = mode === "auto";
     autoModeSpeakerQueueRef.current = [];
     turnCountRef.current = 0;
 
@@ -362,6 +360,7 @@ export function useDebate(): UseDebateResult {
   const resetDebate = (): void => {
     setDebateStarted(false);
     setDebateFinished(false);
+    setDebateMode("auto");
     setHistory([]);
     historyRef.current = [];
     setSelectedParties([]);
@@ -389,6 +388,7 @@ export function useDebate(): UseDebateResult {
     currentSpeakerId,
     currentSpeakerParty,
     debateFinished,
+    debateMode,
     debateStarted,
     endDebate,
     handleNextSpeaker,

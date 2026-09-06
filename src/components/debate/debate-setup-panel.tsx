@@ -1,16 +1,20 @@
 "use client";
 
-import { Lightbulb, Mic, Shuffle, Users } from "lucide-react";
+import { Lightbulb, Mic, Pause, Play, Shuffle, Users } from "lucide-react";
 import PartyChip from "@/components/shared/party-chip";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
 import { PARTIES } from "@/lib/parties";
 import type { PartyPersona } from "@/types/party";
+
+export type DebateMode = "auto" | "manual";
 
 interface DebateSetupPanelProps {
   selectedParties: PartyPersona[];
   onToggleParty: (party: PartyPersona) => void;
   topic: string;
   onTopicChange: (topic: string) => void;
+  debateMode: DebateMode;
+  onDebateModeChange: (mode: DebateMode) => void;
   onStartDebate: () => void;
 }
 
@@ -19,6 +23,8 @@ export default function DebateSetupPanel({
   onToggleParty,
   topic,
   onTopicChange,
+  debateMode,
+  onDebateModeChange,
   onStartDebate,
 }: DebateSetupPanelProps): React.JSX.Element {
   const isSelected = (party: PartyPersona): boolean =>
@@ -54,6 +60,26 @@ export default function DebateSetupPanel({
           <Shuffle className="h-3.5 w-3.5" />
           Slumpa fråga
         </button>
+
+        {/* Mode selector */}
+        <div className="mt-4 flex gap-2">
+          <button
+            className={`cartoon-btn flex-1 text-xs ${debateMode === "auto" ? "" : "cartoon-btn-ghost"}`}
+            onClick={() => onDebateModeChange("auto")}
+            type="button"
+          >
+            <Play className="h-3.5 w-3.5" />
+            Auto
+          </button>
+          <button
+            className={`cartoon-btn flex-1 text-xs ${debateMode === "manual" ? "" : "cartoon-btn-ghost"}`}
+            onClick={() => onDebateModeChange("manual")}
+            type="button"
+          >
+            <Pause className="h-3.5 w-3.5" />
+            Manuell
+          </button>
+        </div>
 
         {/* Start button — directly under the input, like the submit button in QuestionInput */}
         <button
