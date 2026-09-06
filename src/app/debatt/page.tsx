@@ -81,7 +81,7 @@ export default function DebattPage(): React.JSX.Element {
               className="cartoon-card flex h-[340px] flex-col gap-3.5 overflow-y-auto border-3 p-3.5 sm:h-[400px] sm:p-5 md:h-[440px]"
               id="debate-transcript"
               ref={transcriptContainerRef}
-              style={{ backgroundColor: "#fbf9f4" }}
+              style={{ backgroundColor: "var(--color-cream)" }}
             >
               {history.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">

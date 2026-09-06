@@ -65,8 +65,8 @@ export default function Bubble({
       <div className="flex w-full justify-end" id={`${idPrefix}-${turnNumber}`}>
         <div className="flex max-w-[85%] flex-col items-end gap-2.5 md:max-w-[72%]">
           <div
-            className="rounded-2xl rounded-ee-xs border-2 border-black p-3.5 text-white shadow-[3px_3px_0px_#1a1a1a]"
-            style={{ backgroundColor: "#4338ca" }}
+            className="rounded-2xl rounded-ee-xs border-2 border-black p-3.5 text-white shadow-[var(--shadow-btn)]"
+            style={{ backgroundColor: "var(--color-user)" }}
           >
             <p className="whitespace-pre-wrap font-bold text-sm leading-relaxed md:text-base">{text}</p>
           </div>
@@ -74,11 +74,11 @@ export default function Bubble({
           <div className="flex items-center gap-1.5 px-1 font-black text-xs">
             <span
               className="flex items-center justify-center rounded-full border border-black text-white"
-              style={{ backgroundColor: "#4338ca", height: 22, width: 22 }}
+              style={{ backgroundColor: "var(--color-user)", height: 22, width: 22 }}
             >
               {variant === "debate" ? <Mic className="h-3 w-3" /> : <User className="h-3 w-3" />}
             </span>
-            <span style={{ color: "#4338ca" }}>{variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}</span>
+            <span style={{ color: "var(--color-user)" }}>{variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}</span>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ export default function Bubble({
   return (
     <div className="flex w-full justify-start" id={`${idPrefix}-${turnNumber}`}>
       <div className="flex max-w-[88%] flex-col items-start gap-2.5 md:max-w-[76%]">
-        <div className="w-full overflow-hidden rounded-2xl rounded-es-xs border-2 border-black bg-white shadow-[3px_3px_0px_#1a1a1a]">
+        <div className="w-full overflow-hidden rounded-2xl rounded-es-xs border-2 border-black bg-white shadow-[var(--shadow-btn)]">
           <div className="h-1.5 w-full" style={{ backgroundColor: party.color }} />
           <div className="p-3.5">{body}</div>
         </div>

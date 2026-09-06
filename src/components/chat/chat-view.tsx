@@ -74,7 +74,7 @@ export default function ChatView({
       <div
         className="cartoon-card flex max-h-[65vh] min-h-80 flex-col gap-4 overflow-y-auto border-3 p-4 md:p-6"
         id="chat-transcript"
-        style={{ backgroundColor: "#fbf9f4" }}
+        style={{ backgroundColor: "var(--color-cream)" }}
       >
         {chatHistory.map((message, index) => {
           if (message.role === "user") {
