@@ -50,7 +50,7 @@ export default function DebattPage(): React.JSX.Element {
       <PageContainer className="px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Debatt</h1>
+          <h1 className="font-black text-3xl leading-tight text-[var(--color-ink)]">Debatt</h1>
           <p className="mt-1 font-semibold text-gray-600">
             Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.
           </p>
