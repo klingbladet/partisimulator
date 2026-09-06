@@ -33,12 +33,14 @@ export default function DebateStage({
           return (
             <button
               aria-pressed={isSelected}
+              className="rounded-full border-2 p-0.5 transition-all"
               disabled={isLoading}
               id={`debate-speaker-${party.id}`}
               key={party.id}
               onClick={() => onSelectSpeaker(party.id)}
               style={{
-                cursor: isLoading ? "not-allowed" : "pointer",
+                borderColor: isSelected ? party.color : "var(--border)",
+                boxShadow: isSelected ? `0 0 0 2px ${party.color}` : "none",
                 opacity: isLoading && !isSelected ? 0.5 : 1,
               }}
               title={`${party.displayName} (${party.partyName})`}
@@ -46,7 +48,6 @@ export default function DebateStage({
             >
               <PartyAvatar
                 badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
-                badgeSize={14}
                 className="relative overflow-hidden rounded-full border-2"
                 party={party}
                 size={36}

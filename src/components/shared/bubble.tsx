@@ -96,12 +96,11 @@ export default function Bubble({
 
         <div className="flex items-center gap-1.5 px-1 font-black text-xs">
           <PartyAvatar
-            badgeClassName="absolute -bottom-0.5 -end-0.5 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
-            badgeSize={12}
+            badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
             className="relative overflow-hidden rounded-full border border-black"
             party={party}
             size={22}
-            style={{ backgroundColor: party.color }}
+            style={{ backgroundColor: "var(--color-user)" }}
           />
           <span style={{ color: party.color }}>{party.displayName}</span>
           <span className="font-bold text-gray-500">({party.abbreviation})</span>
