@@ -35,7 +35,7 @@ function HomeContent(): React.JSX.Element {
       <PageContainer className="px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-black text-3xl leading-tight text-[var(--color-ink)]">Direktfråga</h1>
+          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Direktfråga</h1>
           <p className="mt-1 font-semibold text-gray-600">
             Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.
           </p>

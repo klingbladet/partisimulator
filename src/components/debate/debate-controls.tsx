@@ -104,9 +104,9 @@ export default function DebateControls({
           disabled={isLoading}
           id="next-speaker-btn"
           onClick={onNextSpeaker}
+          style={{ backgroundColor: "var(--color-ink)", color: "var(--color-white)" }}
           title="Nästa replik"
           type="button"
-          style={{ backgroundColor: "var(--color-ink)", color: "var(--color-white)" }}
         >
           <SkipForward className="h-4 w-4" />
         </button>

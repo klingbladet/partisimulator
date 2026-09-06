@@ -66,6 +66,9 @@ pnpm analyze-code
 
 Read the [coding guide](docs/CODING-GUIDE.md), the [tone of voice guide](docs/TONE-OF-VOICE.md), and the [markdown guide](docs/MARKDOWN-GUIDE.md) before contributing.
 
+Write code, comments, commit messages, and documentation in English.
+The app's own output stays Swedish — that's by design, not an exception to work around.
+
 ## Claude Code hooks
 
 The guards in `.claude/hooks` run on Node, so they need no extra tooling and no setup step.
@@ -132,14 +135,12 @@ These environment variables control the model provider.
 - `MLX_BASE_URL`, used by `mlx`, the base URL of your running oMLX server, defaults to `http://localhost:8000/v1`
 - `MLX_MODEL`, used by `mlx`, the model directory name exactly as oMLX reports it under `/v1/models`
 
-Embeddings for the manifesto RAG are separate.
-[src/lib/embeddings.ts](src/lib/embeddings.ts) always runs locally via `@xenova/transformers`, regardless of `LLM_PROVIDER`.
-
 #### Examples
 
 Local model, served by oMLX:
 
 ```sh
+EMBEDDINGS_PROVIDER=local
 LLM_PROVIDER=mlx
 MLX_BASE_URL=http://localhost:8000/v1
 MLX_MODEL=Dolphin3.0-Llama3.1-8B-MLX-6bit
@@ -154,4 +155,41 @@ OPENROUTER_MODEL=anthropic/claude-sonnet-4.5
 
 ```sh
 OPENROUTER_MODEL=openai/gpt-5
+```
+
+### Embeddings provider
+
+Embeddings for the manifesto RAG are a separate choice from chat generation.
+`EMBEDDINGS_PROVIDER` in `.env` picks which one, independently of `LLM_PROVIDER`.
+`createEmbedding()` in [src/lib/embeddings.ts](src/lib/embeddings.ts) resolves the backend on every request.
+
+#### Local, the default
+
+The app runs embeddings locally via `@xenova/transformers` when `EMBEDDINGS_PROVIDER` is `local`, unset, or set to anything other than `openrouter`.
+No network call and no API key needed.
+This holds regardless of `LLM_PROVIDER`, so even `mlx` and OpenRouter chat generation both get local, offline, no-cost RAG by default.
+
+#### OpenRouter
+
+Set `EMBEDDINGS_PROVIDER=openrouter` to call OpenRouter's hosted `openai/text-embedding-3-small` model instead, billed to your `OPENROUTER_API_KEY`.
+Useful where bundling the local model isn't practical, for example some serverless deployments.
+
+#### Environment variables
+
+- `EMBEDDINGS_PROVIDER`, set to `openrouter` to use OpenRouter's hosted embeddings, or `local` (or leave unset) to run locally
+- `OPENROUTER_API_KEY`, used by `openrouter`, the same key used by the `openrouter` chat provider
+
+#### Examples
+
+Local embeddings, the default — `EMBEDDINGS_PROVIDER=local` is what `.env.example` ships with, though the variable is optional and can be left unset entirely:
+
+```sh
+EMBEDDINGS_PROVIDER=local
+```
+
+OpenRouter embeddings, independent of whichever `LLM_PROVIDER` you're running:
+
+```sh
+EMBEDDINGS_PROVIDER=openrouter
+OPENROUTER_API_KEY=sk-or-v1-...
 ```

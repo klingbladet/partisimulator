@@ -38,11 +38,11 @@ export default function AnswerBubble({
     <div className="answer-bubble" id={`answer-${party.id}`} style={{ borderColor: party.color }}>
       {/* Header */}
       <div className="answer-bubble-header" style={{ backgroundColor: party.color, borderColor: party.color }}>
-          <PartyAvatar
-            badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
-            className="relative overflow-hidden rounded-full border-2 border-white"
-            party={party}
-            size={42}
+        <PartyAvatar
+          badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+          className="relative overflow-hidden rounded-full border-2 border-white"
+          party={party}
+          size={42}
         />
         <div className="min-w-0 flex-1">
           <div className="truncate font-black text-sm leading-tight" style={{ color: party.textColor }}>

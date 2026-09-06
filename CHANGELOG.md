@@ -20,6 +20,47 @@ All notable changes to this project will be documented in this file.
 
 - None yet...
 
+## [0.1.3] - 2026-09-06
+
+### Added
+
+- `MAX_DEBATE_TURNS = 8` hard cap on auto-mode debates (`src/hooks/use-debate.ts`)
+- "Nästa replik" button for manual step-through once auto-mode is paused (`debate-controls.tsx`, `handleNextSpeaker`)
+- `sanitizeSpeech()` strips leaked model "thinking"/instruction text from debate replies before they're stored or shown
+- `ROADMAP.md` and `PROJECT_MAP.md`, both since superseded (see Removed)
+- "Embeddings provider" section in `README.md`, documenting `EMBEDDINGS_PROVIDER` alongside the existing model-provider docs
+- `ignoreScripts: false` in `pnpm-workspace.yaml`, and a rule in `CLAUDE.md`/`AGENTS.md` against bypassing lint/format hooks via `git commit --no-verify` or `ignore-scripts`
+- "Antigravity hooks" section in `CLAUDE.md`/`AGENTS.md`, documenting the `.agents/hooks` guards alongside the existing Claude Code hooks section
+- Rule in `CLAUDE.md`/`AGENTS.md` and `README.md`: write code, comments, commit messages, and documentation in English, distinct from the app's own Swedish output
+- `README.md`'s "Embeddings provider" section now documents `local` as an explicit, settable value for `EMBEDDINGS_PROVIDER` (matching `.env.example`), not just "leave it unset"
+
+### Changed
+
+- New `noPleasantries` prompt rule bans AI-style openers ("Det är en intressant fråga...")
+- Response length tightened across one-shot, ask-all, and debate prompts to a 60-80 word target (`prompt-templates.json`), with matching `maxOutputTokens` adjustments
+- Debate mode: auto-play is now the fixed default on start; manual stepping only surfaces once paused
+- RAG embeddings (`createEmbedding` in `src/lib/embeddings.ts`) now support two backends, mirroring `getModel()`'s `LLM_PROVIDER` pattern: local `@xenova/transformers` (default, no network call or API key) or OpenRouter's hosted `openai/text-embedding-3-small`, selected via the new `EMBEDDINGS_PROVIDER` env var
+- RAG timeout raised from 2.5s to 30s (`src/lib/rag.ts`); debate retrieval now only feeds the last 2 history entries into the query
+- Hardcoded hex colors and box-shadow values replaced with CSS custom properties across `globals.css` and components
+- `pnpm-workspace.yaml`: `onlyBuiltDependencies` migrated to `allowBuilds` (pnpm 10.26+)
+
+### Removed
+
+- `getSupabaseClient()` and the backing `_publicClient` cache in `src/lib/supabase.ts` — exported but never called anywhere in the codebase
+- `ROADMAP.md`'s and `PROJECT_MAP.md`'s still-relevant content, moved into `TODO.md` (translated to English) ahead of deleting both files
+
+### Fixed
+
+- `scripts/seed.ts` no longer requires `OPENROUTER_API_KEY` unconditionally; it's only checked when `EMBEDDINGS_PROVIDER=openrouter`, matching the dual-backend embeddings change
+- `scripts/seed.ts` imported `getEmbedder` from `src/lib/embeddings.ts`, which no longer exports it after the dual-backend rewrite; removed the import, but initially missed that `main()` still called `await getEmbedder()` a few lines later — `tsconfig.json` excluded `scripts/` from type-checking, so this dangling reference wasn't caught until a manual regression pass; removed the stray call, since `createEmbedding()` already lazy-loads internally
+- `tsconfig.json` no longer excludes `scripts/` from type-checking; it was already fully type-correct under the same compiler settings, so there was no reason it wasn't being checked
+- `sanitizeSpeech()` was defined twice, identically, in both `src/lib/sanitize.ts` and `src/app/api/debate/route.ts`; the route now imports it from `@/lib/sanitize` instead of keeping its own copy
+- `CLAUDE.md`/`AGENTS.md`'s hook-bypass rule referenced `~/.npmrc` for `ignore-scripts`; pnpm only reads auth/registry settings from `.npmrc`, so this pointed at the wrong file — corrected to the global `~/.config/pnpm/config.yaml`
+- Reverted every party's `rhetoricalStyle` and `tone` in `parties.json` back to `main`'s originals; the AI had invented/hallucinated non-Swedish words
+- `DebateStage`'s speaker selector rendered a doubled selection ring: the branch added `borderColor`/`boxShadow` styling to the outer speaker button while an identical ring already existed on the inner `PartyAvatar`, stacking two rings 2px apart; removed the outer button's duplicate, restoring the single ring on the avatar
+- `globals.css`'s `:disabled, [disabled]` rule used `cursor: not-allowed !important`; the `!important` was redundant, since that selector already outranks the universal-selector cursor rule on specificity alone — removed
+- `cspell.json`'s `ignorePaths` now excludes `pnpm-workspace.yaml` (dependency-name allowlists, not prose) and `next-env.d.ts` (Next.js-generated, never hand-edited)
+
 ## [0.1.2] - 2026-09-06
 
 ### Added

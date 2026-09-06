@@ -1,8 +1,8 @@
 import { useCompletion } from "@ai-sdk/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { PARTIES } from "@/lib/parties";
-import { cleanText, extractSources } from "@/lib/sources";
 import { sanitizeSpeech } from "@/lib/sanitize";
+import { cleanText, extractSources } from "@/lib/sources";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyId, PartyPersona } from "@/types/party";
 

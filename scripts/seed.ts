@@ -5,12 +5,13 @@
  *
  * Usage:
  *   1. PDF-filer i scripts/manifests/ (s.pdf, m.pdf, sd.pdf, v.pdf, c.pdf, kd.pdf, l.pdf, mp.pdf)
- *   2. Sätt OPENROUTER_API_KEY och Supabase-nycklar i .env.local
+ *   2. Sätt Supabase-nycklarna i .env.local (och OPENROUTER_API_KEY om EMBEDDINGS_PROVIDER=openrouter)
  *   3. Kör: npm run seed
  *
- * Embeddings körs LOKALT med @xenova/transformers (ingen API-nyckel behövs för embeddings).
+ * Embeddings körs LOKALT med @xenova/transformers som standard (ingen API-nyckel behövs).
  * Modell: paraphrase-multilingual-MiniLM-L12-v2 (384 dimensioner, stöder svenska)
  * Modellen laddas ner automatiskt vid första körning (~120 MB).
+ * Sätt EMBEDDINGS_PROVIDER=openrouter för att köra embeddings via OpenRouter istället.
  */
 
 import * as fs from "node:fs";
@@ -18,7 +19,7 @@ import * as path from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import pdfParse from "pdf-parse";
-import { createEmbedding, getEmbedder } from "../src/lib/embeddings";
+import { createEmbedding } from "../src/lib/embeddings";
 
 // Load env variables from .env.local
 dotenv.config({ path: path.join(process.cwd(), ".env.local") });
@@ -145,11 +146,15 @@ async function seedParty(partyId: string, pdfFile: string) {
 async function main() {
   console.log("🗳️  PartiSimulator 2026 – Manifest Seeding");
   console.log("==========================================\n");
-  console.log("📌 Embedding-motor: Lokal (paraphrase-multilingual-MiniLM-L12-v2)");
-  console.log("📌 Ingen Anthropic-nyckel behövs för embeddings!\n");
+  const usesOpenRouterEmbeddings = process.env.EMBEDDINGS_PROVIDER === "openrouter";
+  console.log(
+    usesOpenRouterEmbeddings
+      ? "📌 Embedding-motor: OpenRouter (openai/text-embedding-3-small)"
+      : "📌 Embedding-motor: Lokal (paraphrase-multilingual-MiniLM-L12-v2)",
+  );
 
-  if (!process.env.OPENROUTER_API_KEY) {
-    console.error("❌ OPENROUTER_API_KEY saknas i .env.local");
+  if (usesOpenRouterEmbeddings && !process.env.OPENROUTER_API_KEY) {
+    console.error("❌ OPENROUTER_API_KEY saknas i .env.local (krävs när EMBEDDINGS_PROVIDER=openrouter)");
     process.exit(1);
   }
 
@@ -162,9 +167,6 @@ async function main() {
     console.error(`❌ Mappen scripts/manifests/ saknas`);
     process.exit(1);
   }
-
-  // Pre-load embedding model before processing parties
-  await getEmbedder();
 
   for (const party of PARTIES) {
     await seedParty(party.id, party.pdfFile);

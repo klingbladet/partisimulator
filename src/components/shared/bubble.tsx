@@ -78,7 +78,9 @@ export default function Bubble({
             >
               {variant === "debate" ? <Mic className="h-3 w-3" /> : <User className="h-3 w-3" />}
             </span>
-            <span style={{ color: "var(--color-user)" }}>{variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}</span>
+            <span style={{ color: "var(--color-user)" }}>
+              {variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}
+            </span>
           </div>
         </div>
       </div>

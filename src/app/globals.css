@@ -59,7 +59,7 @@
 /* Disabled elements keep the standard not-allowed cursor */
 :disabled,
 [disabled] {
-  cursor: not-allowed !important;
+  cursor: not-allowed;
 }
 
 /* Global focus-visible ring for keyboard accessibility */
