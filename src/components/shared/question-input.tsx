@@ -59,7 +59,7 @@ export default function QuestionInput({
         />
         <div
           className="absolute end-4 bottom-3 rounded bg-white px-1.5 py-0.5 font-semibold text-xs"
-          style={{ color: isNearLimit ? "#f0a500" : "#aaa" }}
+          style={{ color: isNearLimit ? "var(--color-warning)" : "var(--color-placeholder)" }}
         >
           {charCount}/{maxLength}
         </div>
