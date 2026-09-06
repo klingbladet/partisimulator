@@ -10,6 +10,7 @@ interface DebateControlsProps {
   onUserInterjectionSubmit: () => void;
   autoMode: boolean;
   onToggleAutoMode: () => void;
+  onNextSpeaker: () => void;
   onStop: () => void;
   onEndDebate: () => void;
   onResetDebate: () => void;
@@ -24,6 +25,7 @@ export default function DebateControls({
   onUserInterjectionSubmit,
   autoMode,
   onToggleAutoMode,
+  onNextSpeaker,
   onStop,
   onEndDebate,
   onResetDebate,
@@ -94,6 +96,19 @@ export default function DebateControls({
       >
         {autoMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
       </button>
+
+      {!autoMode && !isLoading && (
+        <button
+          aria-label="Nästa replik"
+          className="cartoon-btn cartoon-btn-ghost"
+          id="next-speaker-btn"
+          onClick={onNextSpeaker}
+          title="Nästa replik"
+          type="button"
+        >
+          <Play className="h-4 w-4" />
+        </button>
+      )}
 
       <button
         aria-label="Avsluta debatten"

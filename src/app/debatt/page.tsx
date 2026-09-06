@@ -31,6 +31,7 @@ export default function DebattPage(): React.JSX.Element {
     toggleParty,
     startDebate,
     handleUserInterjection,
+    handleNextSpeaker,
     handleSelectSpeaker,
     handleStop,
     endDebate,
@@ -117,6 +118,7 @@ export default function DebattPage(): React.JSX.Element {
               debateFinished={debateFinished}
               isLoading={isLoading}
               onEndDebate={handleEndDebate}
+              onNextSpeaker={handleNextSpeaker}
               onResetDebate={resetDebate}
               onStop={handleStop}
               onToggleAutoMode={toggleAutoMode}
