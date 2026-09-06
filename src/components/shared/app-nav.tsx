@@ -14,14 +14,7 @@ export default function AppNav(): React.JSX.Element {
   ];
 
   return (
-    <nav
-      className="sticky top-0 z-40 border-b-3"
-      style={{
-        backgroundColor: "var(--color-cream)",
-        borderBottom: "3px solid var(--color-ink)",
-        boxShadow: "0 3px 0px var(--color-ink)",
-      }}
-    >
+    <nav className="app-nav">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
         {/* Logo — plain anchor, not next/link, so a click always does a full page reload and clears all state */}
         <a className="flex items-center gap-2 no-underline" href="/" id="nav-logo">

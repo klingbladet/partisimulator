@@ -43,7 +43,7 @@ export default function DebateControls({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="cartoon-card flex items-center gap-2 p-3">
       <input
         className="cartoon-input flex-1 text-sm"
         id="user-interjection-input"
