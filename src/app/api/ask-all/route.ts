@@ -45,7 +45,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
           const { text } = await generateText({
             abortSignal: abortController.signal,
-            maxOutputTokens: 400,
+            maxOutputTokens: 600,
             messages: [{ content: question, role: "user" }],
             model: getModel(),
             system: systemPrompt,
