@@ -6,6 +6,7 @@ import ChatView from "@/components/chat/chat-view";
 import InitialQuestionForm from "@/components/chat/initial-question-form";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
+import PageHeader from "@/components/shared/page-header";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
 import { useChatConversation } from "@/hooks/use-chat-conversation";
@@ -34,13 +35,10 @@ function HomeContent(): React.JSX.Element {
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Direktfråga</h1>
-          <p className="mt-1 font-semibold text-gray-600">
-            Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.
-          </p>
-        </div>
+        <PageHeader
+          description="Fråga ett enskilt parti hur de ställer sig i en eller flera frågor."
+          title="Direktfråga"
+        />
 
         {/* View 1: Initial Question Form (when no chat has started yet) */}
         {chatHistory.length === 0 && !isLoading ? (

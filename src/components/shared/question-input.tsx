@@ -1,6 +1,8 @@
 "use client";
 
 import { Shuffle, Square } from "lucide-react";
+import CountedTextarea from "@/components/shared/counted-textarea";
+import InputStack from "@/components/shared/input-stack";
 import TypingDots from "@/components/shared/typing-dots";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
 
@@ -39,31 +41,18 @@ export default function QuestionInput({
     }
   };
 
-  const charCount = value.length;
-  const isNearLimit = charCount > maxLength * 0.8;
-
   return (
-    <div className="flex flex-col gap-2">
-      <div className="relative">
-        <textarea
-          aria-label="Skriv din fråga"
-          className="cartoon-input pb-7"
-          disabled={disabled || isLoading}
-          id={id}
-          maxLength={maxLength}
-          onChange={(event) => onChange(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          rows={3}
-          value={value}
-        />
-        <div
-          className="absolute end-4 bottom-3 rounded bg-white px-1.5 py-0.5 font-semibold text-xs"
-          style={{ color: isNearLimit ? "var(--color-warning)" : "var(--color-placeholder)" }}
-        >
-          {charCount}/{maxLength}
-        </div>
-      </div>
+    <InputStack>
+      <CountedTextarea
+        ariaLabel="Skriv din fråga"
+        disabled={disabled || isLoading}
+        id={id}
+        maxLength={maxLength}
+        onChange={onChange}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
+        value={value}
+      />
 
       <button
         className="cartoon-btn cartoon-btn-ghost w-full text-xs"
@@ -106,6 +95,6 @@ export default function QuestionInput({
           )}
         </button>
       )}
-    </div>
+    </InputStack>
   );
 }

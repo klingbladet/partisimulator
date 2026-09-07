@@ -1,13 +1,14 @@
 "use client";
 
-import { CheckCircle2, Lightbulb, Users } from "lucide-react";
+import { CheckCircle2, Lightbulb } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import AnswerBubble from "@/components/grid/answer-bubble";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
-import PartyChip from "@/components/shared/party-chip";
-import QuestionInput from "@/components/shared/question-input";
+import PageHeader from "@/components/shared/page-header";
+import PartyPickerCard from "@/components/shared/party-picker-card";
+import QuestionInputCard from "@/components/shared/question-input-card";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
 import { PARTIES } from "@/lib/parties";
@@ -142,27 +143,23 @@ function GridContent() {
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Alla partier</h1>
-          <p className="mt-1 font-semibold text-gray-600">
-            Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt.
-          </p>
-        </div>
+        <PageHeader
+          description="Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt."
+          title="Alla partier"
+        />
 
         {/* Question input */}
-        <div className="cartoon-card mb-6 p-5">
-          <QuestionInput
-            buttonLabel="Fråga alla 8!"
-            id="grid-question-input"
-            isLoading={isLoading}
-            onChange={setQuestion}
-            onStop={handleStopAll}
-            onSubmit={handleAskAll}
-            placeholder="Vad tycker partierna om sjukvården?"
-            value={question}
-          />
-
+        <QuestionInputCard
+          buttonLabel="Fråga alla 8!"
+          className="mb-6"
+          id="grid-question-input"
+          isLoading={isLoading}
+          onChange={setQuestion}
+          onStop={handleStopAll}
+          onSubmit={handleAskAll}
+          placeholder="Vad tycker partierna om sjukvården?"
+          value={question}
+        >
           {hasStarted && isLoading && (
             <div className="mt-3 flex items-center gap-3">
               <div className="h-3 flex-1 overflow-hidden rounded-full border-2 border-black bg-gray-200">
@@ -184,21 +181,16 @@ function GridContent() {
               Alla 8 partier har svarat! Fråga gärna något annat.
             </div>
           )}
-        </div>
+        </QuestionInputCard>
 
         {/* Preview of who's answering, before a question has been asked */}
         {!hasStarted && (
-          <section className="cartoon-card mb-8 p-6">
-            <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-              <Users className="h-5 w-5" />
-              <span>Partierna som svarar</span>
-            </h2>
-            <div className="party-grid">
-              {PARTIES.map((party) => (
-                <PartyChip key={party.id} onClick={() => {}} party={party} selected={false} />
-              ))}
-            </div>
-          </section>
+          <PartyPickerCard
+            className="mb-8"
+            heading="Partierna som svarar"
+            isSelected={() => false}
+            onSelectParty={() => {}}
+          />
         )}
 
         {/* Active question */}

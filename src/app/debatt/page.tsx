@@ -7,6 +7,7 @@ import DebateStage from "@/components/debate/debate-stage";
 import AppNav from "@/components/shared/app-nav";
 import Bubble from "@/components/shared/bubble";
 import PageContainer from "@/components/shared/page-container";
+import PageHeader from "@/components/shared/page-header";
 import SiteFooter from "@/components/shared/site-footer";
 import { useDebate } from "@/hooks/use-debate";
 import { PARTIES } from "@/lib/parties";
@@ -49,13 +50,10 @@ export default function DebattPage(): React.JSX.Element {
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Debatt</h1>
-          <p className="mt-1 font-semibold text-gray-600">
-            Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.
-          </p>
-        </div>
+        <PageHeader
+          description="Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt."
+          title="Debatt"
+        />
 
         {!debateStarted ? (
           <DebateSetupPanel

@@ -163,3 +163,5 @@ See the [TODO list](../TODO.md)
 ## After each change and before a commit
 
 Write to the [Changelog](../CHANGELOG.md). Please be extremely concise.
+
+When moving `[Unreleased]` entries into a new version section, bump `version` in [package.json](../package.json) to match.

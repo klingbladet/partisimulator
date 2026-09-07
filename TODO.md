@@ -13,7 +13,7 @@
 - [ ] Design overhaul - focus on minimizing the "AI look"
 - [ ] Dark mode, light mode, system - yes?
 - [ ] Adapt app to smaller screens
-- [ ] Consolidate icon usage across all components onto lucide-react
+- [x] Consolidate icon usage across all components onto lucide-react
 - [ ] Context-aware custom cursors, for example a gavel cursor in Debate mode
 
 ## General and prompt tuning (AI quality)

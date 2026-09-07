@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Nav logo now reads "Partisimulator 2026" on a single line.
+- None yet...
 
 ### Removed
 
@@ -18,6 +18,29 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- None yet...
+
+## [0.1.5] - 2026-09-07
+
+### Added
+
+- `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
+- Debate topic field now has the same 500-char limit and counter chip as the question inputs.
+
+### Changed
+
+- Nav logo now reads "Partisimulator 2026" on a single line.
+- `src/lib/openrouter.ts` now uses the official `@openrouter/ai-sdk-provider` instead of `@ai-sdk/openai`'s generic OpenAI-compatible client, and requests `reasoning: { exclude: true }` so no model's chain-of-thought is ever returned in the response, regardless of which model `OPENROUTER_MODEL` is set to.
+- `sanitizeSpeech` (`src/lib/sanitize.ts`) rewritten from a list of English reasoning-phrase regexes (fragile, model-specific) to stripping `<think>`/`<thinking>`/`<reasoning>` tag blocks, including a still-open block mid-stream — a defense-in-depth backstop for providers that ignore OpenRouter's exclude flag, or the local MLX path, which has no equivalent flag at all.
+
+### Removed
+
+- None yet...
+
+### Fixed
+
+- Ask-all's question card used `p-5` instead of the `p-6` every other card uses.
+- Debate's topic input used `mt-3` spacing between the textarea and its buttons instead of the `gap-2` used everywhere else, and its textarea lacked the bottom padding reserved for the character counter, making it look tighter than the other input cards even after the gap fix.
 - `getModel()` now calls `openrouter.chat(...)` instead of `openrouter(...)`, which defaulted to the OpenAI Responses API and 404'd against OpenRouter's Chat Completions-only endpoint.
 - `getOpenRouterModel()` now throws when `OPENROUTER_MODEL` is unset instead of silently falling back to the invalid slug `openrouter/free`.
 - `.env.example` split into separate OpenRouter (active by default) and MLX (commented out) blocks, replacing slash-separated placeholders like `openrouter_or_mlx` that silently mismatched the code's strict equality checks.

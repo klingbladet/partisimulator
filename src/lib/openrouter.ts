@@ -1,8 +1,8 @@
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 
-export const openrouter = createOpenAI({
+export const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
+  compatibility: "strict",
   headers: {
     "HTTP-Referer": "https://partisimulator.vercel.app",
     "X-Title": "PartiSimulator 2026",
