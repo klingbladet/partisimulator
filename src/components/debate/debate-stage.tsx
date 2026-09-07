@@ -10,7 +10,7 @@ interface DebateStageProps {
   topic: string;
 }
 
-/** Slim header strip: topic on the left, every debater's avatar on the right — the current speaker gets a colored ring. */
+/** Slim header strip: topic on the left, every debater's avatar on the right - the current speaker gets a colored ring. */
 export default function DebateStage({ parties, currentSpeakerId, topic }: DebateStageProps): React.JSX.Element {
   return (
     <section className="cartoon-card flex flex-wrap items-center gap-3 p-3">

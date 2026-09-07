@@ -121,7 +121,7 @@ function GridContent() {
     });
   };
 
-  // Abort any in-flight party streams when the user navigates away — otherwise they keep running
+  // Abort any in-flight party streams when the user navigates away - otherwise they keep running
   // server-side with nothing left to render them.
   useEffect(() => {
     return () => {

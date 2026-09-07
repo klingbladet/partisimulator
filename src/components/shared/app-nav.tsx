@@ -18,12 +18,12 @@ export default function AppNav(): React.JSX.Element {
   return (
     <nav className="app-nav">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        {/* Logo — plain anchor, not next/link, so a click always does a full page reload and clears all state */}
+        {/* Logo - plain anchor, not next/link, so a click always does a full page reload and clears all state */}
         <a className="flex items-center gap-2 px-2 py-3 no-underline" href="/" id="nav-logo">
           <span className="block font-black font-heading text-black text-lg leading-tight">Partisimulator 2026</span>
         </a>
 
-        {/* Nav tabs — inline from sm upward */}
+        {/* Nav tabs - inline from sm upward */}
         <div className="hidden flex-wrap items-center gap-2 sm:flex">
           {tabs.map((tab) => (
             <Link
@@ -38,7 +38,7 @@ export default function AppNav(): React.JSX.Element {
           ))}
         </div>
 
-        {/* Hamburger toggle — below sm only */}
+        {/* Hamburger toggle - below sm only */}
         <div className="sm:hidden">
           <button
             aria-controls="nav-menu"
@@ -57,7 +57,7 @@ export default function AppNav(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Mobile menu panel — below sm only */}
+      {/* Mobile menu panel - below sm only */}
       {isMenuOpen && (
         <div
           className="flex flex-col gap-2 border-t px-4 py-3 sm:hidden"

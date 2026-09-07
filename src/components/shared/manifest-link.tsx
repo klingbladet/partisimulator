@@ -5,7 +5,7 @@ interface ManifestLinkProps {
   className?: string;
 }
 
-/** Link to a party's full manifesto PDF, styled like SourcesList's citation chips — shown as the fallback when no answer could be generated. */
+/** Link to a party's full manifesto PDF, styled like SourcesList's citation chips - shown as the fallback when no answer could be generated. */
 export default function ManifestLink({
   href,
   className = "answer-bubble-source",

@@ -88,7 +88,7 @@ export function useDebate(): UseDebateResult {
   const [targetSpeakerId, setTargetSpeakerId] = useState<string | null>(null);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const [autoMode, setAutoMode] = useState(false);
-  // True from the moment "Avsluta" is confirmed until every party has given its closing statement —
+  // True from the moment "Avsluta" is confirmed until every party has given its closing statement -
   // gates the other controls so nothing else can interleave a turn into the closing round.
   const [isEndingDebate, setIsEndingDebate] = useState(false);
   // Latest-value refs, read after an `await` (once a reply finishes) where the closure that
@@ -111,7 +111,7 @@ export function useDebate(): UseDebateResult {
   const lastSpeakerIdRef = useRef<string | null>(null);
   const turnCountRef = useRef(0);
   // Set right before a manual stop. handleStop resolves (or drops) the streaming placeholder
-  // itself, synchronously, before the aborted complete() call below settles — so once it does
+  // itself, synchronously, before the aborted complete() call below settles - so once it does
   // settle, stoppedRef tells generateSpeech's cleanup to leave that entry alone rather than
   // re-touching (or deleting) whatever handleStop already put there.
   const stoppedRef = useRef(false);
@@ -130,7 +130,7 @@ export function useDebate(): UseDebateResult {
   };
 
   // Every "who speaks next" decision goes through here, so a party targeted via the interjection
-  // picker is honored whenever a turn actually opens up — including a turn that opens up later
+  // picker is honored whenever a turn actually opens up - including a turn that opens up later
   // (auto mode's own chain, or the next manual "Nästa talare" click), not just one starting right
   // this instant. Reads/clears the ref directly rather than waiting on the setState + re-render,
   // since a chained call can run again before React commits that update. `isTargeted` tells
@@ -159,7 +159,7 @@ export function useDebate(): UseDebateResult {
   // Fills in the streaming placeholder entry (added when this turn started, see generateSpeech)
   // with its final text, keyed by id so it updates in place instead of appending a new entry.
   // That keeps it in its original chronological slot even if a user interjection was appended to
-  // history while this reply was still streaming — appending fresh would silently reorder it after
+  // history while this reply was still streaming - appending fresh would silently reorder it after
   // that interjection. Guards on streamingEntryIdRef so a duplicate call (onFinish firing after
   // the awaited complete() already resolved, or vice versa) is a harmless no-op the second time.
   const resolveStreamingEntry = (speakerId: string, rawText: string): void => {
@@ -172,7 +172,7 @@ export function useDebate(): UseDebateResult {
     const cleaned = cleanText(rawText);
     if (!cleaned) {
       if (stoppedRef.current) {
-        // User cut the turn off manually before anything usable arrived — drop the placeholder
+        // User cut the turn off manually before anything usable arrived - drop the placeholder
         // rather than leave a permanent blank bubble, same as the "nothing came back" branches.
         const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);
         historyRef.current = withoutPlaceholder;
@@ -180,7 +180,7 @@ export function useDebate(): UseDebateResult {
         clearStreamingState();
         return;
       }
-      // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning preamble) —
+      // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning preamble) -
       // show the in-character fallback instead of leaving a permanent blank bubble.
       const fallback = buildNoAnswerFallback(party);
       const fallbackHistory = historyRef.current.map((entry) =>
@@ -206,7 +206,7 @@ export function useDebate(): UseDebateResult {
   });
 
   // Abort any in-flight reply when the user navigates away, and stop auto mode's chain from
-  // continuing — aborting the current fetch alone doesn't stop it, since the recursive call in
+  // continuing - aborting the current fetch alone doesn't stop it, since the recursive call in
   // generateSpeech that kicks off the *next* speaker runs after `complete()` settles regardless of
   // why it settled, and only checks refs (debateFinishedRef), never the fact that this hook unmounted.
   const stopRef = useRef(stop);
@@ -225,7 +225,7 @@ export function useDebate(): UseDebateResult {
     }
   }, [completion, isLoading]);
 
-  // Auto-scroll ONLY inside the chat container, and only when a new turn is added — not on every
+  // Auto-scroll ONLY inside the chat container, and only when a new turn is added - not on every
   // streamed chunk, so scrolling up to re-read earlier replies during generation isn't fought.
   const historyLength = history.length;
   useEffect(() => {
@@ -234,7 +234,7 @@ export function useDebate(): UseDebateResult {
     }
   }, [historyLength]);
 
-  // Also snap to bottom the instant a new speaker starts — in auto mode, turns can chain back to
+  // Also snap to bottom the instant a new speaker starts - in auto mode, turns can chain back to
   // back fast enough that waiting for the pendingText/near-bottom check below to catch up lags visibly.
   useEffect(() => {
     if (currentSpeakerId && transcriptContainerRef.current) {
@@ -243,7 +243,7 @@ export function useDebate(): UseDebateResult {
   }, [currentSpeakerId]);
 
   // Also follow a reply while it streams, but only if the transcript was already scrolled near
-  // the bottom — otherwise a long reply grows past the fixed-height box out of view, while someone
+  // the bottom - otherwise a long reply grows past the fixed-height box out of view, while someone
   // scrolled up to re-read an earlier turn keeps their position undisturbed.
   useEffect(() => {
     const container = transcriptContainerRef.current;
@@ -264,12 +264,12 @@ export function useDebate(): UseDebateResult {
     });
   };
 
-  // Always allowed, even mid-stream — the moderator entry lands in history right away. If a party
+  // Always allowed, even mid-stream - the moderator entry lands in history right away. If a party
   // was targeted, the entry addresses them by name directly (so generateSpeech can skip its own
-  // "Turen går till" line once their turn actually comes up — see the "targeted" TurnKind).
+  // "Turen går till" line once their turn actually comes up - see the "targeted" TurnKind).
   // If nothing's in flight and auto mode isn't already chaining its own turns, answer right away
   // instead of waiting for a separate "Nästa talare" click. If a reply is streaming or auto mode is
-  // running, leave targetSpeakerId untouched rather than firing here — pickNextSpeaker consumes it
+  // running, leave targetSpeakerId untouched rather than firing here - pickNextSpeaker consumes it
   // whenever the next turn actually opens up (the auto-chain's own continuation, or the next manual click).
   const handleUserInterjection = (): void => {
     const question = userInterjection.trim();
@@ -298,7 +298,7 @@ export function useDebate(): UseDebateResult {
     }
   };
 
-  // Generates one party's reply and, in auto mode, immediately recurses into the next speaker —
+  // Generates one party's reply and, in auto mode, immediately recurses into the next speaker -
   // a plain function call, not a ref lookup or a separate effect reacting to state, so there's no
   // dependency on a re-render happening before the next turn can start. Reads history from
   // historyRef rather than the closure's own `history`, since that's frozen at whatever it was
@@ -324,12 +324,12 @@ export function useDebate(): UseDebateResult {
       currentHistory = [...currentHistory, moderatorEntry];
     }
 
-    // The API only sees fully-resolved entries — the placeholder below is display-only, added
+    // The API only sees fully-resolved entries - the placeholder below is display-only, added
     // after this snapshot so it doesn't confuse the prompt with an empty entry from this speaker.
     // Windowed to the server's own cap: the full transcript (shown in the UI) grows without limit
     // over a long debate, but debateRequestSchema rejects a history over MAX_HISTORY_ENTRIES, so
     // sending the whole thing verbatim would make every turn past that point fail outright once
-    // the debate runs long enough — including every auto-mode turn after a "vill du fortsätta?"
+    // the debate runs long enough - including every auto-mode turn after a "vill du fortsätta?"
     // confirmation, since resuming doesn't undo how much history has already piled up.
     const historyForApi = currentHistory.slice(-MAX_HISTORY_ENTRIES);
 
@@ -361,7 +361,7 @@ export function useDebate(): UseDebateResult {
     continueAfterTurn(turnKind);
   };
 
-  // After the API call settles, updates history with the final reply — or, if nothing usable came
+  // After the API call settles, updates history with the final reply - or, if nothing usable came
   // back and the user didn't stop it manually, the in-character fallback. If the user did stop it,
   // handleStop already resolved (or dropped) this entry synchronously, before this aborted
   // complete() call settled, so there's nothing left to do here.
@@ -371,7 +371,7 @@ export function useDebate(): UseDebateResult {
       return;
     }
     if (stoppedRef.current) return;
-    // Nothing came back (e.g. network error) — show the in-character fallback instead of leaving a
+    // Nothing came back (e.g. network error) - show the in-character fallback instead of leaving a
     // permanent blank bubble in the transcript.
     const fallback = buildNoAnswerFallback(party);
     const fallbackHistory = historyRef.current.map((entry) =>
@@ -383,7 +383,7 @@ export function useDebate(): UseDebateResult {
   };
 
   // Closing round: chain straight into the next party still owed a statement, in the order fixed
-  // when "Avsluta" was confirmed — once the queue is empty, the debate actually ends. Bails out
+  // when "Avsluta" was confirmed - once the queue is empty, the debate actually ends. Bails out
   // silently if the component unmounted mid-round (debateFinishedRef is forced true then), same
   // guard continueAutoMode uses.
   const continueClosingRound = (): void => {
@@ -427,7 +427,7 @@ export function useDebate(): UseDebateResult {
   };
 
   // Manual mode (no auto-chain to pick this up on its own), but a party was targeted while this
-  // turn was still in flight — answer it now instead of leaving the debate silently paused until
+  // turn was still in flight - answer it now instead of leaving the debate silently paused until
   // an extra "Nästa talare" click. Doesn't interrupt the reply that just finished, just follows it.
   const continueTargetedManualTurn = (): void => {
     if (!targetSpeakerIdRef.current || debateFinishedRef.current || isEndingDebateRef.current) return;
@@ -437,7 +437,7 @@ export function useDebate(): UseDebateResult {
     }
   };
 
-  // Once a turn has settled, decides whether — and how — the next one starts: a closing round
+  // Once a turn has settled, decides whether - and how - the next one starts: a closing round
   // takes priority, then auto mode's own chain, then a manual-mode party that got targeted while
   // this turn was still in flight. Manual turns (autoMode off) never touch turnCountRef, so
   // stepping through "Nästa replik" by hand is never capped.
@@ -460,7 +460,7 @@ export function useDebate(): UseDebateResult {
     }
   };
 
-  // Starts paused with a randomly picked opening speaker — the user steps through turns by hand
+  // Starts paused with a randomly picked opening speaker - the user steps through turns by hand
   // (or presses play to switch to auto mode) rather than the debate running on its own by default.
   const startDebate = (): void => {
     if (selectedParties.length < 2 || !topic.trim()) return;
@@ -481,7 +481,7 @@ export function useDebate(): UseDebateResult {
 
   // Toggling auto mode back on while the debate is idle (paused between turns) has no in-flight
   // reply to chain off of, so it needs to kick off the next speaker itself. The speech kickoff runs
-  // after setAutoMode, not inside its updater — a setState updater must stay pure, and generateSpeech
+  // after setAutoMode, not inside its updater - a setState updater must stay pure, and generateSpeech
   // itself calls setState (React double-invokes updaters in dev Strict Mode to catch exactly this).
   const toggleAutoMode = (): void => {
     if (isEndingDebate) return;
@@ -502,7 +502,7 @@ export function useDebate(): UseDebateResult {
 
   // Cancel a running speech: abort the stream, keep whatever text arrived so far as the final
   // entry (onFinish never fires on an aborted stream), then snap the transcript to the bottom.
-  // Also pauses auto mode — a manual cancel shouldn't be immediately overridden by the next auto turn.
+  // Also pauses auto mode - a manual cancel shouldn't be immediately overridden by the next auto turn.
   const handleStop = (): void => {
     if (!isLoading) return;
     const speaker = currentSpeakerRef.current;
@@ -513,7 +513,7 @@ export function useDebate(): UseDebateResult {
     if (speaker && completion) {
       resolveStreamingEntry(speaker, sanitizeSpeech(completion));
     } else if (entryId) {
-      // Stopped before any text streamed back — drop the empty placeholder rather than leave it.
+      // Stopped before any text streamed back - drop the empty placeholder rather than leave it.
       const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);
       historyRef.current = withoutPlaceholder;
       setHistory(withoutPlaceholder);
@@ -533,7 +533,7 @@ export function useDebate(): UseDebateResult {
     closingQueueRef.current = null;
   };
 
-  // "Avsluta" doesn't end the debate outright — it gives every participating party one final
+  // "Avsluta" doesn't end the debate outright - it gives every participating party one final
   // closing statement first (in a freshly shuffled order), then finishDebate ends it for real.
   const endDebate = (): void => {
     if (debateFinished || isEndingDebate) return;

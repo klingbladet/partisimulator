@@ -139,7 +139,7 @@ These environment variables control the model provider.
 
 - `LLM_PROVIDER`, used by both, set to `mlx` to go local or leave unset for OpenRouter
 - `OPENROUTER_API_KEY`, required by `openrouter`, the API key from your OpenRouter account
-- `OPENROUTER_MODEL`, required by `openrouter`, the model slug to request, for example `anthropic/claude-sonnet-4.5` — there's no default, the app throws without it
+- `OPENROUTER_MODEL`, required by `openrouter`, the model slug to request, for example `anthropic/claude-sonnet-4.5` - there's no default, the app throws without it
 - `MLX_BASE_URL`, used by `mlx`, the base URL of your running oMLX server, defaults to `http://localhost:8000/v1`
 - `MLX_MODEL`, used by `mlx`, the model directory name exactly as oMLX reports it under `/v1/models`
 - `MLX_API_KEY`, used by `mlx`, the API key your oMLX server expects, defaults to `local`

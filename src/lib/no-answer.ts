@@ -6,7 +6,7 @@ export interface NoAnswerFallback {
 }
 
 /**
- * Shown instead of a dropped or blank reply when nothing usable came back from the model — the
+ * Shown instead of a dropped or blank reply when nothing usable came back from the model - the
  * request failed outright, or sanitizeSpeech had to strip a leaked/garbled response down to
  * nothing. Keeps the party in character and points at its real manifesto rather than leaving a
  * dead bubble or silence. Träskpartiet has no real manifesto to link to, so it gets its own line.

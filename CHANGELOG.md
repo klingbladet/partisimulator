@@ -54,40 +54,40 @@ All notable changes to this project will be documented in this file.
 - Prompt injection: retrieved manifest text and debate history are now wrapped in `[DATA BÖRJAR]`/`[DATA SLUTAR]` markers inside the system prompt, with an explicit rule that content between them is data to respond to, never instructions to follow - closes the gap where debate's moderator interjections sat inline with real instructions instead of in their own message role
 - `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
-- Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
+- Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model - stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
 - Landing page at `/`: a heading, three mode cards (Direktfråga, Alla partier, Debatt), and a party grid that jumps straight into Direktfråga with a party preselected (`PartyLauncher`).
 - Debate mode: "Avsluta" now runs a closing-statement round (one final reply per party, in a freshly shuffled order) before the debate actually ends, via a new `isClosingStatement` prompt mode; `DebateControls` shows a "Slutpläderingar pågår..." status card meanwhile.
-- Debate mode: interjection composer has a "Rikta frågan till" party picker — picking one routes that turn straight to the chosen party instead of whoever's next in the shuffle queue.
+- Debate mode: interjection composer has a "Rikta frågan till" party picker - picking one routes that turn straight to the chosen party instead of whoever's next in the shuffle queue.
 - Debate mode: sending an interjection now answers immediately (the picked party, or whoever's next) instead of requiring a separate "Nästa talare" click, as long as nothing's already in flight.
-- Debate mode: moderator announcements before each turn — a welcome/topic intro for the opening speaker, "Turen går till X" before every other turn, and "Kan du svara på följande fråga, X: ..." (replacing the plain question) when a party is targeted directly.
+- Debate mode: moderator announcements before each turn - a welcome/topic intro for the opening speaker, "Turen går till X" before every other turn, and "Kan du svara på följande fråga, X: ..." (replacing the plain question) when a party is targeted directly.
 - `AppNav`: below the `sm` breakpoint, the inline tabs collapse into a hamburger toggle that opens a dropdown panel with the same three links.
-- `--color-warning` CSS variable reintroduced in `globals.css` (`#fbbf24`), dropped back earlier in 0.1.5 as a text color for contrast reasons — now used as a button background instead, which doesn't have the same contrast problem.
+- `--color-warning` CSS variable reintroduced in `globals.css` (`#fbbf24`), dropped back earlier in 0.1.5 as a text color for contrast reasons - now used as a button background instead, which doesn't have the same contrast problem.
 - Best-effort, in-memory per-IP rate limiting (`src/lib/rate-limit.ts`) on `/api/ask`, `/api/ask-all`, and `/api/debate` - none of them had any limit before, so a direct POST loop could rack up real LLM cost with no throttling at all. Resets on cold start and isn't shared across concurrent serverless instances, so it's a speed bump against casual abuse, not a hard guarantee. Can be turned off via `RATE_LIMIT_ENABLED=false`, e.g. for local development or automated tests
 
 ### Changed
 
 - Nav logo now reads "Partisimulator 2026" on a single line.
 - `src/lib/openrouter.ts` now uses the official `@openrouter/ai-sdk-provider` instead of `@ai-sdk/openai`'s generic OpenAI-compatible client, and requests `reasoning: { exclude: true }` so no model's chain-of-thought is ever returned in the response, regardless of which model `OPENROUTER_MODEL` is set to.
-- `sanitizeSpeech` (`src/lib/sanitize.ts`) rewritten from a list of English reasoning-phrase regexes (fragile, model-specific) to stripping `<think>`/`<thinking>`/`<reasoning>` tag blocks, including a still-open block mid-stream — a defense-in-depth backstop for providers that ignore OpenRouter's exclude flag, or the local MLX path, which has no equivalent flag at all.
-- Direktfråga moved from `/` to `/direktfraga`, Alla partier moved from `/grid` to `/alla-partier` — updated in `AppNav`, the "Fortsätt chatta" handoff, and the chat-seeding effect in `useChatConversation`, which now also preselects a party from a `party`-only URL instead of requiring a full `party`+`q`+`a` handoff.
+- `sanitizeSpeech` (`src/lib/sanitize.ts`) rewritten from a list of English reasoning-phrase regexes (fragile, model-specific) to stripping `<think>`/`<thinking>`/`<reasoning>` tag blocks, including a still-open block mid-stream - a defense-in-depth backstop for providers that ignore OpenRouter's exclude flag, or the local MLX path, which has no equivalent flag at all.
+- Direktfråga moved from `/` to `/direktfraga`, Alla partier moved from `/grid` to `/alla-partier` - updated in `AppNav`, the "Fortsätt chatta" handoff, and the chat-seeding effect in `useChatConversation`, which now also preselects a party from a `party`-only URL instead of requiring a full `party`+`q`+`a` handoff.
 - Nav tabs are flat by default and only pick up the bordered/shadowed cartoon-button look on hover or when active, so the nav bar reads less bulky.
 - `InputStack`'s vertical gap between an input and its button(s) increased from `gap-2` to `gap-3`.
 - Debate now starts paused instead of auto-running; auto mode is opt-in via the play button.
-- Debate mode: party avatars in `DebateStage` are no longer clickable — speaking order is controlled only via "Nästa talare", auto mode, or the new party picker; removed the now-dead `handleSelectSpeaker`.
+- Debate mode: party avatars in `DebateStage` are no longer clickable - speaking order is controlled only via "Nästa talare", auto mode, or the new party picker; removed the now-dead `handleSelectSpeaker`.
 - Debate mode: input+send and the stop/next/end controls are now two separate white boxes instead of one, always stacked rather than side-by-side on larger screens; every control button (Skicka, Avbryt, Auto/Pausa, Nästa talare, Avsluta) has a visible label instead of an icon alone, and stretches evenly across its row.
 - Debate mode: the auto/manual mode toggle moved out of the bottom controls bar into its own strip between the topic header and the transcript.
 - Debate mode: the topic/question banner in `DebateStage` no longer truncates to 1–2 lines; long topics now wrap in full.
 - Auto mode's turn cap raised from 8 to 20, and now only applies to its own unattended chaining (manual "Nästa replik" stepping is uncapped). Hitting the cap pauses auto mode and asks the user whether to continue, instead of ending the debate.
 - Debate controls bar wraps onto two rows on small screens (input + send, then the mode/end buttons) instead of squeezing everything onto one line.
-- Submit buttons (Direktfråga, Alla partier, Debatt) now show a static label ("Skicka" / "Starta") instead of embedding the party name or the current question/topic text. Debatt's start button no longer swaps to "Välj minst 2 partier nedan..." text either — it stays "Starta" and relies on the disabled state, same as the other submit buttons.
+- Submit buttons (Direktfråga, Alla partier, Debatt) now show a static label ("Skicka" / "Starta") instead of embedding the party name or the current question/topic text. Debatt's start button no longer swaps to "Välj minst 2 partier nedan..." text either - it stays "Starta" and relies on the disabled state, same as the other submit buttons.
 - Party grid (`.party-grid`) shows one party per row below 580px, instead of two cramped columns; 2-column and 4-column breakpoints above that are unchanged.
 - Alla partier's answer grid (`.grid-answers`) gets the same 580px breakpoint: one card per row below it, 2 columns from 580px, 3 columns from 1024px (unchanged).
-- Direktfråga's chat banner is no longer a dark full-bleed header — it's now a light `cartoon-card` strip showing the opening question and the party's avatar, matching the question strip used on Alla partier and Debatt.
+- Direktfråga's chat banner is no longer a dark full-bleed header - it's now a light `cartoon-card` strip showing the opening question and the party's avatar, matching the question strip used on Alla partier and Debatt.
 - The question/topic strip on Direktfråga, Alla partier, and Debatt now wraps onto 2 lines below the `sm` breakpoint instead of truncating to one line with no way to read the rest.
 - Debate mode: the auto/manual mode toggle moved again, from between the topic header and transcript to directly below the transcript, above `DebateControls`.
 - Debate mode: the mode toggle button's label switched from "Auto"/"Pausa" to "Slå på auto-läge"/"Stäng av auto-läge".
 - `AppNav`'s mobile hamburger toggle (`.nav-menu-toggle`) always shows its white background and black border/shadow instead of only revealing it on hover, matching the neo-brutalist buttons used elsewhere.
-- `DebateModeToggle` is no longer wrapped in a `cartoon-card` box with a separate "Automatiskt läge"/"Manuellt läge" label — just the button itself now, full width, filled with `--color-success` (paused) or `--color-warning` (auto engaged) instead of the flat ghost variant.
+- `DebateModeToggle` is no longer wrapped in a `cartoon-card` box with a separate "Automatiskt läge"/"Manuellt läge" label - just the button itself now, full width, filled with `--color-success` (paused) or `--color-warning` (auto engaged) instead of the flat ghost variant.
 - Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
 - Each mode's accent color, shared via new `src/lib/mode-colors.ts`, now also tints that page's main input card (light background tint, colored top border, colored focus ring)
 - Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
@@ -100,7 +100,7 @@ All notable changes to this project will be documented in this file.
 ### Removed
 
 - Direktfråga's "Byt parti / Ny fråga" reset button, and the now-unused `handleResetConversation` it called.
-- Debatt's "Valda: ..." summary line under the party picker, listing the currently selected debaters — redundant with the picker's own selected-state styling.
+- Debatt's "Valda: ..." summary line under the party picker, listing the currently selected debaters - redundant with the picker's own selected-state styling.
 
 ### Fixed
 
@@ -108,22 +108,22 @@ All notable changes to this project will be documented in this file.
 - Restored the "Analyze User Input" and "We need to decide/follow" leak patterns, dropped from `sanitize.ts` without a replacement.
 - Removed the multiline flag from the leak patterns so they only match at the very start of a reply, not partway through legitimate content that happens to start a line with a leak phrase.
 - Bounded the "User Safety" leak pattern to its own line instead of matching to the end of the string, so it can no longer delete real content that follows it.
-- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak — real answers could go silently missing.
+- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak - real answers could go silently missing.
 - Ask-all's question card used `p-5` instead of the `p-6` every other card uses.
-- Submit/stop buttons in `QuestionInput` had a stray `mt-2` stacked on top of `InputStack`'s gap, giving them a bigger, inconsistent gap than the debate setup panel's equivalent button — removed so all `InputStack` consumers share the same spacing.
+- Submit/stop buttons in `QuestionInput` had a stray `mt-2` stacked on top of `InputStack`'s gap, giving them a bigger, inconsistent gap than the debate setup panel's equivalent button - removed so all `InputStack` consumers share the same spacing.
 - Debate's topic input used `mt-3` spacing between the textarea and its buttons instead of the `gap-2` used everywhere else, and its textarea lacked the bottom padding reserved for the character counter, making it look tighter than the other input cards even after the gap fix.
 - `getModel()` now calls `openrouter.chat(...)` instead of `openrouter(...)`, which defaulted to the OpenAI Responses API and 404'd against OpenRouter's Chat Completions-only endpoint.
 - `getOpenRouterModel()` now throws when `OPENROUTER_MODEL` is unset instead of silently falling back to the invalid slug `openrouter/free`.
 - `.env.example` split into separate OpenRouter (active by default) and MLX (commented out) blocks, replacing slash-separated placeholders like `openrouter_or_mlx` that silently mismatched the code's strict equality checks.
-- `README.md` no longer claims `.env.example` ships with `EMBEDDINGS_PROVIDER=local` — it actually ships with `openrouter` in the default block; also documents the previously-missing `MLX_API_KEY` and `SHREK` env vars.
+- `README.md` no longer claims `.env.example` ships with `EMBEDDINGS_PROVIDER=local` - it actually ships with `openrouter` in the default block; also documents the previously-missing `MLX_API_KEY` and `SHREK` env vars.
 - Question and debate-topic textareas now get their accessible name from the visible card heading (`aria-labelledby`) instead of a hidden `aria-label`, so screen readers and voice control announce the same text a sighted user sees.
 - Character counter under those textareas now uses `text-gray-600`/`text-amber-700` instead of the low-contrast `--color-placeholder`/`--color-warning` colors, meeting WCAG AA contrast.
-- `sanitizeSpeech` (`src/lib/sanitize.ts`) now also strips untagged plain-text reasoning leaks anchored to the start of a reply (e.g. "User Safety: safe", "We need to produce X's reply, following the rules") — coverage that was lost earlier in 0.1.5 when the old phrase-based regexes were replaced with `<think>`-tag-only matching, for models that leak analysis text without wrapping it in a tag at all.
+- `sanitizeSpeech` (`src/lib/sanitize.ts`) now also strips untagged plain-text reasoning leaks anchored to the start of a reply (e.g. "User Safety: safe", "We need to produce X's reply, following the rules") - coverage that was lost earlier in 0.1.5 when the old phrase-based regexes were replaced with `<think>`-tag-only matching, for models that leak analysis text without wrapping it in a tag at all.
 - Debate mode's `resolveStreamingEntry` (`src/hooks/use-debate.ts`) no longer strands a permanent blank placeholder bubble, and stale `currentSpeakerId`/`streamingEntryId` state, when `sanitizeSpeech` reduces a reply to nothing.
 - `.cartoon-btn:disabled` (`src/app/globals.css`) no longer dims to 50% opacity, which faded text and background toward the same page color and dropped contrast on the primary variant to roughly 3.4:1. Disabled buttons now use a fixed ink-on-placeholder-gray pair (~7.5:1) regardless of variant, meeting WCAG AA.
 - All decorative `lucide-react` icons now carry `aria-hidden="true"`. Unmarked, each renders as a bare `<svg>` with no accessible name, which screen readers expose as an unlabeled image alongside its adjacent text (or inside buttons whose `aria-label` already names the control).
-- Debate mode: a party targeted via the interjection picker while another party was still generating never got a turn — nothing advances the debate on its own in manual mode, so the pick just sat there until an unrelated action (like "Nästa talare") happened to consume it. The targeted party now speaks automatically the moment the in-flight reply finishes, without interrupting it.
-- Debate mode: a party targeted via the interjection picker is now honored whenever their turn actually opens up (auto-chain continuation, turn-cap resume, or the next manual click), not just if nothing was in flight at the moment of sending — previously the pick was silently dropped in that case.
+- Debate mode: a party targeted via the interjection picker while another party was still generating never got a turn - nothing advances the debate on its own in manual mode, so the pick just sat there until an unrelated action (like "Nästa talare") happened to consume it. The targeted party now speaks automatically the moment the in-flight reply finishes, without interrupting it.
+- Debate mode: a party targeted via the interjection picker is now honored whenever their turn actually opens up (auto-chain continuation, turn-cap resume, or the next manual click), not just if nothing was in flight at the moment of sending - previously the pick was silently dropped in that case.
 - The sentence-length cap (`sentence-limit.ts`) miscounted mid-abbreviation periods (e.g. "t.ex.", "m.m.") as sentence ends, cutting some replies off early; a "." now only counts as a sentence end when followed by whitespace or end-of-text.
 - `AppNav`'s hamburger toggle stayed visible above the `sm` breakpoint despite the `sm:hidden` utility: `.nav-tab`'s unlayered `display: inline-flex` in `globals.css` (no `@layer`) always outranks Tailwind's layered utility classes regardless of source order, so `sm:hidden` never took effect combined on the same element. Moved the breakpoint class onto a plain wrapping `div` instead.
 - Debate mode: a long debate (past ~20 turns) sent its entire accumulated transcript as the `history` field on every turn, which eventually exceeded `debateRequestSchema`'s 40-entry cap and made every subsequent turn fail server-side validation outright - shown as a vanished/fallback reply that streamed in and then disappeared. Each failed turn still counted toward the auto-mode turn cap, so confirming "vill du fortsätta?" just re-hit the same failure loop and re-triggered the same prompt almost immediately
@@ -136,9 +136,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - `--color-success` CSS variable in `globals.css`, alongside the existing `--color-error*`/`--color-warning` tokens
-- Grid mode: a white "active question" card above the answer grid (matching debate mode's topic strip), showing the question that's actually being answered — tracked in its own `activeQuestion` state so editing the input mid-stream doesn't retroactively change it
+- Grid mode: a white "active question" card above the answer grid (matching debate mode's topic strip), showing the question that's actually being answered - tracked in its own `activeQuestion` state so editing the input mid-stream doesn't retroactively change it
 - Grid mode ("Alla partier"): a "Partierna som svarar" preview section showing all 8 party cards before a question is asked, matching the up-front party preview already shown on the one-shot and debate pages
-- `src/app/icon.png` (the app's gavel cursor image) wired up via Next's file-based favicon convention, replacing the default Vercel icon — the stale `src/app/favicon.ico`, a since-abandoned `src/app/icon.svg` attempt, and the unused `public/favicon.svg` still need manual deletion (blocked by this session's sandbox permissions)
+- `src/app/icon.png` (the app's gavel cursor image) wired up via Next's file-based favicon convention, replacing the default Vercel icon - the stale `src/app/favicon.ico`, a since-abandoned `src/app/icon.svg` attempt, and the unused `public/favicon.svg` still need manual deletion (blocked by this session's sandbox permissions)
 - Self-hosted "Big Shoulders Black" display font (`src/app/fonts/`, loaded via `next/font/local`) for all headings and the `AppNav` logo text
 
 ### Changed
@@ -156,17 +156,17 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-- `debateMode` state in `src/hooks/use-debate.ts` — set on start/reset and returned from the hook, but never read by `debatt/page.tsx` (its only consumer) and never set to anything but `"auto"`; fully dead
-- 8 unused party-color CSS variables (`--color-s`, `--color-m`, `--color-sd`, `--color-v`, `--color-c`, `--color-kd`, `--color-l`, `--color-mp`) — never referenced anywhere in CSS or components; party colors are read from `parties.json` per party instead
+- `debateMode` state in `src/hooks/use-debate.ts` - set on start/reset and returned from the hook, but never read by `debatt/page.tsx` (its only consumer) and never set to anything but `"auto"`; fully dead
+- 8 unused party-color CSS variables (`--color-s`, `--color-m`, `--color-sd`, `--color-v`, `--color-c`, `--color-kd`, `--color-l`, `--color-mp`) - never referenced anywhere in CSS or components; party colors are read from `parties.json` per party instead
 - The Instrument Serif Google Fonts import and `--font-serif` variable, superseded by the local heading font
 
 ### Fixed
 
 - `sanitizeSpeech()` (strips leaked model "thinking"/instruction text) was only wired into the debate path; one-shot chat (`use-chat-conversation.ts`) and grid mode (`/api/ask-all`) now run replies through it too, before extracting stance/sources
-- `/api/debate` had no error handling at all, and `/api/ask-all` only caught errors inside each party's own promise — a malformed request body, or `getModel()` throwing, escaped as an unstyled 500 instead of the app's usual `{error}` JSON response; both routes now match `/api/ask`'s try/catch and `errorResponse` shape
+- `/api/debate` had no error handling at all, and `/api/ask-all` only caught errors inside each party's own promise - a malformed request body, or `getModel()` throwing, escaped as an unstyled 500 instead of the app's usual `{error}` JSON response; both routes now match `/api/ask`'s try/catch and `errorResponse` shape
 - `src/lib/rag.ts` left five debug `console.log`/`console.warn` calls (`--> [RAG] ...`) from tracking down the embeddings regression; removed, and the surviving timeout/error warnings no longer carry the debug prefix
 - `retrieveContext()`'s 30s timeout timer was never cleared once the real retrieval settled first (the common case), leaving a dangling `setTimeout` per call; now cleared in a `finally` block
-- Party avatar under the chat/debate bubble had its background hardcoded to `--color-user` (indigo), a copy-paste artifact from the user bubble above it — now uses the party's own color
+- Party avatar under the chat/debate bubble had its background hardcoded to `--color-user` (indigo), a copy-paste artifact from the user bubble above it - now uses the party's own color
 - One-shot chat's `[STÅNDPUNKT: ...]` marker leaked as raw bracket text while streaming and only turned into the parsed stance pill once the whole reply finished; the marker is now parsed live the moment it fully streams in (`pendingStance` in `use-chat-conversation.ts`), and an in-progress, not-yet-closed marker no longer renders as visible text in the meantime
 - Grid mode's "Partierna som svarar" preview initially rendered as plain, unstyled avatars with no card background; switched to the same `PartyChip` component used elsewhere so it actually renders as a party grid
 
@@ -196,19 +196,19 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-- `getSupabaseClient()` and the backing `_publicClient` cache in `src/lib/supabase.ts` — exported but never called anywhere in the codebase
+- `getSupabaseClient()` and the backing `_publicClient` cache in `src/lib/supabase.ts` - exported but never called anywhere in the codebase
 - `ROADMAP.md`'s and `PROJECT_MAP.md`'s still-relevant content, moved into `TODO.md` (translated to English) ahead of deleting both files
 
 ### Fixed
 
 - `scripts/seed.ts` no longer requires `OPENROUTER_API_KEY` unconditionally; it's only checked when `EMBEDDINGS_PROVIDER=openrouter`, matching the dual-backend embeddings change
-- `scripts/seed.ts` imported `getEmbedder` from `src/lib/embeddings.ts`, which no longer exports it after the dual-backend rewrite; removed the import, but initially missed that `main()` still called `await getEmbedder()` a few lines later — `tsconfig.json` excluded `scripts/` from type-checking, so this dangling reference wasn't caught until a manual regression pass; removed the stray call, since `createEmbedding()` already lazy-loads internally
+- `scripts/seed.ts` imported `getEmbedder` from `src/lib/embeddings.ts`, which no longer exports it after the dual-backend rewrite; removed the import, but initially missed that `main()` still called `await getEmbedder()` a few lines later - `tsconfig.json` excluded `scripts/` from type-checking, so this dangling reference wasn't caught until a manual regression pass; removed the stray call, since `createEmbedding()` already lazy-loads internally
 - `tsconfig.json` no longer excludes `scripts/` from type-checking; it was already fully type-correct under the same compiler settings, so there was no reason it wasn't being checked
 - `sanitizeSpeech()` was defined twice, identically, in both `src/lib/sanitize.ts` and `src/app/api/debate/route.ts`; the route now imports it from `@/lib/sanitize` instead of keeping its own copy
-- `CLAUDE.md`/`AGENTS.md`'s hook-bypass rule referenced `~/.npmrc` for `ignore-scripts`; pnpm only reads auth/registry settings from `.npmrc`, so this pointed at the wrong file — corrected to the global `~/.config/pnpm/config.yaml`
+- `CLAUDE.md`/`AGENTS.md`'s hook-bypass rule referenced `~/.npmrc` for `ignore-scripts`; pnpm only reads auth/registry settings from `.npmrc`, so this pointed at the wrong file - corrected to the global `~/.config/pnpm/config.yaml`
 - Reverted every party's `rhetoricalStyle` and `tone` in `parties.json` back to `main`'s originals; the AI had invented/hallucinated non-Swedish words
 - `DebateStage`'s speaker selector rendered a doubled selection ring: the branch added `borderColor`/`boxShadow` styling to the outer speaker button while an identical ring already existed on the inner `PartyAvatar`, stacking two rings 2px apart; removed the outer button's duplicate, restoring the single ring on the avatar
-- `globals.css`'s `:disabled, [disabled]` rule used `cursor: not-allowed !important`; the `!important` was redundant, since that selector already outranks the universal-selector cursor rule on specificity alone — removed
+- `globals.css`'s `:disabled, [disabled]` rule used `cursor: not-allowed !important`; the `!important` was redundant, since that selector already outranks the universal-selector cursor rule on specificity alone - removed
 - `cspell.json`'s `ignorePaths` now excludes `pnpm-workspace.yaml` (dependency-name allowlists, not prose) and `next-env.d.ts` (Next.js-generated, never hand-edited)
 
 ## [0.1.2] - 2026-09-06
@@ -229,7 +229,7 @@ All notable changes to this project will be documented in this file.
 - One-shot page: submit button reads "Fråga {leader's first name} från {party name}!"; removed the "är vald" banner below the party grid
 - Grid mode: removed the empty-state "Skriv en fråga..." block; answer cards no longer swap to a typing-dots indicator in the header while streaming, and no longer repeat the party abbreviation next to the logo badge
 - `Bubble`: avatar/name row moved below the bubble for both variants, with more breathing room and a tail that points down at it; removed the per-turn "#N" badge; user/moderator bubble now has a small circular avatar (matching party avatars) instead of a bare icon
-- Debate mode redesigned into three regions: a slim `DebateStage` header strip (topic + every debater's avatar, current speaker ringed in their color) on top, the transcript given the dominant share of vertical space in the middle, and a single-row `DebateControls` composer (input, send, stop, pause/resume, end) at the bottom — matching the one-shot page's header/transcript/input convention
+- Debate mode redesigned into three regions: a slim `DebateStage` header strip (topic + every debater's avatar, current speaker ringed in their color) on top, the transcript given the dominant share of vertical space in the middle, and a single-row `DebateControls` composer (input, send, stop, pause/resume, end) at the bottom - matching the one-shot page's header/transcript/input convention
 - Debate mode: "Avsluta debatten" now asks for confirmation before ending
 - Debate mode: replies now open by addressing the previous speaker by name and referencing something concrete they just said, instead of stating a generic stance first
 - Debate mode: replies may now call out a genuine self-contradiction from anywhere earlier in the debate, not just the immediately preceding speaker
@@ -252,14 +252,14 @@ All notable changes to this project will be documented in this file.
 - Debate transcript auto-scroll now also snaps to bottom the instant a new speaker starts, not just when a turn completes
 - `DebateStage`'s debater avatar row now wraps instead of overflowing its container on small screens
 - Removed the global `html { scroll-behavior: smooth }` rule in `globals.css`, which fought the new instant-snap-to-bottom scrolling added for chained auto-mode debate turns (see above); scroll-to-bottom calls that do want an animation already pass `behavior: "smooth"` explicitly per call
-- Navigating away from an in-progress reply (one-shot, grid, or debate) no longer leaves it streaming in the background — the request is now aborted on unmount
+- Navigating away from an in-progress reply (one-shot, grid, or debate) no longer leaves it streaming in the background - the request is now aborted on unmount
 - Debate mode: the reply prompt's closing instruction always referenced the debate's static opening topic, even when the last entry was a user interjection asking something else, making parties drift back to the original question instead of answering the new one; it now points at the interjected question directly when that's what's being answered
 - Debate mode: any draft text sitting in the interjection input, not yet submitted, was silently swept into the transcript and sent the moment the next speaker's turn started (auto mode's chained turns in particular); removed the duplicate auto-submit path in `generateSpeech` so only explicitly submitting (Send/Enter) ever adds an interjection
 - Grid mode's answer cards could overflow their column when a party name had no natural line-break point (e.g. "Sverigedemokraterna"), pushing the whole page (nav and footer included) into a horizontal scrollbar; party name/abbreviation now truncate in the card header, and `.grid-answers`' columns use `minmax(0, 1fr)` so this class of overflow can't recur
 - One-shot's active-party banner showed a redundant abbreviation pill next to the name, inconsistent with grid mode's card header; removed it
-- None of `/api/ask`, `/api/ask-all`, or `/api/debate` forwarded the request's abort signal into `streamText`/`generateText`, so aborting the fetch client-side (e.g. navigating away) never actually stopped the LLM call server-side — it kept running and streaming into nothing; all three now pass `abortSignal: req.signal` through
+- None of `/api/ask`, `/api/ask-all`, or `/api/debate` forwarded the request's abort signal into `streamText`/`generateText`, so aborting the fetch client-side (e.g. navigating away) never actually stopped the LLM call server-side - it kept running and streaming into nothing; all three now pass `abortSignal: req.signal` through
 - Debate auto mode's chained turns could keep firing after the debate page unmounted: the unmount cleanup only aborted the in-flight fetch, but `generateSpeech`'s post-await check for whether to continue to the next speaker only reads `autoModeRef`/`debateFinishedRef`, never the fact that the hook itself had unmounted; the cleanup now also marks the debate finished so the chain stops
-- Navigating away from Grid mode while all 8 parties were still answering didn't actually stop their generation server-side: `/api/ask-all`'s hand-rolled SSE stream had no `cancel()` handler, so its `Promise.all` of `generateText` calls kept running to completion regardless of whether the client was still reading — `req.signal` only reflects the already-fully-read request body, not the response being abandoned; a dedicated `AbortController` wired to the stream's `cancel()` now actually stops every in-flight party call
+- Navigating away from Grid mode while all 8 parties were still answering didn't actually stop their generation server-side: `/api/ask-all`'s hand-rolled SSE stream had no `cancel()` handler, so its `Promise.all` of `generateText` calls kept running to completion regardless of whether the client was still reading - `req.signal` only reflects the already-fully-read request body, not the response being abandoned; a dedicated `AbortController` wired to the stream's `cancel()` now actually stops every in-flight party call
 
 ## [0.1.1] - 2026-09-05
 
@@ -272,8 +272,8 @@ All notable changes to this project will be documented in this file.
 - Shrek as a feature-flagged test party (behind "SHREK=true", exposed to client code via "next.config.ts"'s "env" option), hidden from the default 8-party experience
 - "SiteFooter" component: the single, global AI-simulation notice, rendered once in the footer on every page
 - "PageContainer" component: shared max-w-6xl content width across all three routes, matching "AppNav"'s own width
-- Cancel/stop button in all three modes (one-shot, grid, debate) — aborts the in-flight request, keeps whatever text streamed so far, and snaps the view back to the bottom
-- Debate auto mode: a Play/Pause toggle that generates replies in sequence automatically, with speaking order reshuffled every round (unlimited by design, no reply cap — the user pauses or ends the debate manually)
+- Cancel/stop button in all three modes (one-shot, grid, debate) - aborts the in-flight request, keeps whatever text streamed so far, and snaps the view back to the bottom
+- Debate auto mode: a Play/Pause toggle that generates replies in sequence automatically, with speaking order reshuffled every round (unlimited by design, no reply cap - the user pauses or ends the debate manually)
 - Random opening speaker when a debate starts
 - "Slumpa fråga" button next to the question input in all three modes, populates the field with a random example question from a new "src/lib/example-questions.ts"
 - lucide-react icon set, replacing every emoji across the app
@@ -284,11 +284,11 @@ All notable changes to this project will be documented in this file.
 - Refactor "src/lib/prompts.ts" into composable section builders so each party's voice gets its own prominent block and both prompt modes share one output template instead of duplicated prose, see "docs/MODULAR-SYSTEM-PROMPTS-PLAN.md"
 - Split the direct-question prompt into two independently tunable templates, "buildOneShotPrompt" for "/api/ask" and "buildAskAllPrompt" for "/api/ask-all", so grid answers can have their own short-length rule instead of sharing the one-shot conversation's rules verbatim
 - Move party persona data into "src/lib/parties.json" and static prompt section text (headers, rule wording, per-mode output steps and length constraints) into "src/lib/prompt-templates.json", so tweaking a party's personality or a prompt's wording no longer requires reading "prompts.ts"
-- Grid mode's answer cards move sources into the header (always visible) instead of the bottom of the card body, and drop the mandatory full AI-simulation disclaimer paragraph in favor of the "Fortsätt chatta" button — a deliberate, explicit exception to this project's own "notice after every response" rule, scoped to grid cards only; one-shot and debate bubbles keep their disclaimer
+- Grid mode's answer cards move sources into the header (always visible) instead of the bottom of the card body, and drop the mandatory full AI-simulation disclaimer paragraph in favor of the "Fortsätt chatta" button - a deliberate, explicit exception to this project's own "notice after every response" rule, scoped to grid cards only; one-shot and debate bubbles keep their disclaimer
 - Removed the per-answer AI-simulation disclaimer everywhere in favor of the single global footer notice; ".claude/CLAUDE.md"'s disclaimer rule updated to match
 - Logo in "AppNav" is a plain anchor instead of "next/link", so clicking it always does a full page reload and clears state
 - Auto-scroll in one-shot chat and the debate transcript now only fires when a new turn is added, not on every streamed chunk, so scrolling up during generation isn't fought
-- One-shot page: the question input and party selector are combined into a single card, input above the party grid; typing is now allowed before a party is picked — only the submit button requires one
+- One-shot page: the question input and party selector are combined into a single card, input above the party grid; typing is now allowed before a party is picked - only the submit button requires one
 - Debate setup: topic input moved above the party/debater grid
 - Removed the non-functional "Fråga alla 8 partier" hand-off button and the "Enter för att skicka" hint from the one-shot page
 - CSS converted to logical properties (inline-start/end, block-start/end) throughout "globals.css" and Tailwind utility classes across components
@@ -299,7 +299,7 @@ All notable changes to this project will be documented in this file.
 - Debate mode: removed the redundant "Vem talar härnäst?" pill-button speaker list ("DebateSpeakerSelector") since clicking a party card already selects the next speaker; the remaining speaker picker ("DebateStage") now reuses the same "PartyChip" cards and "party-grid" layout as the one-shot and setup-panel party selectors instead of its own bespoke standing-cutout/TV-chyron styling
 - Debate mode: reordered the active-debate layout to input bar, then the party/speaker cards, then the transcript, matching the one-shot page's input-above-selector convention
 - "PartyChip" accepts an optional "disabled" prop (default false, no change for existing callers) so it can be reused as the debate speaker picker while a reply is streaming
-- Debate transcript now also auto-scrolls while a reply is streaming, not just when a full turn completes, but only when already scrolled near the bottom — so long replies stay in view without fighting someone scrolled up to reread an earlier turn
+- Debate transcript now also auto-scrolls while a reply is streaming, not just when a full turn completes, but only when already scrolled near the bottom - so long replies stay in view without fighting someone scrolled up to reread an earlier turn
 - Various design tweaks to unify design across the different modes
 
 ### Removed

@@ -1,6 +1,6 @@
 interface PageContainerProps {
   children: React.ReactNode;
-  /** Padding classes are each page's own choice — only the width is shared, so pass e.g. "px-4 py-8" here. */
+  /** Padding classes are each page's own choice - only the width is shared, so pass e.g. "px-4 py-8" here. */
   className?: string;
 }
 
