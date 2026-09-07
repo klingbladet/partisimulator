@@ -18,7 +18,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+- Leak-preamble patterns in `sanitize.ts` could swallow an entire streamed reply. A missing end-of-string fallback let a mid-stream leak preamble (for example "Here's a thinking process:") pass through unstripped for one chunk, then get stripped retroactively once more text arrived, leaving the real answer permanently truncated.
+- Restored the "Analyze User Input" and "We need to decide/follow" leak patterns, dropped from `sanitize.ts` without a replacement.
+- Removed the multiline flag from the leak patterns so they only match at the very start of a reply, not partway through legitimate content that happens to start a line with a leak phrase.
+- Bounded the "User Safety" leak pattern to its own line instead of matching to the end of the string, so it can no longer delete real content that follows it.
+- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak — real answers could go silently missing.
 
 ## [0.1.5] - 2026-09-07
 
