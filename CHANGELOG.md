@@ -20,10 +20,38 @@ All notable changes to this project will be documented in this file.
 
 - None yet...
 
+## [0.1.6] - 2026-09-08
+
+### Added
+
+- `/om-projektet`: a tongue-in-cheek "about us" page, linked only from the site footer ("Om oss" inline in the disclaimer text, not the main nav). Every piece is AI-generated fresh per visit via `/api/about`, one independent LLM call per piece so a rambling model can't starve later pieces of its token budget:
+    - A project "story" (`src/lib/about-prompt.ts`, `src/lib/about.json`) following Daniel Calvisi's Story Maps beat order, streamed in as one numbered, headed section per beat, plus a bombastic mission-statement beat and a quotable closing line.
+    - A "cast list" giving each real maker a fresh, absurd one-line "boast bio" per visit, blending a made-up title and an exaggerated experience claim into a single sentence that names them directly. Names are read from the optional `MAKER_NAMES` env var (`src/lib/makers.ts`) rather than committed to source, so they never end up in git history; unset just means an empty cast list, not a crash.
+    - `src/lib/about-notes.json`: a freeform scratchpad of words/phrases anyone can add to by hand, woven into every generated piece as optional inspiration.
+    - Cast list and story each show their own loading indicator, switched over via an explicit `castDone` stream event rather than inferring the phase change from event timing.
+
+### Changed
+
+- Grew the nav logo's tap target to match the nav tabs' padding, without shifting its visible position
+- `shuffleArray` extracted from `use-debate.ts` into shared `src/lib/shuffle.ts`, reused to randomize the about page's cast-list order each visit
+
+### Removed
+
+- Icon on the "Starta" button in debate setup
+
+### Fixed
+
+- None yet...
+
 ## [0.1.5] - 2026-09-07
 
 ### Added
 
+- Server-side request validation (`zod`, `src/lib/validation.ts`) for `/api/ask`, `/api/ask-all`, and `/api/debate` - the 500-char question/topic limit was only ever enforced by the input's `maxLength`, so any direct POST bypassed it entirely. Also strips zero-width and control characters from free-text fields, and constrains conversation-history `role` to `"user" | "assistant"` so a crafted request body can no longer smuggle an extra role into the message list sent to the model
+- Debate mode: the interjection input now has the same 500-char limit as the topic and question fields it had none before, client or server side
+- Capped `history` arrays in `/api/ask` and `/api/debate` at 40 entries, and `selectedParties` at the number of real parties, so a direct POST can't smuggle in an unbounded array to inflate LLM cost per request
+- `debateHistoryEntrySchema.speakerName` now goes through the same hidden-character stripping as every other free-text field, instead of a bare length check
+- Prompt injection: retrieved manifest text and debate history are now wrapped in `[DATA BÖRJAR]`/`[DATA SLUTAR]` markers inside the system prompt, with an explicit rule that content between them is data to respond to, never instructions to follow - closes the gap where debate's moderator interjections sat inline with real instructions instead of in their own message role
 - `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
 - Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
@@ -34,6 +62,7 @@ All notable changes to this project will be documented in this file.
 - Debate mode: moderator announcements before each turn — a welcome/topic intro for the opening speaker, "Turen går till X" before every other turn, and "Kan du svara på följande fråga, X: ..." (replacing the plain question) when a party is targeted directly.
 - `AppNav`: below the `sm` breakpoint, the inline tabs collapse into a hamburger toggle that opens a dropdown panel with the same three links.
 - `--color-warning` CSS variable reintroduced in `globals.css` (`#fbbf24`), dropped back earlier in 0.1.5 as a text color for contrast reasons — now used as a button background instead, which doesn't have the same contrast problem.
+- Best-effort, in-memory per-IP rate limiting (`src/lib/rate-limit.ts`) on `/api/ask`, `/api/ask-all`, and `/api/debate` - none of them had any limit before, so a direct POST loop could rack up real LLM cost with no throttling at all. Resets on cold start and isn't shared across concurrent serverless instances, so it's a speed bump against casual abuse, not a hard guarantee. Can be turned off via `RATE_LIMIT_ENABLED=false`, e.g. for local development or automated tests
 
 ### Changed
 
@@ -59,6 +88,14 @@ All notable changes to this project will be documented in this file.
 - Debate mode: the mode toggle button's label switched from "Auto"/"Pausa" to "Slå på auto-läge"/"Stäng av auto-läge".
 - `AppNav`'s mobile hamburger toggle (`.nav-menu-toggle`) always shows its white background and black border/shadow instead of only revealing it on hover, matching the neo-brutalist buttons used elsewhere.
 - `DebateModeToggle` is no longer wrapped in a `cartoon-card` box with a separate "Automatiskt läge"/"Manuellt läge" label — just the button itself now, full width, filled with `--color-success` (paused) or `--color-warning` (auto engaged) instead of the flat ghost variant.
+- Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
+- Each mode's accent color, shared via new `src/lib/mode-colors.ts`, now also tints that page's main input card (light background tint, colored top border, colored focus ring)
+- Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
+- Nav tab font size bumped from `0.9rem` to `1rem`
+- `AppNav` tabs now flash black on press (`:active`), previously no press feedback
+- `globals.css`: removed section-header comments
+- `MAX_HISTORY_ENTRIES` (`src/lib/validation.ts`) is now exported and reused client-side to window the `history` sent to `/api/ask` and `/api/debate` to its own cap, instead of sending the entire accumulated transcript every time
+- `use-debate.ts`: extracted `generateSpeech`'s moderator-line building, turn-result handling, and turn-continuation logic (closing round / auto mode / targeted manual turn) into separate named functions - fallow flagged `generateSpeech` at cognitive complexity 44 (CRITICAL); the worst function in the file is now `continueAutoMode` at 13 (HIGH)
 
 ### Removed
 
@@ -67,6 +104,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Leak-preamble patterns in `sanitize.ts` could swallow an entire streamed reply. A missing end-of-string fallback let a mid-stream leak preamble (for example "Here's a thinking process:") pass through unstripped for one chunk, then get stripped retroactively once more text arrived, leaving the real answer permanently truncated.
+- Restored the "Analyze User Input" and "We need to decide/follow" leak patterns, dropped from `sanitize.ts` without a replacement.
+- Removed the multiline flag from the leak patterns so they only match at the very start of a reply, not partway through legitimate content that happens to start a line with a leak phrase.
+- Bounded the "User Safety" leak pattern to its own line instead of matching to the end of the string, so it can no longer delete real content that follows it.
+- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak — real answers could go silently missing.
 - Ask-all's question card used `p-5` instead of the `p-6` every other card uses.
 - Submit/stop buttons in `QuestionInput` had a stray `mt-2` stacked on top of `InputStack`'s gap, giving them a bigger, inconsistent gap than the debate setup panel's equivalent button — removed so all `InputStack` consumers share the same spacing.
 - Debate's topic input used `mt-3` spacing between the textarea and its buttons instead of the `gap-2` used everywhere else, and its textarea lacked the bottom padding reserved for the character counter, making it look tighter than the other input cards even after the gap fix.
@@ -84,6 +126,10 @@ All notable changes to this project will be documented in this file.
 - Debate mode: a party targeted via the interjection picker is now honored whenever their turn actually opens up (auto-chain continuation, turn-cap resume, or the next manual click), not just if nothing was in flight at the moment of sending — previously the pick was silently dropped in that case.
 - The sentence-length cap (`sentence-limit.ts`) miscounted mid-abbreviation periods (e.g. "t.ex.", "m.m.") as sentence ends, cutting some replies off early; a "." now only counts as a sentence end when followed by whitespace or end-of-text.
 - `AppNav`'s hamburger toggle stayed visible above the `sm` breakpoint despite the `sm:hidden` utility: `.nav-tab`'s unlayered `display: inline-flex` in `globals.css` (no `@layer`) always outranks Tailwind's layered utility classes regardless of source order, so `sm:hidden` never took effect combined on the same element. Moved the breakpoint class onto a plain wrapping `div` instead.
+- Debate mode: a long debate (past ~20 turns) sent its entire accumulated transcript as the `history` field on every turn, which eventually exceeded `debateRequestSchema`'s 40-entry cap and made every subsequent turn fail server-side validation outright - shown as a vanished/fallback reply that streamed in and then disappeared. Each failed turn still counted toward the auto-mode turn cap, so confirming "vill du fortsätta?" just re-hit the same failure loop and re-triggered the same prompt almost immediately
+- Debate mode: stopping a reply mid-stream no longer deletes the partial text it had already shown - `generateSpeech`'s post-stream cleanup was unconditionally dropping the streaming placeholder even after `handleStop` had already resolved it with the partial reply
+- Debate mode: stopping a reply mid-stream now strips chain-of-thought/leak-preamble text (`sanitizeSpeech`) from the partial reply before showing it, same as every other completion path
+- `getParty()` now checks an id is a real party before indexing its lookup object - a request with `partyId: "__proto__"` (or `"constructor"`, etc.) resolved to `Object.prototype` instead of `undefined`, turning the intended "okänt parti" 404 into a crash
 
 ## [0.1.4] - 2026-09-07
 

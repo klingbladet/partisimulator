@@ -1,10 +1,11 @@
 "use client";
 
-import { MessageSquare, Mic, Shuffle } from "lucide-react";
+import { MessageSquare, Shuffle } from "lucide-react";
 import CountedTextarea from "@/components/shared/counted-textarea";
 import InputStack from "@/components/shared/input-stack";
 import PartyPickerCard from "@/components/shared/party-picker-card";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
+import { MODE_COLORS } from "@/lib/mode-colors";
 import type { PartyPersona } from "@/types/party";
 
 interface DebateSetupPanelProps {
@@ -28,7 +29,14 @@ export default function DebateSetupPanel({
   return (
     <div className="space-y-6">
       {/* Topic input */}
-      <section className="cartoon-card p-6">
+      <section
+        className="cartoon-card p-6"
+        style={{
+          backgroundColor: `color-mix(in srgb, ${MODE_COLORS.debatt} 10%, white)`,
+          borderTopColor: MODE_COLORS.debatt,
+          borderTopWidth: "6px",
+        }}
+      >
         <h2 className="mb-4 flex items-center gap-2 font-black text-lg" id="debate-topic-heading">
           <MessageSquare aria-hidden="true" className="h-5 w-5" />
           <span>Ämne</span>
@@ -36,6 +44,7 @@ export default function DebateSetupPanel({
 
         <InputStack>
           <CountedTextarea
+            accentColor={MODE_COLORS.debatt}
             id="debate-topic-input"
             labelledBy="debate-topic-heading"
             maxLength={500}
@@ -67,7 +76,6 @@ export default function DebateSetupPanel({
             onClick={onStartDebate}
             type="button"
           >
-            <Mic aria-hidden="true" className="h-5 w-5" />
             Starta
           </button>
         </InputStack>

@@ -19,7 +19,7 @@ export default function AppNav(): React.JSX.Element {
     <nav className="app-nav">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         {/* Logo — plain anchor, not next/link, so a click always does a full page reload and clears all state */}
-        <a className="flex items-center gap-2 no-underline" href="/" id="nav-logo">
+        <a className="flex items-center gap-2 px-2 py-3 no-underline" href="/" id="nav-logo">
           <span className="block font-black font-heading text-black text-lg leading-tight">Partisimulator 2026</span>
         </a>
 

@@ -6,6 +6,7 @@ import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources, extractStance, type Stance, stripStanceMarker } from "@/lib/sources";
+import { MAX_HISTORY_ENTRIES } from "@/lib/validation";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
 
@@ -158,8 +159,10 @@ export function useChatConversation(): UseChatConversationResult {
     const updatedHistory: ChatMessage[] = [...chatHistory, { id: crypto.randomUUID(), role: "user", text: userText }];
     setChatHistory(updatedHistory);
 
-    // Send to API with full conversation context
-    const apiHistory = chatHistory.map((message) => ({
+    // Send to API with recent conversation context, windowed to the server's own cap - a long
+    // enough conversation would otherwise eventually exceed askRequestSchema's history limit and
+    // start failing every follow-up outright.
+    const apiHistory = chatHistory.slice(-MAX_HISTORY_ENTRIES).map((message) => ({
       content: message.text,
       role: message.role,
     }));

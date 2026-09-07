@@ -4,21 +4,25 @@ import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
 import PartyLauncher from "@/components/shared/party-launcher";
 import SiteFooter from "@/components/shared/site-footer";
+import { MODE_COLORS } from "@/lib/mode-colors";
 
 const MODES = [
   {
+    color: MODE_COLORS.direktfraga,
     description: "Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.",
     href: "/direktfraga",
     Icon: Target,
     title: "Direktfråga",
   },
   {
+    color: MODE_COLORS.allaPartier,
     description: "Ställ en fråga och se hur alla åtta riksdagspartierna svarar parallellt.",
     href: "/alla-partier",
     Icon: LayoutGrid,
     title: "Alla partier",
   },
   {
+    color: MODE_COLORS.debatt,
     description: "Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.",
     href: "/debatt",
     Icon: Mic,
@@ -43,10 +47,15 @@ export default function HomePage(): React.JSX.Element {
 
         <section className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
           {MODES.map((mode) => (
-            <Link className="cartoon-card flex flex-col items-start gap-3 p-6" href={mode.href} key={mode.href}>
+            <Link
+              className="cartoon-card flex flex-col items-start gap-3 p-6 text-white"
+              href={mode.href}
+              key={mode.href}
+              style={{ backgroundColor: mode.color }}
+            >
               <mode.Icon aria-hidden="true" className="h-8 w-8" />
               <h2 className="font-black text-xl">{mode.title}</h2>
-              <p className="font-semibold text-gray-600">{mode.description}</p>
+              <p className="font-semibold text-white/85">{mode.description}</p>
             </Link>
           ))}
         </section>

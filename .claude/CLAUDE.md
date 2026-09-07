@@ -131,6 +131,8 @@ Don't use shell operators such as &&, ;, ||, or | to do this.
 
 Git is only allowed with "read-only" commands.
 
+There exists local branch protection ("pre push" hook and branch protection in project .vscode setting). Do not bypass these protections.
+
 ## No npm, use pnpm
 
 ## Tooling

@@ -11,6 +11,7 @@ import PartyPickerCard from "@/components/shared/party-picker-card";
 import QuestionInputCard from "@/components/shared/question-input-card";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
+import { MODE_COLORS } from "@/lib/mode-colors";
 import { PARTIES } from "@/lib/parties";
 import type { Stance } from "@/lib/sources";
 import { streamAskAll } from "@/lib/stream-ask-all";
@@ -152,6 +153,7 @@ function GridContent() {
 
         {/* Question input */}
         <QuestionInputCard
+          accentColor={MODE_COLORS.allaPartier}
           buttonLabel="Skicka"
           className="mb-6"
           id="grid-question-input"

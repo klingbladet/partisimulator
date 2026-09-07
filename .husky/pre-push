@@ -1,0 +1,6 @@
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "HOOK: Push to a feature branch instead, then open a pull request on GitHub." >&2
+    exit 1
+  fi
+done

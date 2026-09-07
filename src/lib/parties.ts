@@ -43,5 +43,7 @@ export const PARTY_MAP: Record<PartyId, PartyPersona> = Object.fromEntries(
 ) as Record<PartyId, PartyPersona>;
 
 export function getParty(id: string): PartyPersona | undefined {
-  return PARTY_MAP[id as PartyId];
+  // Validate before indexing: PARTY_MAP is a plain object, so a raw, unchecked id like "__proto__"
+  // or "constructor" would resolve to Object.prototype instead of undefined.
+  return isPartyId(id) ? PARTY_MAP[id] : undefined;
 }

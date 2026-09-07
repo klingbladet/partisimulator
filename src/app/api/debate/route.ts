@@ -5,31 +5,30 @@ import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
 import { buildRetrievalQuery, retrieveContext } from "@/lib/rag";
+import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
-import type { DebateEntry } from "@/types/debate";
+import { debateRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
-  try {
-    const {
-      selectedParties,
-      topic,
-      history,
-      nextSpeakerId,
-      isClosingStatement,
-    }: {
-      selectedParties: string[];
-      topic: string;
-      history: DebateEntry[];
-      nextSpeakerId: string;
-      isClosingStatement?: boolean;
-    } = await req.json();
+  // Higher budget than /api/ask: auto mode legitimately fires a new request every few seconds as
+  // it chains through speakers on its own, not just in response to direct user action.
+  if (!isWithinRateLimit(req, "debate", 60, 5 * 60_000)) {
+    return errorResponse("För många repliker - vänta en stund och försök igen", 429);
+  }
 
-    if (!topic || !nextSpeakerId || !selectedParties?.length) {
-      return errorResponse("topic, nextSpeakerId och selectedParties krävs", 400);
+  try {
+    const body = await req.json();
+    const parsed = debateRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return errorResponse(
+        "Ogiltig request - kontrollera ämne, historik och valda partier (max 500 tecken för ämnet)",
+        400,
+      );
     }
+    const { history, isClosingStatement, nextSpeakerId, topic } = parsed.data;
 
     const party = getParty(nextSpeakerId);
     if (!party) {

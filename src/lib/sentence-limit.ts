@@ -1,4 +1,5 @@
 import type { TextStreamPart, ToolSet } from "ai";
+import { sanitizeSpeech } from "@/lib/sanitize";
 
 /**
  * A "." only ends a sentence when followed by whitespace or the end of the text - otherwise it's
@@ -62,7 +63,11 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
         if (stopped || !lastChunk || emittedLength >= accumulatedText.length) {
           return;
         }
-        controller.enqueue({ ...lastChunk, text: accumulatedText.slice(emittedLength) });
+        const sanitized = sanitizeSpeech(accumulatedText);
+        const remaining = sanitized.slice(emittedLength);
+        if (remaining.length > 0) {
+          controller.enqueue({ ...lastChunk, text: remaining });
+        }
       },
       transform(chunk, controller) {
         if (stopped) {
@@ -75,19 +80,23 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
 
         lastChunk = chunk;
         accumulatedText += chunk.text;
-        const heldBackTrailingDot = accumulatedText.endsWith(".") ? 1 : 0;
-        const resolvedLength = accumulatedText.length - heldBackTrailingDot;
+        const sanitized = sanitizeSpeech(accumulatedText);
+        const heldBackTrailingDot = sanitized.endsWith(".") ? 1 : 0;
+        const resolvedLength = sanitized.length - heldBackTrailingDot;
 
-        const boundary = findSentenceBoundary(accumulatedText.slice(0, resolvedLength), maxSentences);
+        const boundary = findSentenceBoundary(sanitized.slice(0, resolvedLength), maxSentences);
         if (boundary !== null) {
-          controller.enqueue({ ...chunk, text: accumulatedText.slice(emittedLength, boundary) });
+          const textToSend = sanitized.slice(emittedLength, boundary);
+          if (textToSend.length > 0) {
+            controller.enqueue({ ...chunk, text: textToSend });
+          }
           stopped = true;
           stopStream();
           return;
         }
 
         if (resolvedLength > emittedLength) {
-          controller.enqueue({ ...chunk, text: accumulatedText.slice(emittedLength, resolvedLength) });
+          controller.enqueue({ ...chunk, text: sanitized.slice(emittedLength, resolvedLength) });
           emittedLength = resolvedLength;
         }
       },

@@ -9,3 +9,11 @@ export interface AskAllEvent {
   stance?: Stance;
   manifestUrl?: string | null;
 }
+
+export interface AboutBeatEvent {
+  type: "beat" | "cast" | "castDone" | "done";
+  index?: number;
+  heading?: string;
+  text?: string;
+  name?: string;
+}

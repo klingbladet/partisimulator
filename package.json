@@ -11,7 +11,8 @@
     "next": "16.3.3",
     "pdf-parse": "^1.1.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.0.0",
@@ -54,5 +55,5 @@
     "typecheck": "tsc --noEmit"
   },
   "type": "module",
-  "version": "0.1.5"
+  "version": "0.1.6"
 }

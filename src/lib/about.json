@@ -1,0 +1,79 @@
+{
+  "buzzwords": [
+    "synergier",
+    "disruptivt",
+    "leverage",
+    "paradigmskifte",
+    "end-to-end",
+    "growth mindset",
+    "hackathon-anda",
+    "moonshot",
+    "AI-first",
+    "iterera snabbt",
+    "MVP",
+    "stå på stora språkmodellers axlar",
+    "north star",
+    "low-hanging fruit",
+    "tänka utanför boxen"
+  ],
+  "complications": [
+    "token-budgeten tog slut mitt i en debatt",
+    "en av oss försvann in i en CSS-variabel i tre dagar",
+    "embeddings vägrade indexera en fredag kväll",
+    "ett parti svarade plötsligt som Shrek",
+    "readme:n ljög om hur klart projektet var"
+  ],
+  "experienceJokes": [
+    "13 års erfarenhet av en teknik som funnits i tre",
+    "självlärd sedan i tisdags",
+    "certifierad i något ingen kan uttala",
+    "expert på synergier utan formell utbildning",
+    "har läst hela transformer-artikeln - typ",
+    "kan dokumentationen utantill, för ett bibliotek som lades ner förra året"
+  ],
+  "goals": [
+    "hitta en modell som inte hallucinerade fram hela partiprogram",
+    "få åtta partier att svara utan att låta identiska",
+    "bygga en RAG-pipeline innan presentationen",
+    "få strömmande svar att inte klippa av mitt i en mening",
+    "göra en chattbot som faktiskt citerade sina källor"
+  ],
+  "howTheyMet": [
+    "på ett hackathon där ingen egentligen vann något",
+    "i en Discord-server för folk som bygger AI-prylar för skojs skull",
+    "i en skolkorridor, mitt i en diskussion om vektordatabaser",
+    "via ett GitHub-issue som eskalerade till vänskap",
+    "på ett gruppuppgiftsmöte som skulle ta 20 minuter och tog fem timmar"
+  ],
+  "incitingIncidents": [
+    "en lärare sa 'gör något kul med språkmodeller'",
+    "domänen krävde en RAG-pipeline som ingen ville bygga",
+    "en av oss vägrade skriva ännu en CRUD-app och föreslog partiledare istället",
+    "deadline dök upp i kalendern som ett brev på posten",
+    "någon sa 'hur svårt kan åtta AI-partiledare vara?'"
+  ],
+  "professions": [
+    "Rockstar Developer",
+    "Prompt-viskare",
+    "Chief Vibes Officer",
+    "Full Stack-schaman",
+    "självutnämnd AI-arkitekt (utan visitkort)",
+    "Debugger by day, dreamer by night",
+    "RAG-entusiast som pratar om embeddings på fester",
+    "UX-nörd med starka åsikter om knapprundningar"
+  ],
+  "setbacks": [
+    "hela demot kraschade fem minuter innan presentationen",
+    "commiten döpt 'fix' fixade ingenting",
+    "en part svarade konsekvent som fel parti i två dagar",
+    "batchkörningen av embeddings åt upp hela natten",
+    "presentationen började med en 500-serverfel-skärm"
+  ],
+  "wins": [
+    "det streamade - på riktigt, i realtid",
+    "alla åtta partier svarade samtidigt utan att krascha",
+    "hela RAG-pipelinen löste sig klockan tre på natten",
+    "källhänvisningarna pekade äntligen på rätt sida i manifestet",
+    "betygssättaren log, vilket är sällsynt"
+  ]
+}

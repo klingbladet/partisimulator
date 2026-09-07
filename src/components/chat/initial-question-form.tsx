@@ -2,6 +2,7 @@
 
 import PartyPickerCard from "@/components/shared/party-picker-card";
 import QuestionInputCard from "@/components/shared/question-input-card";
+import { MODE_COLORS } from "@/lib/mode-colors";
 import type { PartyPersona } from "@/types/party";
 
 interface InitialQuestionFormProps {
@@ -26,6 +27,7 @@ export default function InitialQuestionForm({
   return (
     <div className="space-y-6">
       <QuestionInputCard
+        accentColor={MODE_COLORS.direktfraga}
         buttonLabel="Skicka"
         id="direct-question-input"
         isLoading={isLoading}

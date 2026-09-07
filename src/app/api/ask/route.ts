@@ -5,20 +5,26 @@ import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildOneShotPrompt, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { isWithinRateLimit } from "@/lib/rate-limit";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
+import { askRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
+  if (!isWithinRateLimit(req, "ask", 20, 5 * 60_000)) {
+    return errorResponse("För många frågor - vänta en stund och försök igen", 429);
+  }
+
   try {
     const body = await req.json();
-    const partyId = body.partyId;
-    const question = body.question || body.prompt;
-    const history: Array<{ role: "user" | "assistant"; content: string }> = body.history || [];
-
-    if (!partyId || !question) {
-      return errorResponse("partyId och question krävs", 400);
+    // useCompletion's own default body carries the prompt as `prompt`; the explicit body override
+    // in use-chat-conversation.ts sends the same text again as `question`, which takes precedence.
+    const parsed = askRequestSchema.safeParse({ ...body, question: body.question || body.prompt });
+    if (!parsed.success) {
+      return errorResponse("Ogiltig fråga - den får inte vara tom eller längre än 500 tecken", 400);
     }
+    const { history = [], partyId, question } = parsed.data;
 
     const party = getParty(partyId);
     if (!party) {
@@ -45,7 +51,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const result = streamText({
       abortSignal: req.signal,
       experimental_transform: createSentenceLimitTransform(getMaxSentences("one-shot")),
-      maxOutputTokens: 200,
+      maxOutputTokens: 400,
       messages,
       model: getModel(),
       system: systemPrompt,

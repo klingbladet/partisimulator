@@ -21,9 +21,9 @@ const UNCLOSED_THINK_BLOCK = /<(think|thinking|reasoning)>[\s\S]*$/i;
  */
 const LEAK_PREAMBLE_PATTERNS = [
   /^Here's a thinking process:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
-  /^Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
-  /^User Safety:[\s\S]*?$/i,
-  /^We need to produce[\s\S]*?(?=\n|$)/i,
+  /^(?:\d+\.\s*\*{0,2})?Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
+  /^User Safety:[\s\S]*?(?=\n|$)/i,
+  /^We need to (?:produce|decide|follow)[^\n]*\n?/i,
 ];
 
 function stripLeakPreamble(text: string): string {
