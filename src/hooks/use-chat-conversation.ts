@@ -43,23 +43,26 @@ export function useChatConversation(): UseChatConversationResult {
   // whatever handleStop already added for the partial reply.
   const stoppedRef = useRef(false);
 
-  // Seed the conversation from a "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
-  // router.replace("/") clears party/q/a, so the re-run this triggers hits the guard below and no-ops.
+  // Preselect a party from a landing-page link, and/or seed a full conversation from a
+  // "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
+  // router.replace("/direktfraga") clears them, so the re-run this triggers hits the guard below and no-ops.
   useEffect(() => {
     const partyId = searchParams.get("party");
-    const seedQuestion = searchParams.get("q");
-    const seedAnswer = searchParams.get("a");
-    if (!partyId || !seedQuestion || !seedAnswer) return;
+    if (!partyId) return;
 
     const party = getParty(partyId);
     if (!party) return;
-
     setSelectedParty(party);
-    setChatHistory([
-      { id: crypto.randomUUID(), role: "user", text: seedQuestion },
-      { id: crypto.randomUUID(), role: "assistant", text: seedAnswer },
-    ]);
-    router.replace("/");
+
+    const seedQuestion = searchParams.get("q");
+    const seedAnswer = searchParams.get("a");
+    if (seedQuestion && seedAnswer) {
+      setChatHistory([
+        { id: crypto.randomUUID(), role: "user", text: seedQuestion },
+        { id: crypto.randomUUID(), role: "assistant", text: seedAnswer },
+      ]);
+    }
+    router.replace("/direktfraga");
   }, [router, searchParams]);
 
   const addFallbackMessage = (): void => {

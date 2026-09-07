@@ -418,21 +418,26 @@ body {
   color: var(--color-ink);
   text-decoration: none;
   cursor: pointer;
-  background: var(--color-white);
-  border: var(--border-width) solid var(--border);
+  background: transparent;
+  border: var(--border-width) solid transparent;
   border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .nav-tab:hover {
-  box-shadow: var(--shadow-btn-hover);
-  transform: translate(-1px, -1px);
+  background: var(--color-white);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
 }
 
 .nav-tab.active {
   color: var(--color-white);
   background: var(--color-ink);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
+}
+
+.nav-tab.active:hover {
   box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
 }

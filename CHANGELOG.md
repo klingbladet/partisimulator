@@ -27,12 +27,16 @@ All notable changes to this project will be documented in this file.
 - `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
 - Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
+- Landing page at `/`: a heading, three mode cards (Direktfråga, Alla partier, Debatt), and a party grid that jumps straight into Direktfråga with a party preselected (`PartyLauncher`).
 
 ### Changed
 
 - Nav logo now reads "Partisimulator 2026" on a single line.
 - `src/lib/openrouter.ts` now uses the official `@openrouter/ai-sdk-provider` instead of `@ai-sdk/openai`'s generic OpenAI-compatible client, and requests `reasoning: { exclude: true }` so no model's chain-of-thought is ever returned in the response, regardless of which model `OPENROUTER_MODEL` is set to.
 - `sanitizeSpeech` (`src/lib/sanitize.ts`) rewritten from a list of English reasoning-phrase regexes (fragile, model-specific) to stripping `<think>`/`<thinking>`/`<reasoning>` tag blocks, including a still-open block mid-stream — a defense-in-depth backstop for providers that ignore OpenRouter's exclude flag, or the local MLX path, which has no equivalent flag at all.
+- Direktfråga moved from `/` to `/direktfraga`, Alla partier moved from `/grid` to `/alla-partier` — updated in `AppNav`, the "Fortsätt chatta" handoff, and the chat-seeding effect in `useChatConversation`, which now also preselects a party from a `party`-only URL instead of requiring a full `party`+`q`+`a` handoff.
+- Nav tabs are flat by default and only pick up the bordered/shadowed cartoon-button look on hover or when active, so the nav bar reads less bulky.
+- `InputStack`'s vertical gap between an input and its button(s) increased from `gap-2` to `gap-3`.
 
 ### Removed
 
@@ -41,6 +45,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Ask-all's question card used `p-5` instead of the `p-6` every other card uses.
+- Submit/stop buttons in `QuestionInput` had a stray `mt-2` stacked on top of `InputStack`'s gap, giving them a bigger, inconsistent gap than the debate setup panel's equivalent button — removed so all `InputStack` consumers share the same spacing.
 - Debate's topic input used `mt-3` spacing between the textarea and its buttons instead of the `gap-2` used everywhere else, and its textarea lacked the bottom padding reserved for the character counter, making it look tighter than the other input cards even after the gap fix.
 - `getModel()` now calls `openrouter.chat(...)` instead of `openrouter(...)`, which defaulted to the OpenAI Responses API and 404'd against OpenRouter's Chat Completions-only endpoint.
 - `getOpenRouterModel()` now throws when `OPENROUTER_MODEL` is unset instead of silently falling back to the invalid slug `openrouter/free`.
