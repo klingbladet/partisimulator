@@ -20,10 +20,10 @@ const UNCLOSED_THINK_BLOCK = /<(think|thinking|reasoning)>[\s\S]*$/i;
  * blanket ban on the phrase appearing anywhere.
  */
 const LEAK_PREAMBLE_PATTERNS = [
-  /^Here's a thinking process:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
-  /^Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
-  /^User Safety:[\s\S]*?$/i,
-  /^We need to produce[\s\S]*?(?=\n|$)/i,
+  /^Here's a thinking process:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n)/im,
+  /^\d+\.\s*\*?\*?Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n)/im,
+  /^User Safety:[\s\S]*?$/im,
+  /^We need to (?:produce|decide|follow)[^\n]*\n?/im,
 ];
 
 function stripLeakPreamble(text: string): string {
