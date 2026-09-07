@@ -1,5 +1,6 @@
 "use client";
 
+import { Users } from "lucide-react";
 import PartyChip from "@/components/shared/party-chip";
 import QuestionInput from "@/components/shared/question-input";
 import { PARTIES } from "@/lib/parties";
@@ -25,27 +26,32 @@ export default function InitialQuestionForm({
   isLoading,
 }: InitialQuestionFormProps): React.JSX.Element {
   return (
-    <section className="cartoon-card space-y-5 p-6">
-      <QuestionInput
-        buttonLabel={
-          selectedParty
-            ? `Fråga ${selectedParty.displayName.split(" ")[0]} från ${selectedParty.partyName}!`
-            : "Fråga partiet!"
-        }
-        id="direct-question-input"
-        isLoading={isLoading}
-        onChange={onQuestionChange}
-        onStop={onStop}
-        onSubmit={onSubmit}
-        placeholder={
-          selectedParty ? `Fråga ${selectedParty.displayName}...` : "Skriv din fråga, välj sedan parti nedan..."
-        }
-        submitDisabled={!selectedParty}
-        value={question}
-      />
+    <div className="space-y-6">
+      <section className="cartoon-card p-6">
+        <QuestionInput
+          buttonLabel={
+            selectedParty
+              ? `Fråga ${selectedParty.displayName.split(" ")[0]} från ${selectedParty.partyName}!`
+              : "Fråga partiet!"
+          }
+          id="direct-question-input"
+          isLoading={isLoading}
+          onChange={onQuestionChange}
+          onStop={onStop}
+          onSubmit={onSubmit}
+          placeholder={
+            selectedParty ? `Fråga ${selectedParty.displayName}...` : "Skriv din fråga, välj sedan parti nedan..."
+          }
+          submitDisabled={!selectedParty}
+          value={question}
+        />
+      </section>
 
-      <div className="border-gray-200 border-t-2 pt-5">
-        <h2 className="mb-4 font-black text-lg">Välj parti att samtala med</h2>
+      <section className="cartoon-card p-6">
+        <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
+          <Users className="h-5 w-5" />
+          <span>Vem vill du fråga?</span>
+        </h2>
 
         <div className="party-grid">
           {PARTIES.map((party) => (
@@ -58,7 +64,7 @@ export default function InitialQuestionForm({
             />
           ))}
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

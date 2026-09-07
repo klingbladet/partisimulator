@@ -4,12 +4,14 @@ import { RotateCcw, Send, Square } from "lucide-react";
 import type { RefObject } from "react";
 import Bubble from "@/components/shared/bubble";
 import PartyAvatar from "@/components/shared/party-avatar";
+import type { Stance } from "@/lib/sources";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
 
 interface ChatViewProps {
   selectedParty: PartyPersona | null;
   chatHistory: ChatMessage[];
+  pendingStance: Stance | undefined;
   pendingText: string;
   isLoading: boolean;
   chatEndRef: RefObject<HTMLDivElement | null>;
@@ -23,6 +25,7 @@ interface ChatViewProps {
 export default function ChatView({
   selectedParty,
   chatHistory,
+  pendingStance,
   pendingText,
   isLoading,
   chatEndRef,
@@ -50,9 +53,7 @@ export default function ChatView({
             />
             <div>
               <div className="font-black text-lg text-white">{selectedParty.displayName}</div>
-              <div className="font-semibold text-gray-300 text-xs">
-                {selectedParty.partyName} · {selectedParty.keyIssues.join(", ")}
-              </div>
+              <div className="font-bold text-gray-300 text-sm">{selectedParty.partyName}</div>
             </div>
           </div>
 
@@ -103,6 +104,7 @@ export default function ChatView({
           <Bubble
             isStreaming={true}
             party={selectedParty}
+            stance={pendingStance}
             text={pendingText}
             turnNumber={chatHistory.length + 1}
             variant="chat"
@@ -138,7 +140,7 @@ export default function ChatView({
             style={{ inlineSize: "100%" }}
             type="button"
           >
-            <Square className="h-4 w-4" />
+            <Square className="h-4 w-4" fill="currentColor" />
             Avbryt
           </button>
         ) : (

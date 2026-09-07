@@ -82,7 +82,7 @@ export default function DebateControls({
           title="Avbryt"
           type="button"
         >
-          <Square className="h-4 w-4" />
+          <Square className="h-4 w-4" fill="currentColor" />
         </button>
       )}
 

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
 /* ============================================
@@ -6,7 +6,6 @@
    ============================================ */
 
 :root {
-  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
   --background: #fffbf0;
   --foreground: #1a1a1a;
   --border: #1a1a1a;
@@ -19,16 +18,6 @@
   --radius: 16px;
   --radius-sm: 10px;
 
-  /* Party colors */
-  --color-s: #ee2524;
-  --color-m: #1b49a2;
-  --color-sd: #ddc400;
-  --color-v: #be0000;
-  --color-c: #009933;
-  --color-kd: #231f5c;
-  --color-l: #006ab3;
-  --color-mp: #83cf39;
-
   /* UI colors */
   --color-cream: #fffbf0;
   --color-cream-dark: #f5edd8;
@@ -39,6 +28,7 @@
   --color-error-bg: #fff5f5;
   --color-error-border: #f44336;
   --color-warning: #f0a500;
+  --color-success: #22c55e;
   --color-placeholder: #aaaaaa;
   --color-source-bg: #e8f4fd;
   --color-source-border: #2196f3;
@@ -75,7 +65,7 @@ h4,
 h5,
 h6,
 .font-heading {
-  font-family: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  font-family: var(--font-heading);
   letter-spacing: -0.01em;
 }
 
@@ -409,7 +399,7 @@ body {
 
 @media (min-width: 1024px) {
   .grid-answers {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

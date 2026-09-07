@@ -1,6 +1,6 @@
 "use client";
 
-import { Lightbulb, Mic, Shuffle, Users } from "lucide-react";
+import { Mic, Shuffle, Users } from "lucide-react";
 import PartyChip from "@/components/shared/party-chip";
 import { getRandomExampleQuestion } from "@/lib/example-questions";
 import { PARTIES } from "@/lib/parties";
@@ -28,21 +28,18 @@ export default function DebateSetupPanel({
     <div className="space-y-6">
       {/* Topic input */}
       <section className="cartoon-card p-6">
-        <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-          <Lightbulb className="h-5 w-5" />
-          <span>Debattämne</span>
-        </h2>
-        <input
+        <textarea
           className="cartoon-input"
           id="debate-topic-input"
           onChange={(event) => onTopicChange(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
               onStartDebate();
             }
           }}
           placeholder={`T.ex. "Hur ska Sverige bekämpa brottsligheten?"`}
-          type="text"
+          rows={3}
           value={topic}
         />
         <button

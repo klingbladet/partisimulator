@@ -14,7 +14,40 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
+- None yet...
+
+### Fixed
+
+- None yet...
+
+## [0.1.4] - 2026-09-07
+
+### Added
+
+- `--color-success` CSS variable in `globals.css`, alongside the existing `--color-error*`/`--color-warning` tokens
+- Grid mode: a white "active question" card above the answer grid (matching debate mode's topic strip), showing the question that's actually being answered — tracked in its own `activeQuestion` state so editing the input mid-stream doesn't retroactively change it
+- Grid mode ("Alla partier"): a "Partierna som svarar" preview section showing all 8 party cards before a question is asked, matching the up-front party preview already shown on the one-shot and debate pages
+- `src/app/icon.png` (the app's gavel cursor image) wired up via Next's file-based favicon convention, replacing the default Vercel icon — the stale `src/app/favicon.ico`, a since-abandoned `src/app/icon.svg` attempt, and the unused `public/favicon.svg` still need manual deletion (blocked by this session's sandbox permissions)
+- Self-hosted "Big Shoulders Black" display font (`src/app/fonts/`, loaded via `next/font/local`) for all headings and the `AppNav` logo text
+
+### Changed
+
+- `StanceMeter` (the Agree/Disagree/Neutral badge) restyled from a soft Tailwind alert pill (thin colored border, pastel background) to match the app's neo-brutalist system: solid black border, hard-offset shadow, solid color fill
+- One-shot page's black party banner: dropped the key-issues list from the subtitle line, keeping just the party name, now bigger (`text-xs` → `text-sm`)
+- The avatar/icon shown under each chat and debate bubble (party avatar and the user/moderator icon) enlarged from 22px to 44px
+- The "Du"/moderator bubble, its icon badge, and its name label switched from `--color-user` (indigo) to `--color-ink` (black), so the human side of the conversation reads as neutral rather than another "party" color
+- Grid mode's answer cards: 3 per row on desktop instead of 4 (`.grid-answers` in `globals.css`)
+- The "Avbryt" stop icon (lucide's `Square`) is now solid-filled instead of outlined, across all three modes, so it reads clearly as a stop control against the rest of the app's outline iconography
+- One-shot page split into two separate cards (question input, then a "Vem vill du fråga?" party picker), matching the already-separate input/party-picker cards used in debate and grid mode
+- Debate mode's topic entry enlarged from a single-line `<input>` to a `rows={3}` textarea, matching the size of the shared `QuestionInput` used on the other two pages
+- Debate mode's "Debattämne" heading above the topic input removed, matching the other two modes' headline-less input cards
+- Grid mode: tightened the gap between the question-input card and the party grid from `mb-8` to `mb-6`, matching the spacing used elsewhere
+
+### Removed
+
 - `debateMode` state in `src/hooks/use-debate.ts` — set on start/reset and returned from the hook, but never read by `debatt/page.tsx` (its only consumer) and never set to anything but `"auto"`; fully dead
+- 8 unused party-color CSS variables (`--color-s`, `--color-m`, `--color-sd`, `--color-v`, `--color-c`, `--color-kd`, `--color-l`, `--color-mp`) — never referenced anywhere in CSS or components; party colors are read from `parties.json` per party instead
+- The Instrument Serif Google Fonts import and `--font-serif` variable, superseded by the local heading font
 
 ### Fixed
 
@@ -22,6 +55,9 @@ All notable changes to this project will be documented in this file.
 - `/api/debate` had no error handling at all, and `/api/ask-all` only caught errors inside each party's own promise — a malformed request body, or `getModel()` throwing, escaped as an unstyled 500 instead of the app's usual `{error}` JSON response; both routes now match `/api/ask`'s try/catch and `errorResponse` shape
 - `src/lib/rag.ts` left five debug `console.log`/`console.warn` calls (`--> [RAG] ...`) from tracking down the embeddings regression; removed, and the surviving timeout/error warnings no longer carry the debug prefix
 - `retrieveContext()`'s 30s timeout timer was never cleared once the real retrieval settled first (the common case), leaving a dangling `setTimeout` per call; now cleared in a `finally` block
+- Party avatar under the chat/debate bubble had its background hardcoded to `--color-user` (indigo), a copy-paste artifact from the user bubble above it — now uses the party's own color
+- One-shot chat's `[STÅNDPUNKT: ...]` marker leaked as raw bracket text while streaming and only turned into the parsed stance pill once the whole reply finished; the marker is now parsed live the moment it fully streams in (`pendingStance` in `use-chat-conversation.ts`), and an in-progress, not-yet-closed marker no longer renders as visible text in the meantime
+- Grid mode's "Partierna som svarar" preview initially rendered as plain, unstyled avatars with no card background; switched to the same `PartyChip` component used elsewhere so it actually renders as a party grid
 
 ## [0.1.3] - 2026-09-06
 

@@ -4,7 +4,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import { isDuplicateOfLastEntry } from "@/lib/history";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { cleanText, extractSources, extractStance, stripStanceMarker } from "@/lib/sources";
+import { cleanText, extractSources, extractStance, type Stance, stripStanceMarker } from "@/lib/sources";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
 
@@ -17,6 +17,7 @@ interface UseChatConversationResult {
   handleSendQuestion: (textToSend: string) => Promise<void>;
   handleStop: () => void;
   isLoading: boolean;
+  pendingStance: Stance | undefined;
   pendingText: string;
   question: string;
   selectedParty: PartyPersona | null;
@@ -34,6 +35,7 @@ export function useChatConversation(): UseChatConversationResult {
   const [followUpQuestion, setFollowUpQuestion] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [pendingText, setPendingText] = useState("");
+  const [pendingStance, setPendingStance] = useState<Stance | undefined>(undefined);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Seed the conversation from a "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
@@ -79,6 +81,7 @@ export function useChatConversation(): UseChatConversationResult {
       ];
     });
     setPendingText("");
+    setPendingStance(undefined);
   };
 
   const { completion, complete, isLoading, error, stop } = useCompletion({
@@ -99,10 +102,14 @@ export function useChatConversation(): UseChatConversationResult {
     return () => stopRef.current();
   }, []);
 
-  // Stream live text into pendingText
+  // Stream live text into pendingText, parsing the stance marker out as soon as it's arrived
+  // (the regex isn't anchored to the start, so this resolves within the first ~20 characters
+  // streamed) instead of only once the whole reply finishes.
   useEffect(() => {
     if (isLoading && completion) {
-      setPendingText(cleanText(sanitizeSpeech(completion)));
+      const sanitized = sanitizeSpeech(completion);
+      setPendingStance(extractStance(sanitized));
+      setPendingText(cleanText(stripStanceMarker(sanitized)));
     }
   }, [completion, isLoading]);
 
@@ -160,6 +167,7 @@ export function useChatConversation(): UseChatConversationResult {
   const handleResetConversation = (): void => {
     setChatHistory([]);
     setPendingText("");
+    setPendingStance(undefined);
     setQuestion("");
     setFollowUpQuestion("");
   };
@@ -173,6 +181,7 @@ export function useChatConversation(): UseChatConversationResult {
     handleSendQuestion,
     handleStop,
     isLoading,
+    pendingStance,
     pendingText,
     question,
     selectedParty,

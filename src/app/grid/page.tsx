@@ -1,11 +1,12 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Lightbulb, Users } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import AnswerBubble from "@/components/grid/answer-bubble";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
+import PartyChip from "@/components/shared/party-chip";
 import QuestionInput from "@/components/shared/question-input";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
@@ -30,6 +31,7 @@ function GridContent() {
   const initialQ = searchParams.get("q") || "";
 
   const [question, setQuestion] = useState(initialQ);
+  const [activeQuestion, setActiveQuestion] = useState(initialQ);
   const [answers, setAnswers] = useState<Record<string, PartyAnswer>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [allDone, setAllDone] = useState(false);
@@ -76,6 +78,8 @@ function GridContent() {
 
   const handleAskAll = useCallback(async () => {
     if (!question.trim()) return;
+
+    setActiveQuestion(question.trim());
 
     // Reset state
     const initial: Record<string, PartyAnswer> = {};
@@ -147,7 +151,7 @@ function GridContent() {
         </div>
 
         {/* Question input */}
-        <div className="cartoon-card mb-8 p-5">
+        <div className="cartoon-card mb-6 p-5">
           <QuestionInput
             buttonLabel="Fråga alla 8!"
             id="grid-question-input"
@@ -181,6 +185,29 @@ function GridContent() {
             </div>
           )}
         </div>
+
+        {/* Preview of who's answering, before a question has been asked */}
+        {!hasStarted && (
+          <section className="cartoon-card mb-8 p-6">
+            <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
+              <Users className="h-5 w-5" />
+              <span>Partierna som svarar</span>
+            </h2>
+            <div className="party-grid">
+              {PARTIES.map((party) => (
+                <PartyChip key={party.id} onClick={() => {}} party={party} selected={false} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Active question */}
+        {hasStarted && (
+          <div className="cartoon-card mb-4 flex items-center gap-2 p-4">
+            <Lightbulb className="h-5 w-5 flex-shrink-0 text-amber-500" />
+            <span className="truncate font-black text-gray-800">&quot;{activeQuestion}&quot;</span>
+          </div>
+        )}
 
         {/* Grid of answers */}
         {hasStarted && (

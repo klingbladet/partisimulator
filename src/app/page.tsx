@@ -20,6 +20,7 @@ function HomeContent(): React.JSX.Element {
     setFollowUpQuestion,
     chatHistory,
     pendingText,
+    pendingStance,
     chatEndRef,
     isLoading,
     error,
@@ -63,6 +64,7 @@ function HomeContent(): React.JSX.Element {
             onReset={handleResetConversation}
             onSendFollowUp={() => handleSendQuestion(followUpQuestion)}
             onStop={handleStop}
+            pendingStance={pendingStance}
             pendingText={pendingText}
             selectedParty={selectedParty}
           />

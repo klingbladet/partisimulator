@@ -66,7 +66,7 @@ export default function Bubble({
         <div className="flex max-w-[85%] flex-col items-end gap-2.5 md:max-w-[72%]">
           <div
             className="rounded-2xl rounded-ee-xs border-2 border-black p-3.5 text-white shadow-[var(--shadow-btn)]"
-            style={{ backgroundColor: "var(--color-user)" }}
+            style={{ backgroundColor: "var(--color-ink)" }}
           >
             <p className="whitespace-pre-wrap font-bold text-sm leading-relaxed md:text-base">{text}</p>
           </div>
@@ -74,11 +74,11 @@ export default function Bubble({
           <div className="flex items-center gap-1.5 px-1 font-black text-xs">
             <span
               className="flex items-center justify-center rounded-full border border-black text-white"
-              style={{ backgroundColor: "var(--color-user)", height: 22, width: 22 }}
+              style={{ backgroundColor: "var(--color-ink)", height: 44, width: 44 }}
             >
-              {variant === "debate" ? <Mic className="h-3 w-3" /> : <User className="h-3 w-3" />}
+              {variant === "debate" ? <Mic className="h-5 w-5" /> : <User className="h-5 w-5" />}
             </span>
-            <span style={{ color: "var(--color-user)" }}>
+            <span style={{ color: "var(--color-ink)" }}>
               {variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}
             </span>
           </div>
@@ -101,8 +101,8 @@ export default function Bubble({
             badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
             className="relative overflow-hidden rounded-full border border-black"
             party={party}
-            size={22}
-            style={{ backgroundColor: "var(--color-user)" }}
+            size={44}
+            style={{ backgroundColor: party.color }}
           />
           <span style={{ color: party.color }}>{party.displayName}</span>
           <span className="font-bold text-gray-500">({party.abbreviation})</span>
