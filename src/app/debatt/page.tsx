@@ -2,11 +2,13 @@
 
 import { MessageCircle } from "lucide-react";
 import DebateControls from "@/components/debate/debate-controls";
+import DebateModeToggle from "@/components/debate/debate-mode-toggle";
 import DebateSetupPanel from "@/components/debate/debate-setup-panel";
 import DebateStage from "@/components/debate/debate-stage";
 import AppNav from "@/components/shared/app-nav";
 import Bubble from "@/components/shared/bubble";
 import PageContainer from "@/components/shared/page-container";
+import PageHeader from "@/components/shared/page-header";
 import SiteFooter from "@/components/shared/site-footer";
 import { useDebate } from "@/hooks/use-debate";
 import { PARTIES } from "@/lib/parties";
@@ -24,21 +26,24 @@ export default function DebattPage(): React.JSX.Element {
     streamingEntryId,
     userInterjection,
     setUserInterjection,
+    targetSpeakerId,
+    setTargetSpeakerId,
     transcriptContainerRef,
     isLoading,
+    isEndingDebate,
     autoMode,
     toggleAutoMode,
     toggleParty,
     startDebate,
     handleUserInterjection,
-    handleSelectSpeaker,
+    handleNextSpeaker,
     handleStop,
     endDebate,
     resetDebate,
   } = useDebate();
 
   const handleEndDebate = (): void => {
-    if (window.confirm("Vill du verkligen avsluta debatten?")) {
+    if (window.confirm("Vill du avsluta debatten? Varje parti får en sista slutplädering innan debatten avslutas.")) {
       endDebate();
     }
   };
@@ -48,13 +53,10 @@ export default function DebattPage(): React.JSX.Element {
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Debatt</h1>
-          <p className="mt-1 font-semibold text-gray-600">
-            Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.
-          </p>
-        </div>
+        <PageHeader
+          description="Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt."
+          title="Debatt"
+        />
 
         {!debateStarted ? (
           <DebateSetupPanel
@@ -68,27 +70,21 @@ export default function DebattPage(): React.JSX.Element {
           /* Debate view */
           <div className="w-full space-y-4">
             {/* Topic + who's debating, in one slim strip — the active speaker gets a colored ring */}
-            <DebateStage
-              currentSpeakerId={currentSpeakerId}
-              isLoading={isLoading}
-              onSelectSpeaker={handleSelectSpeaker}
-              parties={selectedParties}
-              topic={topic}
-            />
+            <DebateStage currentSpeakerId={currentSpeakerId} parties={selectedParties} topic={topic} />
 
             {/* Roomy, Higher & Narrower Chat Transcript Window */}
             <div
               className="cartoon-card flex h-[340px] flex-col gap-3.5 overflow-y-auto border-3 p-3.5 sm:h-[400px] sm:p-5 md:h-[440px]"
               id="debate-transcript"
               ref={transcriptContainerRef}
-              style={{ backgroundColor: "#fbf9f4" }}
+              style={{ backgroundColor: "var(--color-cream)" }}
             >
               {history.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-                  <MessageCircle className="mb-1.5 h-8 w-8" />
+                  <MessageCircle aria-hidden="true" className="mb-1.5 h-8 w-8" />
                   <p className="font-extrabold text-gray-700 text-sm">Debatten är redo att börja!</p>
                   <p className="mt-1 font-semibold text-gray-400 text-xs">
-                    Ställ en fråga som debattledare nedan, eller klicka på den partiledare som ska tala ovan.
+                    Ställ en fråga som debattledare nedan, eller tryck på play för att låta debatten rulla på.
                   </p>
                 </div>
               )}
@@ -101,6 +97,7 @@ export default function DebattPage(): React.JSX.Element {
                     isStreaming={isEntryStreaming}
                     isUser={isUser}
                     key={entry.id}
+                    manifestUrl={entry.manifestUrl}
                     party={party}
                     sources={entry.sources}
                     speakerName={entry.speakerName}
@@ -112,16 +109,22 @@ export default function DebattPage(): React.JSX.Element {
               })}
             </div>
 
+            <DebateModeToggle autoMode={autoMode} disabled={isEndingDebate} onToggleAutoMode={toggleAutoMode} />
+
             <DebateControls
               autoMode={autoMode}
               debateFinished={debateFinished}
+              isEndingDebate={isEndingDebate}
               isLoading={isLoading}
               onEndDebate={handleEndDebate}
+              onNextSpeaker={handleNextSpeaker}
               onResetDebate={resetDebate}
               onStop={handleStop}
-              onToggleAutoMode={toggleAutoMode}
+              onTargetSpeakerChange={setTargetSpeakerId}
               onUserInterjectionChange={setUserInterjection}
               onUserInterjectionSubmit={handleUserInterjection}
+              parties={selectedParties}
+              targetSpeakerId={targetSpeakerId}
               userInterjection={userInterjection}
             />
           </div>

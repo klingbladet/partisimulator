@@ -21,20 +21,15 @@ export function buildRetrievalQuery(topic: string, history: { text: string }[], 
  * using cosine similarity search via Supabase pgvector.
  */
 export async function retrieveContext(partyId: string, question: string, topK: number = 5): Promise<ManifestChunk[]> {
-  console.log("--> [RAG] retrieveContext start for party:", partyId);
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
-    const timeoutPromise = new Promise<ManifestChunk[]>((_, reject) =>
-      setTimeout(() => reject(new Error("RAG timeout (2.5s) - fortsätter utan manifest")), 2500),
-    );
+    const timeoutPromise = new Promise<ManifestChunk[]>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("RAG timeout (30s) - fortsätter utan manifest")), 30_000);
+    });
 
     const retrievalPromise = (async () => {
-      // Create embedding for the question
-      console.log("--> [RAG] calling createEmbedding for question...");
       const questionEmbedding = await createEmbedding(question);
-      console.log("--> [RAG] embedding created! Dimension:", questionEmbedding.length);
 
-      // Search for similar chunks in Supabase using pgvector
-      console.log("--> [RAG] querying Supabase match_manifest_chunks...");
       const { data, error } = await getSupabaseAdmin().rpc("match_manifest_chunks", {
         match_count: topK,
         match_party_id: partyId,
@@ -56,7 +51,9 @@ export async function retrieveContext(partyId: string, question: string, topK: n
 
     return await Promise.race([retrievalPromise, timeoutPromise]);
   } catch (error) {
-    console.warn("--> [RAG] retrieval failed/timed out, proceeding with persona only:", error);
+    console.warn(`RAG retrieval failed/timed out for party ${partyId}, proceeding with persona only:`, error);
     return [];
+  } finally {
+    clearTimeout(timeoutId);
   }
 }

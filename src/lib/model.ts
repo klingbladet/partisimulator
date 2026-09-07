@@ -16,5 +16,7 @@ export function getModel(): LanguageModel {
     }
     return mlx.chat(modelName);
   }
-  return openrouter(getOpenRouterModel());
+  // Party personas must never leak chain-of-thought: exclude reasoning tokens from the response
+  // for any model routed through OpenRouter, reasoning-capable or not.
+  return openrouter.chat(getOpenRouterModel(), { reasoning: { effort: "low", exclude: true } });
 }

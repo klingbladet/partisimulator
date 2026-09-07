@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
 /* ============================================
@@ -6,32 +6,30 @@
    ============================================ */
 
 :root {
-  --font-serif: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
   --background: #fffbf0;
   --foreground: #1a1a1a;
   --border: #1a1a1a;
   --border-width: 3px;
-  --shadow: 4px 4px 0px #1a1a1a;
-  --shadow-hover: 6px 6px 0px #1a1a1a;
+  --shadow: 4px 4px 0px var(--border);
+  --shadow-hover: 6px 6px 0px var(--border);
+  --shadow-btn: 3px 3px 0px var(--border);
+  --shadow-btn-hover: 5px 5px 0px var(--border);
+  --shadow-btn-active: 1px 1px 0px var(--border);
   --radius: 16px;
   --radius-sm: 10px;
-  --radius-pill: 999px;
-
-  /* Party colors */
-  --color-s: #ee2524;
-  --color-m: #1b49a2;
-  --color-sd: #ddc400;
-  --color-v: #be0000;
-  --color-c: #009933;
-  --color-kd: #231f5c;
-  --color-l: #006ab3;
-  --color-mp: #83cf39;
 
   /* UI colors */
   --color-cream: #fffbf0;
   --color-cream-dark: #f5edd8;
   --color-ink: #1a1a1a;
   --color-white: #ffffff;
+  --color-user: #4338ca;
+  --color-error: #b91c1c;
+  --color-error-bg: #fff5f5;
+  --color-error-border: #f44336;
+  --color-success: #22c55e;
+  --color-warning: #fbbf24;
+  --color-placeholder: #aaaaaa;
   --color-source-bg: #e8f4fd;
   --color-source-border: #2196f3;
   --color-source-text: #0d47a1;
@@ -45,8 +43,19 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  /* Themed gavel cursor everywhere, overriding every other cursor rule (buttons, disabled states, text inputs) */
-  cursor: url("/assets/icons/gavel_32.png"), auto !important;
+  cursor: url("/assets/icons/gavel_32.png"), auto;
+}
+
+/* Disabled elements keep the standard not-allowed cursor */
+:disabled,
+[disabled] {
+  cursor: not-allowed;
+}
+
+/* Global focus-visible ring for keyboard accessibility */
+*:focus-visible {
+  outline: 3px solid var(--color-user);
+  outline-offset: 2px;
 }
 
 h1,
@@ -56,14 +65,14 @@ h4,
 h5,
 h6,
 .font-heading {
-  font-family: var(--font-instrument-serif), "Instrument Serif", Georgia, serif;
+  font-family: var(--font-heading);
   letter-spacing: -0.01em;
 }
 
 body {
   min-height: 100vh;
   font-family: "Nunito", sans-serif;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--foreground);
   cursor: url("/assets/icons/gavel_32.png"), auto;
@@ -111,17 +120,17 @@ body {
   cursor: pointer;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .cartoon-btn:hover {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
 .cartoon-btn:active {
-  box-shadow: 1px 1px 0px var(--border);
+  box-shadow: var(--shadow-btn-active);
   transform: translate(1px, 1px);
 }
 
@@ -145,9 +154,10 @@ body {
 }
 
 .cartoon-btn:disabled {
+  color: var(--color-ink);
   cursor: not-allowed;
-  box-shadow: 3px 3px 0px var(--border);
-  opacity: 0.5;
+  background: var(--color-placeholder);
+  box-shadow: var(--shadow-btn);
   transform: none;
 }
 
@@ -168,22 +178,22 @@ body {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .party-chip:hover:not(:disabled) {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
 .party-chip:active:not(:disabled) {
-  box-shadow: 1px 1px 0px var(--border);
+  box-shadow: var(--shadow-btn-active);
   transform: translate(1px, 1px);
 }
 
 .party-chip.selected {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
@@ -259,7 +269,7 @@ body {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   animation: slideInBubble 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -302,7 +312,7 @@ body {
 
 .cartoon-input::placeholder {
   font-weight: 500;
-  color: #aaa;
+  color: var(--color-placeholder);
 }
 
 /* ============================================
@@ -372,8 +382,14 @@ body {
 
 .party-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 580px) {
+  .party-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 768px) {
@@ -384,13 +400,19 @@ body {
 
 .grid-answers {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+}
+
+@media (min-width: 580px) {
+  .grid-answers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1024px) {
   .grid-answers {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -409,23 +431,48 @@ body {
   color: var(--color-ink);
   text-decoration: none;
   cursor: pointer;
-  background: var(--color-white);
-  border: var(--border-width) solid var(--border);
+  background: transparent;
+  border: var(--border-width) solid transparent;
   border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0px var(--border);
   transition: all 0.12s ease;
 }
 
 .nav-tab:hover {
-  box-shadow: 4px 4px 0px var(--border);
-  transform: translate(-1px, -1px);
+  background: var(--color-white);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
 }
 
 .nav-tab.active {
   color: var(--color-white);
   background: var(--color-ink);
-  box-shadow: 4px 4px 0px var(--border);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
+}
+
+.nav-tab.active:hover {
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
+}
+
+.nav-menu-toggle {
+  background: var(--color-white);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
+}
+
+.nav-menu-toggle:hover {
+  box-shadow: var(--shadow-btn-hover);
+  transform: translate(-1px, -1px);
+}
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-cream);
+  border-bottom: var(--border-width) solid var(--border);
+  box-shadow: 0 3px 0px var(--border);
 }
 
 /* ============================================

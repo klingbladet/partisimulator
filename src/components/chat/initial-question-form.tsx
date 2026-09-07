@@ -1,8 +1,7 @@
 "use client";
 
-import PartyChip from "@/components/shared/party-chip";
-import QuestionInput from "@/components/shared/question-input";
-import { PARTIES } from "@/lib/parties";
+import PartyPickerCard from "@/components/shared/party-picker-card";
+import QuestionInputCard from "@/components/shared/question-input-card";
 import type { PartyPersona } from "@/types/party";
 
 interface InitialQuestionFormProps {
@@ -25,13 +24,9 @@ export default function InitialQuestionForm({
   isLoading,
 }: InitialQuestionFormProps): React.JSX.Element {
   return (
-    <section className="cartoon-card space-y-5 p-6">
-      <QuestionInput
-        buttonLabel={
-          selectedParty
-            ? `Fråga ${selectedParty.displayName.split(" ")[0]} från ${selectedParty.partyName}!`
-            : "Fråga partiet!"
-        }
+    <div className="space-y-6">
+      <QuestionInputCard
+        buttonLabel="Skicka"
         id="direct-question-input"
         isLoading={isLoading}
         onChange={onQuestionChange}
@@ -44,21 +39,11 @@ export default function InitialQuestionForm({
         value={question}
       />
 
-      <div className="border-gray-200 border-t-2 pt-5">
-        <h2 className="mb-4 font-black text-lg">Välj parti att samtala med</h2>
-
-        <div className="party-grid">
-          {PARTIES.map((party) => (
-            <PartyChip
-              key={party.id}
-              onClick={() => onSelectParty(selectedParty?.id === party.id ? null : party)}
-              party={party}
-              selected={selectedParty?.id === party.id}
-              size="md"
-            />
-          ))}
-        </div>
-      </div>
-    </section>
+      <PartyPickerCard
+        heading="Vem vill du fråga?"
+        isSelected={(party) => selectedParty?.id === party.id}
+        onSelectParty={(party) => onSelectParty(selectedParty?.id === party.id ? null : party)}
+      />
+    </div>
   );
 }

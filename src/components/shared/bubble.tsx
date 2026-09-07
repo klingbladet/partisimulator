@@ -1,6 +1,7 @@
 "use client";
 
 import { Mic, User } from "lucide-react";
+import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
 import SourcesList from "@/components/shared/sources-list";
 import StanceMeter from "@/components/shared/stance-meter";
@@ -19,6 +20,8 @@ interface BubbleProps {
   stance?: Stance;
   isStreaming?: boolean;
   turnNumber: number;
+  /** Set when `text` is the no-answer fallback, to link to the party's full manifesto instead of a source citation. */
+  manifestUrl?: string | null;
 }
 
 export default function Bubble({
@@ -31,6 +34,7 @@ export default function Bubble({
   stance,
   isStreaming = false,
   turnNumber,
+  manifestUrl,
 }: BubbleProps): React.JSX.Element {
   const idPrefix = variant === "debate" ? "debate-turn" : "chat-turn";
 
@@ -56,6 +60,12 @@ export default function Bubble({
             <SourcesList className="answer-bubble-source text-xs" sources={sources} />
           </div>
         )}
+
+        {manifestUrl && (
+          <div className="mt-2.5 border-gray-100 border-t pt-2">
+            <ManifestLink className="answer-bubble-source text-xs" href={manifestUrl} />
+          </div>
+        )}
       </>
     );
 
@@ -65,8 +75,8 @@ export default function Bubble({
       <div className="flex w-full justify-end" id={`${idPrefix}-${turnNumber}`}>
         <div className="flex max-w-[85%] flex-col items-end gap-2.5 md:max-w-[72%]">
           <div
-            className="rounded-2xl rounded-ee-xs border-2 border-black p-3.5 text-white shadow-[3px_3px_0px_#1a1a1a]"
-            style={{ backgroundColor: "#4338ca" }}
+            className="rounded-2xl rounded-ee-xs border-2 border-black p-3.5 text-white shadow-[var(--shadow-btn)]"
+            style={{ backgroundColor: "var(--color-ink)" }}
           >
             <p className="whitespace-pre-wrap font-bold text-sm leading-relaxed md:text-base">{text}</p>
           </div>
@@ -74,11 +84,17 @@ export default function Bubble({
           <div className="flex items-center gap-1.5 px-1 font-black text-xs">
             <span
               className="flex items-center justify-center rounded-full border border-black text-white"
-              style={{ backgroundColor: "#4338ca", height: 22, width: 22 }}
+              style={{ backgroundColor: "var(--color-ink)", height: 44, width: 44 }}
             >
-              {variant === "debate" ? <Mic className="h-3 w-3" /> : <User className="h-3 w-3" />}
+              {variant === "debate" ? (
+                <Mic aria-hidden="true" className="h-5 w-5" />
+              ) : (
+                <User aria-hidden="true" className="h-5 w-5" />
+              )}
             </span>
-            <span style={{ color: "#4338ca" }}>{variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}</span>
+            <span style={{ color: "var(--color-ink)" }}>
+              {variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}
+            </span>
           </div>
         </div>
       </div>
@@ -89,18 +105,17 @@ export default function Bubble({
   return (
     <div className="flex w-full justify-start" id={`${idPrefix}-${turnNumber}`}>
       <div className="flex max-w-[88%] flex-col items-start gap-2.5 md:max-w-[76%]">
-        <div className="w-full overflow-hidden rounded-2xl rounded-es-xs border-2 border-black bg-white shadow-[3px_3px_0px_#1a1a1a]">
+        <div className="w-full overflow-hidden rounded-2xl rounded-es-xs border-2 border-black bg-white shadow-[var(--shadow-btn)]">
           <div className="h-1.5 w-full" style={{ backgroundColor: party.color }} />
           <div className="p-3.5">{body}</div>
         </div>
 
         <div className="flex items-center gap-1.5 px-1 font-black text-xs">
           <PartyAvatar
-            badgeClassName="absolute -bottom-0.5 -end-0.5 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
-            badgeSize={12}
+            badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
             className="relative overflow-hidden rounded-full border border-black"
             party={party}
-            size={22}
+            size={44}
             style={{ backgroundColor: party.color }}
           />
           <span style={{ color: party.color }}>{party.displayName}</span>

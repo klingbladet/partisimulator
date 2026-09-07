@@ -5,61 +5,81 @@ import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
 import { buildRetrievalQuery, retrieveContext } from "@/lib/rag";
+import { sanitizeSpeech } from "@/lib/sanitize";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
 import type { DebateEntry } from "@/types/debate";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
-  const {
-    selectedParties,
-    topic,
-    history,
-    nextSpeakerId,
-  }: {
-    selectedParties: string[];
-    topic: string;
-    history: DebateEntry[];
-    nextSpeakerId: string;
-  } = await req.json();
+  try {
+    const {
+      selectedParties,
+      topic,
+      history,
+      nextSpeakerId,
+      isClosingStatement,
+    }: {
+      selectedParties: string[];
+      topic: string;
+      history: DebateEntry[];
+      nextSpeakerId: string;
+      isClosingStatement?: boolean;
+    } = await req.json();
 
-  if (!topic || !nextSpeakerId || !selectedParties?.length) {
-    return errorResponse("topic, nextSpeakerId och selectedParties krävs", 400);
+    if (!topic || !nextSpeakerId || !selectedParties?.length) {
+      return errorResponse("topic, nextSpeakerId och selectedParties krävs", 400);
+    }
+
+    const party = getParty(nextSpeakerId);
+    if (!party) {
+      return errorResponse(`Okänt parti: ${nextSpeakerId}`, 404);
+    }
+
+    const conversationHistory = history.map((entry) => ({
+      speaker: entry.speakerName,
+      text: sanitizeSpeech(entry.text),
+    }));
+
+    const recentHistory = conversationHistory.slice(-2);
+
+    const retrievalQuery = buildRetrievalQuery(topic, recentHistory);
+    const context = await retrieveContext(nextSpeakerId, retrievalQuery);
+
+    const systemPrompt = buildDebatePrompt(party, topic, context, recentHistory, Boolean(isClosingStatement));
+
+    const lastEntry = recentHistory[recentHistory.length - 1];
+
+    let userMessageContent: string;
+    if (isClosingStatement) {
+      userMessageContent = `Det är dags för ${party.displayName} att ge sin slutplädering i debatten om "${topic}".`;
+    } else if (lastEntry?.speaker.includes("Debattledare")) {
+      userMessageContent = `Debattledaren har ställt frågan: "${lastEntry.text}". Ge ${party.displayName}s direkta replik.`;
+    } else {
+      userMessageContent = `Det är dags för ${party.displayName} att ta ordet i debatten om "${topic}".`;
+    }
+
+    const result = streamText({
+      abortSignal: req.signal,
+      experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
+      maxOutputTokens: 300,
+      messages: [{ content: userMessageContent, role: "user" }],
+      model: getModel(),
+      system: systemPrompt,
+      temperature: 0.4,
+    });
+
+    return result.toTextStreamResponse();
+  } catch (error) {
+    console.error("Error in /api/debate:", error);
+
+    let message: string;
+    if (error instanceof Error) {
+      message = error.message;
+    } else {
+      message = "Ett oväntat serverfel uppstod";
+    }
+
+    return errorResponse(message, 500);
   }
-
-  const party = getParty(nextSpeakerId);
-  if (!party) {
-    return errorResponse(`Okänt parti: ${nextSpeakerId}`, 404);
-  }
-
-  const conversationHistory = history.map((historyEntry) => ({
-    speaker: historyEntry.speakerName,
-    text: historyEntry.text,
-  }));
-
-  const retrievalQuery = buildRetrievalQuery(topic, conversationHistory);
-  const context = await retrieveContext(nextSpeakerId, retrievalQuery);
-
-  const systemPrompt = buildDebatePrompt(party, topic, context, conversationHistory);
-
-  const lastHistoryEntry = conversationHistory[conversationHistory.length - 1];
-
-  let userMessageContent: string;
-  if (lastHistoryEntry?.speaker.includes("Debattledare")) {
-    userMessageContent = `Debattledaren har ställt frågan: "${lastHistoryEntry.text}". Ge ${party.displayName}s direkta replik på denna fråga i debatten om "${topic}".`;
-  } else {
-    userMessageContent = `Det är dags för ${party.displayName} att ta ordet och svara i debatten om "${topic}".`;
-  }
-
-  const result = streamText({
-    abortSignal: req.signal,
-    experimental_transform: createSentenceLimitTransform(getMaxSentences("debate")),
-    maxOutputTokens: 250,
-    messages: [{ content: userMessageContent, role: "user" }],
-    model: getModel(),
-    system: systemPrompt,
-    temperature: 0.4,
-  });
-
-  return result.toTextStreamResponse();
 }

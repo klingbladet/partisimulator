@@ -1,12 +1,14 @@
 "use client";
 
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Lightbulb } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import AnswerBubble from "@/components/grid/answer-bubble";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
-import QuestionInput from "@/components/shared/question-input";
+import PageHeader from "@/components/shared/page-header";
+import PartyPickerCard from "@/components/shared/party-picker-card";
+import QuestionInputCard from "@/components/shared/question-input-card";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
 import { PARTIES } from "@/lib/parties";
@@ -22,6 +24,7 @@ interface PartyAnswer {
   stance?: Stance;
   isDone: boolean;
   hasError: boolean;
+  manifestUrl?: string | null;
 }
 
 function GridContent() {
@@ -30,6 +33,7 @@ function GridContent() {
   const initialQ = searchParams.get("q") || "";
 
   const [question, setQuestion] = useState(initialQ);
+  const [activeQuestion, setActiveQuestion] = useState(initialQ);
   const [answers, setAnswers] = useState<Record<string, PartyAnswer>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [allDone, setAllDone] = useState(false);
@@ -60,6 +64,7 @@ function GridContent() {
         [partyId]: {
           hasError: true,
           isDone: true,
+          manifestUrl: event.manifestUrl,
           partyId,
           sources: prev[partyId]?.sources ?? [],
           text: event.text ?? "",
@@ -76,6 +81,8 @@ function GridContent() {
 
   const handleAskAll = useCallback(async () => {
     if (!question.trim()) return;
+
+    setActiveQuestion(question.trim());
 
     // Reset state
     const initial: Record<string, PartyAnswer> = {};
@@ -138,27 +145,23 @@ function GridContent() {
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Alla partier</h1>
-          <p className="mt-1 font-semibold text-gray-600">
-            Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt.
-          </p>
-        </div>
+        <PageHeader
+          description="Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt."
+          title="Alla partier"
+        />
 
         {/* Question input */}
-        <div className="cartoon-card mb-8 p-5">
-          <QuestionInput
-            buttonLabel="Fråga alla 8!"
-            id="grid-question-input"
-            isLoading={isLoading}
-            onChange={setQuestion}
-            onStop={handleStopAll}
-            onSubmit={handleAskAll}
-            placeholder="Vad tycker partierna om sjukvården?"
-            value={question}
-          />
-
+        <QuestionInputCard
+          buttonLabel="Skicka"
+          className="mb-6"
+          id="grid-question-input"
+          isLoading={isLoading}
+          onChange={setQuestion}
+          onStop={handleStopAll}
+          onSubmit={handleAskAll}
+          placeholder="Vad tycker partierna om sjukvården?"
+          value={question}
+        >
           {hasStarted && isLoading && (
             <div className="mt-3 flex items-center gap-3">
               <div className="h-3 flex-1 overflow-hidden rounded-full border-2 border-black bg-gray-200">
@@ -176,11 +179,31 @@ function GridContent() {
 
           {allDone && (
             <div className="status-banner-success mt-3 font-bold text-sm">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
               Alla 8 partier har svarat! Fråga gärna något annat.
             </div>
           )}
-        </div>
+        </QuestionInputCard>
+
+        {/* Preview of who's answering, before a question has been asked */}
+        {!hasStarted && (
+          <PartyPickerCard
+            className="mb-8"
+            heading="Partierna som svarar"
+            isSelected={() => false}
+            onSelectParty={() => {}}
+          />
+        )}
+
+        {/* Active question */}
+        {hasStarted && (
+          <div className="cartoon-card mb-4 flex items-center gap-2 p-4">
+            <Lightbulb aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-amber-500" />
+            <span className="line-clamp-2 min-w-0 font-black text-gray-800 sm:line-clamp-1">
+              &quot;{activeQuestion}&quot;
+            </span>
+          </div>
+        )}
 
         {/* Grid of answers */}
         {hasStarted && (
@@ -194,12 +217,13 @@ function GridContent() {
                   isStreaming={!answer?.isDone}
                   key={party.id}
                   longAnswer={answer?.longAnswer}
+                  manifestUrl={answer?.manifestUrl}
                   onContinueChat={
                     answer?.isDone && !answer.hasError
                       ? () => {
                           const seedAnswer = answer.longAnswer ?? answer.text;
                           router.push(
-                            `/?party=${party.id}&q=${encodeURIComponent(question)}&a=${encodeURIComponent(seedAnswer)}`,
+                            `/direktfraga?party=${party.id}&q=${encodeURIComponent(question)}&a=${encodeURIComponent(seedAnswer)}`,
                           );
                         }
                       : undefined

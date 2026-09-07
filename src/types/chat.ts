@@ -6,4 +6,5 @@ export interface ChatMessage {
   text: string;
   sources?: string[];
   stance?: Stance;
+  manifestUrl?: string | null;
 }

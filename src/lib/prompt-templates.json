@@ -1,8 +1,8 @@
 {
   "mode": {
     "ask-all": {
-      "lengthConstraint": "max 2 korta meningar - detta är en vy där 8 partier svarar sida vid sida och ska gå snabbt att skanna",
-      "longAnswerLengthConstraint": "5-7 meningar",
+      "lengthConstraint": "max 2 korta meningar, totalt 60-80 ord - detta är en vy där 8 partier svarar sida vid sida och ska gå snabbt att skanna",
+      "longAnswerLengthConstraint": "5-7 meningar, max 200 ord",
       "longAnswerMaxSentences": 7,
       "maxSentences": 2,
       "outputSteps": [
@@ -13,7 +13,7 @@
       ]
     },
     "debate": {
-      "lengthConstraint": "2-3 meningar - detta är en debattreplik, inte en föreläsning",
+      "lengthConstraint": "2-3 meningar, 60-80 ord - detta är en debattreplik, inte en föreläsning",
       "maxSentences": 3,
       "outputSteps": [
         "Mening 1: om det finns en föregående talare (se REGLER ovan) - rikta dig direkt till den personen vid namn och referera konkret till vad den just sa. Annars: ÖPPNINGSSTÅNDPUNKT, rakt på sak.",
@@ -22,7 +22,7 @@
       ]
     },
     "one-shot": {
-      "lengthConstraint": "1-2 meningar - inget mer",
+      "lengthConstraint": "1-2 meningar, 60-80 ord - inget mer",
       "maxSentences": 2,
       "outputSteps": [
         "Mening 1: partiets ståndpunkt i frågan, rakt på sak.",
@@ -54,7 +54,8 @@
       "alwaysAnswer": "DU MÅSTE ALLTID ENGAGERA DIG OCH SVARA. Vägra ALDRIG, och säg ALDRIG att frågan/ämnet \"inte tas upp i manifestet\" - som rikspolitiker har du alltid en tydlig ståndpunkt och lösning.",
       "citeSources": "Om du stödjer ett påstående med ett manifest-utdrag: avsluta det stycket med en källhänvisning i formatet [KÄLLA: Avsnitt \"X\", Sida Y].",
       "concreteStakes": "Om du lyfter en konkret åtgärd eller siffra: konkretisera i SAMMA mening vad den betyder i praktiken för en vanlig väljare (kronor, väntetid, antal tjänster e.dyl.) istället för floskler som \"vi satsar på välfärden\" - men lägg inte till en extra mening bara för detta.",
-      "header": "REGLER"
+      "header": "REGLER",
+      "noPleasantries": "Börja ALDRIG med artighetsfraser, inledningsfraser eller generiska AI-kommentarer som 'Det är en intressant fråga', 'Tack för frågan', 'Det glädjer mig att du frågar', 'Som du vet' eller liknande. Gå rakt på sak. Svaret ska låta som en politiker som redan pratar, inte en AI som introducerar sig själv."
     },
     "stance": {
       "header": "STÅNDPUNKTSMARKÖR (OBLIGATORISK, FÖRST I SVARET)",

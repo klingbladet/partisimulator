@@ -33,10 +33,10 @@ A notice about this must appear once, globally, in the site footer on every page
 
 Chat generation routes through `getModel()` in [src/lib/model.ts](../src/lib/model.ts), which picks a backend per request based on `LLM_PROVIDER`.
 
-- `openrouter`, the default, proxies Anthropic and OpenAI models through [OpenRouter](https://openrouter.ai)
+- `openrouter`, the default, proxies Anthropic and OpenAI models through [OpenRouter](https://openrouter.ai). Requires `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` — there is no default model, `getModel()` throws without it.
 - `mlx` routes to a local model served by oMLX, for local development only
 
-Embeddings for the manifesto RAG always run locally via `@xenova/transformers`, regardless of `LLM_PROVIDER`.
+Embeddings for the manifesto RAG run locally via `@xenova/transformers` by default, regardless of `LLM_PROVIDER`. Set `EMBEDDINGS_PROVIDER=openrouter` to call OpenRouter's hosted embeddings API instead, e.g. where bundling the local model isn't practical.
 
 ## Writing prose or comments
 
@@ -45,6 +45,7 @@ Embeddings for the manifesto RAG always run locally via `@xenova/transformers`, 
 - Keep comments to one line by default
 - Write comments that explain the non-obvious why
 - Never restate the code in a comment
+- Write code, comments, commit messages, and documentation in English — this doesn't extend to the app's own output, which is Swedish by design
 
 ## Writing code
 
@@ -140,11 +141,20 @@ Git is only allowed with "read-only" commands.
 
 Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spellcheck` on staged files before each commit, wired up automatically by `pnpm install`.
 
+Never bypass linting or formatting via git commit `--no-verify` (or `-n`) or by setting `ignore-scripts=true` for pnpm install (or in the global `~/.config/pnpm/config.yaml`).
+
 ## Claude Code hooks
 
 The guards in `.claude/hooks` run on Node, so they need no extra tooling and no setup step.
 Claude Code registers them from `.claude/settings.json`.
+
 Restart Claude Code after changing a hook or the settings file.
+
+## Antigravity hooks
+
+The same lint-format-code, lint-format-markdown, and spellcheck guards also run for Antigravity, from `.agents/hooks`, registered in `.agents/hooks.json`.
+
+Keep both hook sets in sync when changing one.
 
 ## Where to start?
 
@@ -153,3 +163,5 @@ See the [TODO list](../TODO.md)
 ## After each change and before a commit
 
 Write to the [Changelog](../CHANGELOG.md). Please be extremely concise.
+
+When moving `[Unreleased]` entries into a new version section, bump `version` in [package.json](../package.json) to match.

@@ -4,4 +4,5 @@ export interface DebateEntry {
   speakerName: string;
   text: string;
   sources: string[];
+  manifestUrl?: string | null;
 }

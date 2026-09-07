@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
+const headingFont = localFont({
   display: "swap",
-  subsets: ["latin"],
-  variable: "--font-instrument-serif",
-  weight: ["400"],
+  src: "./fonts/big-shoulders-black-display.woff2",
+  variable: "--font-heading",
 });
 
 export const metadata: Metadata = {
@@ -40,7 +39,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com" rel="preconnect" />
         <link crossOrigin="anonymous" href="https://fonts.gstatic.com" rel="preconnect" />
       </head>
-      <body className={`min-h-screen ${instrumentSerif.variable}`} style={{ backgroundColor: "var(--background)" }}>
+      <body className={`min-h-screen ${headingFont.variable}`} style={{ backgroundColor: "var(--background)" }}>
         {children}
       </body>
     </html>
