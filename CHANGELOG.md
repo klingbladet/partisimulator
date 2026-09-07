@@ -10,7 +10,30 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- None yet...
+
+### Removed
+
+- None yet...
+
+### Fixed
+
+- None yet...
+
+## [0.1.6] - 2026-09-08
+
+### Added
+
+- `/om-projektet`: a tongue-in-cheek "about us" page, linked only from the site footer ("Om oss" inline in the disclaimer text, not the main nav). Every piece is AI-generated fresh per visit via `/api/about`, one independent LLM call per piece so a rambling model can't starve later pieces of its token budget:
+    - A project "story" (`src/lib/about-prompt.ts`, `src/lib/about.json`) following Daniel Calvisi's Story Maps beat order, streamed in as one numbered, headed section per beat, plus a bombastic mission-statement beat and a quotable closing line.
+    - A "cast list" giving each real maker a fresh, absurd one-line "boast bio" per visit, blending a made-up title and an exaggerated experience claim into a single sentence that names them directly. Names are read from the optional `MAKER_NAMES` env var (`src/lib/makers.ts`) rather than committed to source, so they never end up in git history; unset just means an empty cast list, not a crash.
+    - `src/lib/about-notes.json`: a freeform scratchpad of words/phrases anyone can add to by hand, woven into every generated piece as optional inspiration.
+    - Cast list and story each show their own loading indicator, switched over via an explicit `castDone` stream event rather than inferring the phase change from event timing.
+
+### Changed
+
 - Grew the nav logo's tap target to match the nav tabs' padding, without shifting its visible position
+- `shuffleArray` extracted from `use-debate.ts` into shared `src/lib/shuffle.ts`, reused to randomize the about page's cast-list order each visit
 
 ### Removed
 

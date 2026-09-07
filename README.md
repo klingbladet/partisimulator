@@ -36,6 +36,8 @@ Create a `.env` file in the repository root with the required variables.
 
 Use `.env.example` as a template.
 
+`MAKER_NAMES` is optional and only used by the "about us" page (`/om-projektet`): a comma-separated list of the project's real first names, kept out of source control on purpose. Leave it unset to skip that page's AI-generated cast list.
+
 ### Start the development server
 
 ```sh

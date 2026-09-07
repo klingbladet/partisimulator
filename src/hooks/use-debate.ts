@@ -3,6 +3,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
+import { shuffleArray } from "@/lib/shuffle";
 import { cleanText, extractSources } from "@/lib/sources";
 import { MAX_HISTORY_ENTRIES } from "@/lib/validation";
 import type { DebateEntry } from "@/types/debate";
@@ -17,18 +18,6 @@ const AUTO_MODE_TURN_CAP = 20;
 // since the interjection that picked this speaker already named them; "closing" gets each party's
 // final-statement announcement instead of the regular "next up" one.
 type TurnKind = "closing" | "opening" | "regular" | "targeted";
-
-/** Fisher-Yates shuffle, used to randomize speaking order each auto-mode round. */
-function shuffleArray<T>(items: T[]): T[] {
-  const shuffled = [...items];
-  for (let currentIndex = shuffled.length - 1; currentIndex > 0; currentIndex--) {
-    const randomIndex = Math.floor(Math.random() * (currentIndex + 1));
-    const temp = shuffled[currentIndex];
-    shuffled[currentIndex] = shuffled[randomIndex] as T;
-    shuffled[randomIndex] = temp as T;
-  }
-  return shuffled;
-}
 
 /** The moderator's announcement line for a turn, based on what kind of turn it is. */
 function buildModeratorText(
