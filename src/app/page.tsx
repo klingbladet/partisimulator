@@ -1,100 +1,60 @@
-"use client";
-
-import { XCircle } from "lucide-react";
-import { Suspense } from "react";
-import ChatView from "@/components/chat/chat-view";
-import InitialQuestionForm from "@/components/chat/initial-question-form";
+import { LayoutGrid, Mic, Target } from "lucide-react";
+import Link from "next/link";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
-import PageHeader from "@/components/shared/page-header";
+import PartyLauncher from "@/components/shared/party-launcher";
 import SiteFooter from "@/components/shared/site-footer";
-import TypingDots from "@/components/shared/typing-dots";
-import { useChatConversation } from "@/hooks/use-chat-conversation";
 
-function HomeContent(): React.JSX.Element {
-  const {
-    selectedParty,
-    setSelectedParty,
-    question,
-    setQuestion,
-    followUpQuestion,
-    setFollowUpQuestion,
-    chatHistory,
-    pendingText,
-    pendingStance,
-    chatEndRef,
-    isLoading,
-    error,
-    handleSendQuestion,
-    handleResetConversation,
-    handleStop,
-  } = useChatConversation();
+const MODES = [
+  {
+    description: "Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.",
+    href: "/direktfraga",
+    Icon: Target,
+    title: "Direktfråga",
+  },
+  {
+    description: "Ställ en fråga och se hur alla åtta riksdagspartierna svarar parallellt.",
+    href: "/alla-partier",
+    Icon: LayoutGrid,
+    title: "Alla partier",
+  },
+  {
+    description: "Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.",
+    href: "/debatt",
+    Icon: Mic,
+    title: "Debatt",
+  },
+];
 
+export default function HomePage(): React.JSX.Element {
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
       <AppNav />
 
       <PageContainer className="px-4 py-8">
-        <PageHeader
-          description="Fråga ett enskilt parti hur de ställer sig i en eller flera frågor."
-          title="Direktfråga"
-        />
+        <section className="mb-10 text-center">
+          <h1 className="font-black text-4xl text-[var(--color-ink)] leading-tight">
+            Fråga riksdagspartierna vad de tycker
+          </h1>
+          <p className="mt-2 font-semibold text-gray-600">
+            Välj hur du vill börja. Svaren bygger på partiernas egna valmanifest inför 2026.
+          </p>
+        </section>
 
-        {/* View 1: Initial Question Form (when no chat has started yet) */}
-        {chatHistory.length === 0 && !isLoading ? (
-          <InitialQuestionForm
-            isLoading={isLoading}
-            onQuestionChange={setQuestion}
-            onSelectParty={setSelectedParty}
-            onStop={handleStop}
-            onSubmit={() => handleSendQuestion(question)}
-            question={question}
-            selectedParty={selectedParty}
-          />
-        ) : (
-          /* View 2: Ongoing Chat Dialog */
-          <ChatView
-            chatEndRef={chatEndRef}
-            chatHistory={chatHistory}
-            followUpQuestion={followUpQuestion}
-            isLoading={isLoading}
-            onFollowUpChange={setFollowUpQuestion}
-            onReset={handleResetConversation}
-            onSendFollowUp={() => handleSendQuestion(followUpQuestion)}
-            onStop={handleStop}
-            pendingStance={pendingStance}
-            pendingText={pendingText}
-            selectedParty={selectedParty}
-          />
-        )}
+        <section className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
+          {MODES.map((mode) => (
+            <Link className="cartoon-card flex flex-col items-start gap-3 p-6" href={mode.href} key={mode.href}>
+              <mode.Icon aria-hidden="true" className="h-8 w-8" />
+              <h2 className="font-black text-xl">{mode.title}</h2>
+              <p className="font-semibold text-gray-600">{mode.description}</p>
+            </Link>
+          ))}
+        </section>
 
-        {/* Error state */}
-        {error && (
-          <div
-            className="cartoon-card mt-6 flex items-center gap-2 border-red-400 p-4"
-            style={{ backgroundColor: "var(--color-error-bg)", borderColor: "var(--color-error-border)" }}
-          >
-            <XCircle aria-hidden="true" className="h-4 w-4 flex-shrink-0" style={{ color: "var(--color-error)" }} />
-            <p className="font-bold text-red-700">Något gick fel: {error.message}</p>
-          </div>
-        )}
+        <PartyLauncher />
       </PageContainer>
 
       <SiteFooter />
     </div>
-  );
-}
-
-export default function HomePage(): React.JSX.Element {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <TypingDots />
-        </div>
-      }
-    >
-      <HomeContent />
-    </Suspense>
   );
 }

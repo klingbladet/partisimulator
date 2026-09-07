@@ -8,8 +8,8 @@ export default function AppNav(): React.JSX.Element {
   const pathname = usePathname();
 
   const tabs = [
-    { href: "/", Icon: Target, id: "nav-direct", label: "Direktfråga" },
-    { href: "/grid", Icon: LayoutGrid, id: "nav-grid", label: "Alla partier" },
+    { href: "/direktfraga", Icon: Target, id: "nav-direct", label: "Direktfråga" },
+    { href: "/alla-partier", Icon: LayoutGrid, id: "nav-grid", label: "Alla partier" },
     { href: "/debatt", Icon: Mic, id: "nav-debate", label: "Debatt" },
   ];
 

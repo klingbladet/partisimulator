@@ -221,7 +221,7 @@ function GridContent() {
                       ? () => {
                           const seedAnswer = answer.longAnswer ?? answer.text;
                           router.push(
-                            `/?party=${party.id}&q=${encodeURIComponent(question)}&a=${encodeURIComponent(seedAnswer)}`,
+                            `/direktfraga?party=${party.id}&q=${encodeURIComponent(question)}&a=${encodeURIComponent(seedAnswer)}`,
                           );
                         }
                       : undefined
