@@ -4,24 +4,25 @@ import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
 import PartyLauncher from "@/components/shared/party-launcher";
 import SiteFooter from "@/components/shared/site-footer";
+import { MODE_COLORS } from "@/lib/mode-colors";
 
 const MODES = [
   {
-    color: "#4f46e5",
+    color: MODE_COLORS.direktfraga,
     description: "Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.",
     href: "/direktfraga",
     Icon: Target,
     title: "Direktfråga",
   },
   {
-    color: "#e11d48",
+    color: MODE_COLORS.allaPartier,
     description: "Ställ en fråga och se hur alla åtta riksdagspartierna svarar parallellt.",
     href: "/alla-partier",
     Icon: LayoutGrid,
     title: "Alla partier",
   },
   {
-    color: "#0d9488",
+    color: MODE_COLORS.debatt,
     description: "Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.",
     href: "/debatt",
     Icon: Mic,

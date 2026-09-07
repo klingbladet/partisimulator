@@ -21,6 +21,8 @@ interface QuestionInputProps {
   id?: string;
   /** id of the visible heading that labels the textarea. */
   labelId: string;
+  /** Tints the textarea's focus ring to match the current page's mode color. */
+  accentColor?: string;
 }
 
 export default function QuestionInput({
@@ -36,6 +38,7 @@ export default function QuestionInput({
   buttonLabel = "Fråga!",
   id = "question-input",
   labelId,
+  accentColor,
 }: QuestionInputProps): React.JSX.Element {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.key === "Enter" && !event.shiftKey && !disabled && !submitDisabled && !isLoading && value.trim()) {
@@ -47,6 +50,7 @@ export default function QuestionInput({
   return (
     <InputStack>
       <CountedTextarea
+        accentColor={accentColor}
         disabled={disabled || isLoading}
         id={id}
         labelledBy={labelId}

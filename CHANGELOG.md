@@ -11,7 +11,9 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
+- Each mode's accent color, shared via new `src/lib/mode-colors.ts`, now also tints that page's main input card (light background tint, colored top border, colored focus ring)
 - Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
+- Nav tab font size bumped from `0.9rem` to `1rem`
 - `AppNav` tabs now flash black on press (`:active`), previously no press feedback
 - `globals.css`: removed section-header comments
 

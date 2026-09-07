@@ -11,6 +11,8 @@ interface CountedTextareaProps {
   id: string;
   /** id of the visible heading that labels this field, so the accessible name matches on-screen text. */
   labelledBy: string;
+  /** Tints the focus ring to match the current page's mode color; falls back to the default dark ring when unset. */
+  accentColor?: string;
 }
 
 export default function CountedTextarea({
@@ -23,12 +25,13 @@ export default function CountedTextarea({
   rows = 3,
   id,
   labelledBy,
+  accentColor,
 }: CountedTextareaProps): React.JSX.Element {
   const charCount = value.length;
   const isNearLimit = charCount > maxLength * 0.8;
 
   return (
-    <div className="relative">
+    <div className="relative" style={{ "--input-accent": accentColor } as React.CSSProperties}>
       <textarea
         aria-labelledby={labelledBy}
         className="cartoon-input pb-7"
