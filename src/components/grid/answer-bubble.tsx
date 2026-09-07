@@ -79,7 +79,7 @@ export default function AnswerBubble({
         {isLoading ? (
           <div className="flex items-center gap-2 text-gray-400">
             <TypingDots color={party.color} />
-            <span className="font-semibold text-sm">Hämtar manifest-kontext...</span>
+            <span className="font-semibold text-sm">Förbereder svar...</span>
           </div>
         ) : (
           <>

@@ -1,10 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Nunito+Sans:wght@400;600;700;800&display=swap");
 @import "tailwindcss";
 
-/* ============================================
-   PARTISIMULATOR 2026 – CARTOON DESIGN SYSTEM
-   ============================================ */
-
 :root {
   --background: #fffbf0;
   --foreground: #1a1a1a;
@@ -18,7 +14,6 @@
   --radius: 16px;
   --radius-sm: 10px;
 
-  /* UI colors */
   --color-cream: #fffbf0;
   --color-cream-dark: #f5edd8;
   --color-ink: #1a1a1a;
@@ -35,10 +30,6 @@
   --color-source-text: #0d47a1;
 }
 
-/* ============================================
-   BASE STYLES & TYPOGRAPHY
-   ============================================ */
-
 *,
 *::before,
 *::after {
@@ -46,13 +37,11 @@
   cursor: url("/assets/icons/gavel_32.png"), auto;
 }
 
-/* Disabled elements keep the standard not-allowed cursor */
 :disabled,
 [disabled] {
   cursor: not-allowed;
 }
 
-/* Global focus-visible ring for keyboard accessibility */
 *:focus-visible {
   outline: 3px solid var(--color-user);
   outline-offset: 2px;
@@ -83,10 +72,6 @@ body {
     radial-gradient(circle at 60% 80%, rgba(131, 207, 57, 0.04) 0%, transparent 50%);
 }
 
-/* ============================================
-   CARTOON CARD / CONTAINER
-   ============================================ */
-
 .cartoon-card {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
@@ -101,10 +86,6 @@ body {
   box-shadow: var(--shadow-hover);
   transform: translate(-1px, -1px);
 }
-
-/* ============================================
-   CARTOON BUTTON
-   ============================================ */
 
 .cartoon-btn {
   display: inline-flex;
@@ -161,10 +142,6 @@ body {
   transform: none;
 }
 
-/* ============================================
-   PARTY CHIP
-   ============================================ */
-
 .party-chip {
   position: relative;
   display: flex;
@@ -196,10 +173,6 @@ body {
   box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
-
-/* ============================================
-   ANSWER BUBBLE
-   ============================================ */
 
 .answer-bubble {
   display: flex;
@@ -260,10 +233,6 @@ body {
   margin-block-start: 0.5rem;
 }
 
-/* ============================================
-   DEBATE BUBBLE
-   ============================================ */
-
 .debate-bubble {
   overflow: hidden;
   background: var(--color-white);
@@ -283,10 +252,6 @@ body {
     transform: translateY(0) scale(1);
   }
 }
-
-/* ============================================
-   QUESTION INPUT
-   ============================================ */
 
 .cartoon-input {
   width: 100%;
@@ -314,10 +279,6 @@ body {
   font-weight: 500;
   color: var(--color-placeholder);
 }
-
-/* ============================================
-   LOADING ANIMATION (typing dots)
-   ============================================ */
 
 .typing-dots {
   display: inline-flex;
@@ -355,10 +316,6 @@ body {
   }
 }
 
-/* ============================================
-   STREAMING TEXT CURSOR
-   ============================================ */
-
 .streaming-cursor::after {
   margin-inline-start: 2px;
   font-size: 0.9em;
@@ -375,10 +332,6 @@ body {
     opacity: 0;
   }
 }
-
-/* ============================================
-   GRID LAYOUT
-   ============================================ */
 
 .party-grid {
   display: grid;
@@ -416,17 +369,13 @@ body {
   }
 }
 
-/* ============================================
-   NAV TABS
-   ============================================ */
-
 .nav-tab {
   display: inline-flex;
   gap: 0.4rem;
   align-items: center;
   padding: 0.5rem 1rem;
   font-family: "Nunito", sans-serif;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--color-ink);
   text-decoration: none;
@@ -441,6 +390,11 @@ body {
   background: var(--color-white);
   border-color: var(--border);
   box-shadow: var(--shadow-btn);
+}
+
+.nav-tab:active {
+  color: var(--color-white);
+  background: var(--color-ink);
 }
 
 .nav-tab.active {
@@ -475,10 +429,6 @@ body {
   box-shadow: 0 3px 0px var(--border);
 }
 
-/* ============================================
-   SCROLLBAR
-   ============================================ */
-
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -494,10 +444,6 @@ body {
   border-radius: 4px;
 }
 
-/* ============================================
-   STATUS BANNER
-   ============================================ */
-
 .status-banner-success {
   display: flex;
   gap: 0.5rem;
@@ -510,10 +456,6 @@ body {
   border: 2px solid #22c55e;
   border-radius: var(--radius-sm);
 }
-
-/* ============================================
-   MISC UTILITIES
-   ============================================ */
 
 .text-ink {
   color: var(--color-ink);

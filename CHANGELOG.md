@@ -10,7 +10,10 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet...
+- Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
+- Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
+- `AppNav` tabs now flash black on press (`:active`), previously no press feedback
+- `globals.css`: removed section-header comments
 
 ### Removed
 
