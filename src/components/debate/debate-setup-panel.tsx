@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Mic, Shuffle } from "lucide-react";
+import { MessageSquare, Shuffle } from "lucide-react";
 import CountedTextarea from "@/components/shared/counted-textarea";
 import InputStack from "@/components/shared/input-stack";
 import PartyPickerCard from "@/components/shared/party-picker-card";
@@ -76,7 +76,6 @@ export default function DebateSetupPanel({
             onClick={onStartDebate}
             type="button"
           >
-            <Mic aria-hidden="true" className="h-5 w-5" />
             Starta
           </button>
         </InputStack>

@@ -10,11 +10,11 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet...
+- Grew the nav logo's tap target to match the nav tabs' padding, without shifting its visible position
 
 ### Removed
 
-- None yet...
+- Icon on the "Starta" button in debate setup
 
 ### Fixed
 
