@@ -27,7 +27,6 @@
   --color-error: #b91c1c;
   --color-error-bg: #fff5f5;
   --color-error-border: #f44336;
-  --color-warning: #f0a500;
   --color-success: #22c55e;
   --color-placeholder: #aaaaaa;
   --color-source-bg: #e8f4fd;
@@ -154,9 +153,10 @@ body {
 }
 
 .cartoon-btn:disabled {
+  color: var(--color-ink);
   cursor: not-allowed;
+  background: var(--color-placeholder);
   box-shadow: var(--shadow-btn);
-  opacity: 0.5;
   transform: none;
 }
 

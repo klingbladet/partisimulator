@@ -29,15 +29,15 @@ export default function DebateSetupPanel({
     <div className="space-y-6">
       {/* Topic input */}
       <section className="cartoon-card p-6">
-        <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-          <MessageSquare className="h-5 w-5" />
+        <h2 className="mb-4 flex items-center gap-2 font-black text-lg" id="debate-topic-heading">
+          <MessageSquare aria-hidden="true" className="h-5 w-5" />
           <span>Ämne</span>
         </h2>
 
         <InputStack>
           <CountedTextarea
-            ariaLabel="Skriv debattens ämne"
             id="debate-topic-input"
+            labelledBy="debate-topic-heading"
             maxLength={500}
             onChange={onTopicChange}
             onKeyDown={(event) => {
@@ -55,7 +55,7 @@ export default function DebateSetupPanel({
             onClick={() => onTopicChange(getRandomExampleQuestion())}
             type="button"
           >
-            <Shuffle className="h-3.5 w-3.5" />
+            <Shuffle aria-hidden="true" className="h-3.5 w-3.5" />
             Slumpa fråga
           </button>
 
@@ -71,7 +71,7 @@ export default function DebateSetupPanel({
               "Välj minst 2 partier nedan..."
             ) : (
               <>
-                <Mic className="h-5 w-5" />
+                <Mic aria-hidden="true" className="h-5 w-5" />
                 {`Starta debatten om "${topic || "..."}"`}
               </>
             )}

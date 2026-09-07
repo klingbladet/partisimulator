@@ -26,7 +26,7 @@ export default function StanceMeter({ stance }: StanceMeterProps): React.JSX.Ele
       className={`inline-flex items-center gap-1 rounded-full border-2 border-black px-2.5 py-0.5 font-black text-[11px] uppercase tracking-wide shadow-[2px_2px_0_var(--border)] ${textColorClassName}`}
       style={{ backgroundColor: background }}
     >
-      <Icon className="h-3 w-3" />
+      <Icon aria-hidden="true" className="h-3 w-3" />
       <span>{label}</span>
     </span>
   );

@@ -84,7 +84,7 @@ export default function DebattPage(): React.JSX.Element {
             >
               {history.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-                  <MessageCircle className="mb-1.5 h-8 w-8" />
+                  <MessageCircle aria-hidden="true" className="mb-1.5 h-8 w-8" />
                   <p className="font-extrabold text-gray-700 text-sm">Debatten är redo att börja!</p>
                   <p className="mt-1 font-semibold text-gray-400 text-xs">
                     Ställ en fråga som debattledare nedan, eller klicka på den partiledare som ska tala ovan.
@@ -100,6 +100,7 @@ export default function DebattPage(): React.JSX.Element {
                     isStreaming={isEntryStreaming}
                     isUser={isUser}
                     key={entry.id}
+                    manifestUrl={entry.manifestUrl}
                     party={party}
                     sources={entry.sources}
                     speakerName={entry.speakerName}

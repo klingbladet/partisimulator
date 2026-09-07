@@ -7,4 +7,5 @@ export interface AskAllEvent {
   longAnswer?: string;
   sources?: string[];
   stance?: Stance;
+  manifestUrl?: string | null;
 }

@@ -64,7 +64,7 @@ export default function ChatView({
             onClick={onReset}
             type="button"
           >
-            <RotateCcw className="h-3.5 w-3.5" />
+            <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
             Byt parti / Ny fråga
           </button>
         </div>
@@ -89,6 +89,7 @@ export default function ChatView({
             <Bubble
               isStreaming={false}
               key={message.id}
+              manifestUrl={message.manifestUrl}
               party={selectedParty}
               sources={message.sources}
               stance={message.stance}
@@ -140,7 +141,7 @@ export default function ChatView({
             style={{ inlineSize: "100%" }}
             type="button"
           >
-            <Square className="h-4 w-4" fill="currentColor" />
+            <Square aria-hidden="true" className="h-4 w-4" fill="currentColor" />
             Avbryt
           </button>
         ) : (
@@ -152,7 +153,7 @@ export default function ChatView({
             style={{ inlineSize: "100%" }}
             type="button"
           >
-            <Send className="h-4 w-4" />
+            <Send aria-hidden="true" className="h-4 w-4" />
             Skicka
           </button>
         )}

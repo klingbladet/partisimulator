@@ -19,6 +19,8 @@ interface QuestionInputProps {
   maxLength?: number;
   buttonLabel?: string;
   id?: string;
+  /** id of the visible heading that labels the textarea. */
+  labelId: string;
 }
 
 export default function QuestionInput({
@@ -33,6 +35,7 @@ export default function QuestionInput({
   maxLength = 500,
   buttonLabel = "Fråga!",
   id = "question-input",
+  labelId,
 }: QuestionInputProps): React.JSX.Element {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>): void => {
     if (event.key === "Enter" && !event.shiftKey && !disabled && !submitDisabled && !isLoading && value.trim()) {
@@ -44,9 +47,9 @@ export default function QuestionInput({
   return (
     <InputStack>
       <CountedTextarea
-        ariaLabel="Skriv din fråga"
         disabled={disabled || isLoading}
         id={id}
+        labelledBy={labelId}
         maxLength={maxLength}
         onChange={onChange}
         onKeyDown={handleKeyDown}
@@ -61,7 +64,7 @@ export default function QuestionInput({
         onClick={() => onChange(getRandomExampleQuestion())}
         type="button"
       >
-        <Shuffle className="h-3.5 w-3.5" />
+        <Shuffle aria-hidden="true" className="h-3.5 w-3.5" />
         Slumpa fråga
       </button>
 
@@ -73,7 +76,7 @@ export default function QuestionInput({
           onClick={onStop}
           type="button"
         >
-          <Square className="h-4 w-4" fill="currentColor" />
+          <Square aria-hidden="true" className="h-4 w-4" fill="currentColor" />
           Avbryt
         </button>
       ) : (

@@ -24,6 +24,7 @@ interface PartyAnswer {
   stance?: Stance;
   isDone: boolean;
   hasError: boolean;
+  manifestUrl?: string | null;
 }
 
 function GridContent() {
@@ -63,6 +64,7 @@ function GridContent() {
         [partyId]: {
           hasError: true,
           isDone: true,
+          manifestUrl: event.manifestUrl,
           partyId,
           sources: prev[partyId]?.sources ?? [],
           text: event.text ?? "",
@@ -177,7 +179,7 @@ function GridContent() {
 
           {allDone && (
             <div className="status-banner-success mt-3 font-bold text-sm">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
               Alla 8 partier har svarat! Fråga gärna något annat.
             </div>
           )}
@@ -196,7 +198,7 @@ function GridContent() {
         {/* Active question */}
         {hasStarted && (
           <div className="cartoon-card mb-4 flex items-center gap-2 p-4">
-            <Lightbulb className="h-5 w-5 flex-shrink-0 text-amber-500" />
+            <Lightbulb aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-amber-500" />
             <span className="truncate font-black text-gray-800">&quot;{activeQuestion}&quot;</span>
           </div>
         )}
@@ -213,6 +215,7 @@ function GridContent() {
                   isStreaming={!answer?.isDone}
                   key={party.id}
                   longAnswer={answer?.longAnswer}
+                  manifestUrl={answer?.manifestUrl}
                   onContinueChat={
                     answer?.isDone && !answer.hasError
                       ? () => {

@@ -1,5 +1,6 @@
 import { useCompletion } from "@ai-sdk/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
+import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources } from "@/lib/sources";
@@ -78,6 +79,10 @@ export function useDebate(): UseDebateResult {
   // freshly-shuffled queue can avoid opening with whoever just closed the previous round.
   const lastSpeakerIdRef = useRef<string | null>(null);
   const turnCountRef = useRef(0);
+  // Set right before a manual stop, so a turn that resolves to nothing right afterwards (either
+  // branch below) drops the placeholder silently instead of showing the no-answer fallback — the
+  // user chose to cut it off, that's not the same as the model failing to answer.
+  const stoppedRef = useRef(false);
 
   // Shuffles a fresh speaking-order queue if the current one is empty, then pops the next speaker.
   // Swaps the new queue's opening speaker if it would repeat the previous round's closing speaker.
@@ -109,11 +114,33 @@ export function useDebate(): UseDebateResult {
   // the awaited complete() already resolved, or vice versa) is a harmless no-op the second time.
   const resolveStreamingEntry = (speakerId: string, rawText: string): void => {
     const party = PARTIES.find((candidateParty) => candidateParty.id === speakerId);
-    const cleaned = cleanText(rawText);
     const entryId = streamingEntryIdRef.current;
-    if (!party || !cleaned || !entryId) return;
+    if (!party || !entryId) return;
 
     lastSpeakerIdRef.current = speakerId;
+
+    const cleaned = cleanText(rawText);
+    if (!cleaned) {
+      if (stoppedRef.current) {
+        // User cut the turn off manually before anything usable arrived — drop the placeholder
+        // rather than leave a permanent blank bubble, same as the "nothing came back" branches.
+        const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);
+        historyRef.current = withoutPlaceholder;
+        setHistory(withoutPlaceholder);
+        clearStreamingState();
+        return;
+      }
+      // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning preamble) —
+      // show the in-character fallback instead of leaving a permanent blank bubble.
+      const fallback = buildNoAnswerFallback(party);
+      const fallbackHistory = historyRef.current.map((entry) =>
+        entry.id === entryId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
+      );
+      historyRef.current = fallbackHistory;
+      setHistory(fallbackHistory);
+      clearStreamingState();
+      return;
+    }
 
     const resolvedHistory = historyRef.current.map((entry) =>
       entry.id === entryId ? { ...entry, sources: extractSources(rawText), text: cleaned } : entry,
@@ -215,6 +242,7 @@ export function useDebate(): UseDebateResult {
 
     let currentHistory = historyRef.current;
 
+    stoppedRef.current = false;
     currentSpeakerRef.current = partyId;
     setCurrentSpeakerId(partyId);
 
@@ -248,12 +276,22 @@ export function useDebate(): UseDebateResult {
     const activeSpeaker = partyId;
     if (finalResult) {
       resolveStreamingEntry(activeSpeaker, sanitizeSpeech(finalResult));
-    } else {
-      // Nothing came back (e.g. network error) — drop the empty placeholder instead of leaving a
-      // permanent blank bubble in the transcript.
+    } else if (stoppedRef.current) {
+      // User cut the turn off manually before anything came back — drop the placeholder rather
+      // than leave a permanent blank bubble.
       const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== placeholderId);
       historyRef.current = withoutPlaceholder;
       setHistory(withoutPlaceholder);
+      clearStreamingState();
+    } else {
+      // Nothing came back (e.g. network error) — show the in-character fallback instead of
+      // leaving a permanent blank bubble in the transcript.
+      const fallback = buildNoAnswerFallback(party);
+      const fallbackHistory = historyRef.current.map((entry) =>
+        entry.id === placeholderId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
+      );
+      historyRef.current = fallbackHistory;
+      setHistory(fallbackHistory);
       clearStreamingState();
     }
 
@@ -332,6 +370,7 @@ export function useDebate(): UseDebateResult {
     if (!isLoading) return;
     const speaker = currentSpeakerRef.current;
     const entryId = streamingEntryIdRef.current;
+    stoppedRef.current = true;
     stop();
     setAutoMode(false);
     if (speaker && completion) {

@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 
 - `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
+- Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
 
 ### Changed
 
@@ -45,6 +46,12 @@ All notable changes to this project will be documented in this file.
 - `getOpenRouterModel()` now throws when `OPENROUTER_MODEL` is unset instead of silently falling back to the invalid slug `openrouter/free`.
 - `.env.example` split into separate OpenRouter (active by default) and MLX (commented out) blocks, replacing slash-separated placeholders like `openrouter_or_mlx` that silently mismatched the code's strict equality checks.
 - `README.md` no longer claims `.env.example` ships with `EMBEDDINGS_PROVIDER=local` — it actually ships with `openrouter` in the default block; also documents the previously-missing `MLX_API_KEY` and `SHREK` env vars.
+- Question and debate-topic textareas now get their accessible name from the visible card heading (`aria-labelledby`) instead of a hidden `aria-label`, so screen readers and voice control announce the same text a sighted user sees.
+- Character counter under those textareas now uses `text-gray-600`/`text-amber-700` instead of the low-contrast `--color-placeholder`/`--color-warning` colors, meeting WCAG AA contrast.
+- `sanitizeSpeech` (`src/lib/sanitize.ts`) now also strips untagged plain-text reasoning leaks anchored to the start of a reply (e.g. "User Safety: safe", "We need to produce X's reply, following the rules") — coverage that was lost earlier in 0.1.5 when the old phrase-based regexes were replaced with `<think>`-tag-only matching, for models that leak analysis text without wrapping it in a tag at all.
+- Debate mode's `resolveStreamingEntry` (`src/hooks/use-debate.ts`) no longer strands a permanent blank placeholder bubble, and stale `currentSpeakerId`/`streamingEntryId` state, when `sanitizeSpeech` reduces a reply to nothing.
+- `.cartoon-btn:disabled` (`src/app/globals.css`) no longer dims to 50% opacity, which faded text and background toward the same page color and dropped contrast on the primary variant to roughly 3.4:1. Disabled buttons now use a fixed ink-on-placeholder-gray pair (~7.5:1) regardless of variant, meeting WCAG AA.
+- All decorative `lucide-react` icons now carry `aria-hidden="true"`. Unmarked, each renders as a bare `<svg>` with no accessible name, which screen readers expose as an unlabeled image alongside its adjacent text (or inside buttons whose `aria-label` already names the control).
 
 ## [0.1.4] - 2026-09-07
 

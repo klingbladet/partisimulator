@@ -1,6 +1,7 @@
 "use client";
 
 import { Mic, User } from "lucide-react";
+import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
 import SourcesList from "@/components/shared/sources-list";
 import StanceMeter from "@/components/shared/stance-meter";
@@ -19,6 +20,8 @@ interface BubbleProps {
   stance?: Stance;
   isStreaming?: boolean;
   turnNumber: number;
+  /** Set when `text` is the no-answer fallback, to link to the party's full manifesto instead of a source citation. */
+  manifestUrl?: string | null;
 }
 
 export default function Bubble({
@@ -31,6 +34,7 @@ export default function Bubble({
   stance,
   isStreaming = false,
   turnNumber,
+  manifestUrl,
 }: BubbleProps): React.JSX.Element {
   const idPrefix = variant === "debate" ? "debate-turn" : "chat-turn";
 
@@ -56,6 +60,12 @@ export default function Bubble({
             <SourcesList className="answer-bubble-source text-xs" sources={sources} />
           </div>
         )}
+
+        {manifestUrl && (
+          <div className="mt-2.5 border-gray-100 border-t pt-2">
+            <ManifestLink className="answer-bubble-source text-xs" href={manifestUrl} />
+          </div>
+        )}
       </>
     );
 
@@ -76,7 +86,11 @@ export default function Bubble({
               className="flex items-center justify-center rounded-full border border-black text-white"
               style={{ backgroundColor: "var(--color-ink)", height: 44, width: 44 }}
             >
-              {variant === "debate" ? <Mic className="h-5 w-5" /> : <User className="h-5 w-5" />}
+              {variant === "debate" ? (
+                <Mic aria-hidden="true" className="h-5 w-5" />
+              ) : (
+                <User aria-hidden="true" className="h-5 w-5" />
+              )}
             </span>
             <span style={{ color: "var(--color-ink)" }}>
               {variant === "debate" ? speakerName || "Du (Debattledare)" : "Du"}

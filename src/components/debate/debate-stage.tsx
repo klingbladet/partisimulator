@@ -23,7 +23,7 @@ export default function DebateStage({
   return (
     <section className="cartoon-card flex flex-wrap items-center gap-3 p-3">
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        <Lightbulb className="h-5 w-5 flex-shrink-0 text-amber-500" />
+        <Lightbulb aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-amber-500" />
         <span className="truncate font-black text-gray-800">&quot;{topic}&quot;</span>
       </div>
 

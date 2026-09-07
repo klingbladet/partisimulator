@@ -33,11 +33,11 @@ export default function DebateControls({
   if (debateFinished) {
     return (
       <div className="cartoon-card flex flex-col items-center gap-3 p-6 text-center">
-        <Flag className="h-8 w-8" />
+        <Flag aria-hidden="true" className="h-8 w-8" />
         <p className="font-black text-black text-xl">Debatten är slut!</p>
         <p className="font-semibold text-gray-600 text-sm">Nu återstår bara att räkna rösterna.</p>
         <button className="cartoon-btn cartoon-btn-primary" id="new-debate-btn" onClick={onResetDebate} type="button">
-          <RotateCcw className="h-4 w-4" />
+          <RotateCcw aria-hidden="true" className="h-4 w-4" />
           Ny debatt
         </button>
       </div>
@@ -70,7 +70,7 @@ export default function DebateControls({
         title="Skicka"
         type="button"
       >
-        <Send className="h-4 w-4" />
+        <Send aria-hidden="true" className="h-4 w-4" />
       </button>
 
       {isLoading && (
@@ -82,7 +82,7 @@ export default function DebateControls({
           title="Avbryt"
           type="button"
         >
-          <Square className="h-4 w-4" fill="currentColor" />
+          <Square aria-hidden="true" className="h-4 w-4" fill="currentColor" />
         </button>
       )}
 
@@ -94,7 +94,7 @@ export default function DebateControls({
         title={autoMode ? "Pausa debatten" : "Fortsätt debatten"}
         type="button"
       >
-        {autoMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        {autoMode ? <Pause aria-hidden="true" className="h-4 w-4" /> : <Play aria-hidden="true" className="h-4 w-4" />}
       </button>
 
       {!autoMode && (
@@ -108,7 +108,7 @@ export default function DebateControls({
           title="Nästa replik"
           type="button"
         >
-          <SkipForward className="h-4 w-4" />
+          <SkipForward aria-hidden="true" className="h-4 w-4" />
         </button>
       )}
 
@@ -121,7 +121,7 @@ export default function DebateControls({
         title="Avsluta debatten"
         type="button"
       >
-        <XCircle className="h-4 w-4" />
+        <XCircle aria-hidden="true" className="h-4 w-4" />
       </button>
     </div>
   );

@@ -17,7 +17,7 @@ export default function SourcesList({
     if (!emptyLabel) return null;
     return (
       <div className={className}>
-        <FileText className="h-3.5 w-3.5 flex-shrink-0" />
+        <FileText aria-hidden="true" className="h-3.5 w-3.5 flex-shrink-0" />
         <span>{emptyLabel}</span>
       </div>
     );
@@ -27,7 +27,7 @@ export default function SourcesList({
     <>
       {sources.map((source) => (
         <div className={className} key={source}>
-          <FileText className="h-3.5 w-3.5 flex-shrink-0" />
+          <FileText aria-hidden="true" className="h-3.5 w-3.5 flex-shrink-0" />
           <span>{source}</span>
         </div>
       ))}

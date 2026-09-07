@@ -2,6 +2,7 @@ import { generateText } from "ai";
 import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { getModel } from "@/lib/model";
+import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
 import { buildAskAllPrompt, getLongAnswerMaxSentences, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
@@ -58,6 +59,23 @@ export async function POST(req: NextRequest): Promise<Response> {
           // Enforce the length caps in code, since not every model follows them from the prompt alone
           const limitedShort = limitToSentences(short, getMaxSentences("ask-all"));
           const limitedLong = long ? limitToSentences(long, getLongAnswerMaxSentences()) : undefined;
+          const finalShort = cleanText(limitedShort);
+
+          if (!finalShort) {
+            // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning
+            // preamble) — show the in-character fallback instead of an empty card.
+            const fallback = buildNoAnswerFallback(party);
+            const fallbackEvent = JSON.stringify({
+              manifestUrl: fallback.manifestUrl,
+              partyId: party.id,
+              text: fallback.text,
+              type: "error",
+            });
+            if (!abortController.signal.aborted) {
+              controller.enqueue(encoder.encode(`data: ${fallbackEvent}\n\n`));
+            }
+            return;
+          }
 
           const sources = [...extractSources(limitedShort), ...(limitedLong ? extractSources(limitedLong) : [])];
 
@@ -66,7 +84,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             partyId: party.id,
             sources,
             stance,
-            text: cleanText(limitedShort),
+            text: finalShort,
             type: "answer",
           });
           if (!abortController.signal.aborted) {
@@ -74,9 +92,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           }
         } catch (error) {
           if (abortController.signal.aborted) return;
+          const fallback = buildNoAnswerFallback(party);
           const errorEvent = JSON.stringify({
+            manifestUrl: fallback.manifestUrl,
             partyId: party.id,
-            text: "Kunde inte generera svar för detta parti.",
+            text: fallback.text,
             type: "error",
           });
           controller.enqueue(encoder.encode(`data: ${errorEvent}\n\n`));

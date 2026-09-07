@@ -2,6 +2,7 @@ import { useCompletion } from "@ai-sdk/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { isDuplicateOfLastEntry } from "@/lib/history";
+import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources, extractStance, type Stance, stripStanceMarker } from "@/lib/sources";
@@ -37,6 +38,10 @@ export function useChatConversation(): UseChatConversationResult {
   const [pendingText, setPendingText] = useState("");
   const [pendingStance, setPendingStance] = useState<Stance | undefined>(undefined);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  // Set right before a manual stop, so the awaited complete() call in handleSendQuestion (which
+  // also settles once the abort resolves) knows not to add its own fallback message on top of
+  // whatever handleStop already added for the partial reply.
+  const stoppedRef = useRef(false);
 
   // Seed the conversation from a "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
   // router.replace("/") clears party/q/a, so the re-run this triggers hits the guard below and no-ops.
@@ -57,11 +62,27 @@ export function useChatConversation(): UseChatConversationResult {
     router.replace("/");
   }, [router, searchParams]);
 
+  const addFallbackMessage = (): void => {
+    if (!selectedParty) return;
+    const fallback = buildNoAnswerFallback(selectedParty);
+    setChatHistory((prev) => [
+      ...prev,
+      { id: crypto.randomUUID(), manifestUrl: fallback.manifestUrl, role: "assistant", text: fallback.text },
+    ]);
+    setPendingText("");
+    setPendingStance(undefined);
+  };
+
   const addAssistantMessage = (rawText: string): void => {
     const sanitized = sanitizeSpeech(rawText);
     const stance = extractStance(sanitized);
     const cleaned = cleanText(stripStanceMarker(sanitized));
-    if (!cleaned) return;
+    if (!cleaned) {
+      // The raw reply sanitized down to nothing (e.g. it was entirely a leaked reasoning
+      // preamble) — show the in-character fallback instead of leaving the question unanswered.
+      addFallbackMessage();
+      return;
+    }
     const sources = extractSources(sanitized);
 
     setChatHistory((prev) => {
@@ -127,6 +148,7 @@ export function useChatConversation(): UseChatConversationResult {
     if (!selectedParty || !textToSend.trim() || isLoading) return;
 
     const userText = textToSend.trim();
+    stoppedRef.current = false;
     setQuestion("");
     setFollowUpQuestion("");
 
@@ -150,6 +172,8 @@ export function useChatConversation(): UseChatConversationResult {
 
     if (result) {
       addAssistantMessage(result);
+    } else if (!stoppedRef.current) {
+      addFallbackMessage();
     }
   };
 
@@ -157,6 +181,7 @@ export function useChatConversation(): UseChatConversationResult {
   // message (onFinish never fires on an aborted stream), then snap the view back to the bottom.
   const handleStop = (): void => {
     if (!isLoading) return;
+    stoppedRef.current = true;
     stop();
     if (completion) {
       addAssistantMessage(completion);

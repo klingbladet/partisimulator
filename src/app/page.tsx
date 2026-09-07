@@ -74,7 +74,7 @@ function HomeContent(): React.JSX.Element {
             className="cartoon-card mt-6 flex items-center gap-2 border-red-400 p-4"
             style={{ backgroundColor: "var(--color-error-bg)", borderColor: "var(--color-error-border)" }}
           >
-            <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--color-error)" }} />
+            <XCircle aria-hidden="true" className="h-4 w-4 flex-shrink-0" style={{ color: "var(--color-error)" }} />
             <p className="font-bold text-red-700">Något gick fel: {error.message}</p>
           </div>
         )}

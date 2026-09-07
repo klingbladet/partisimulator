@@ -43,6 +43,7 @@ startvy
 strikethrough
 supabase
 tailwind
+WCAG
 tsconfig
 tsx
 webapplikation

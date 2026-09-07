@@ -25,7 +25,7 @@ export default function PartyPickerCard({
   return (
     <section className={clsx("cartoon-card p-6", className)}>
       <h2 className="mb-4 flex items-center gap-2 font-black text-lg">
-        <Users className="h-5 w-5" />
+        <Users aria-hidden="true" className="h-5 w-5" />
         <span>{heading}</span>
       </h2>
 

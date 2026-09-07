@@ -2,6 +2,7 @@
 
 import { Send } from "lucide-react";
 import Image from "next/image";
+import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
 import SourcesList from "@/components/shared/sources-list";
 import StanceMeter from "@/components/shared/stance-meter";
@@ -19,6 +20,8 @@ interface AnswerBubbleProps {
   isEmpty?: boolean;
   compact?: boolean;
   onContinueChat?: () => void;
+  /** Set when `text` is the no-answer fallback, to link to the party's full manifesto instead of a source citation. */
+  manifestUrl?: string | null;
 }
 
 export default function AnswerBubble({
@@ -31,6 +34,7 @@ export default function AnswerBubble({
   isEmpty = false,
   compact = false,
   onContinueChat,
+  manifestUrl,
 }: AnswerBubbleProps): React.JSX.Element {
   const isLoading = isEmpty && isStreaming;
 
@@ -111,7 +115,7 @@ export default function AnswerBubble({
                 onClick={onContinueChat}
                 type="button"
               >
-                <Send className="h-3.5 w-3.5" />
+                <Send aria-hidden="true" className="h-3.5 w-3.5" />
                 Fortsätt chatta
               </button>
             )}
@@ -122,7 +126,11 @@ export default function AnswerBubble({
       {/* Footer — sources always last, at the very end of the card */}
       {!isLoading && (
         <div className="answer-bubble-footer">
-          <SourcesList emptyLabel="Ingen källa finns" sources={sources} />
+          {manifestUrl ? (
+            <ManifestLink href={manifestUrl} />
+          ) : (
+            <SourcesList emptyLabel="Ingen källa finns" sources={sources} />
+          )}
         </div>
       )}
     </div>

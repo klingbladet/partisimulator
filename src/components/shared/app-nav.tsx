@@ -30,7 +30,7 @@ export default function AppNav(): React.JSX.Element {
               id={tab.id}
               key={tab.href}
             >
-              <tab.Icon className="h-4 w-4" />
+              <tab.Icon aria-hidden="true" className="h-4 w-4" />
               {tab.label}
             </Link>
           ))}

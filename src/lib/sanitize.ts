@@ -12,11 +12,30 @@ const CLOSED_THINK_BLOCK = /<(think|thinking|reasoning)>[\s\S]*?<\/\1>/gi;
 // unfinished thought is ever shown even mid-stream.
 const UNCLOSED_THINK_BLOCK = /<(think|thinking|reasoning)>[\s\S]*$/i;
 
+/**
+ * Some models never wrap their chain-of-thought in a tag at all — they open the raw reply with
+ * their own untagged analysis instead (e.g. "User Safety: safe", "We need to produce Alice's
+ * reply, following the rules."). Each pattern is anchored to the very start of the text, so a
+ * party's real reply can never match partway through — these are known leak openers, not a
+ * blanket ban on the phrase appearing anywhere.
+ */
+const LEAK_PREAMBLE_PATTERNS = [
+  /^Here's a thinking process:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
+  /^Analyze User Input:[\s\S]*?(?=\n[A-ZÅÄÖ]|\n\n|$)/i,
+  /^User Safety:[\s\S]*?$/i,
+  /^We need to produce[\s\S]*?(?=\n|$)/i,
+];
+
+function stripLeakPreamble(text: string): string {
+  return LEAK_PREAMBLE_PATTERNS.reduce((current, pattern) => current.replace(pattern, ""), text);
+}
+
 export function sanitizeSpeech(rawText: string): string {
   if (!rawText) return "";
 
   const withoutClosedBlocks = rawText.replace(CLOSED_THINK_BLOCK, "");
   const withoutOpenBlock = withoutClosedBlocks.replace(UNCLOSED_THINK_BLOCK, "");
+  const withoutLeakPreamble = stripLeakPreamble(withoutOpenBlock);
 
-  return withoutOpenBlock.replace(/\n{3,}/g, "\n\n").trim();
+  return withoutLeakPreamble.replace(/\n{3,}/g, "\n\n").trim();
 }
