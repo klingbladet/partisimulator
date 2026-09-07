@@ -10,5 +10,9 @@ export const openrouter = createOpenAI({
 });
 
 export function getOpenRouterModel(): string {
-  return process.env.OPENROUTER_MODEL || "openrouter/free";
+  const modelName = process.env.OPENROUTER_MODEL;
+  if (!modelName) {
+    throw new Error("OPENROUTER_MODEL måste anges när LLM_PROVIDER=openrouter");
+  }
+  return modelName;
 }

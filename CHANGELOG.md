@@ -18,7 +18,9 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+- `getModel()` now calls `openrouter.chat(...)` instead of `openrouter(...)`, which defaulted to the OpenAI Responses API and 404'd against OpenRouter's Chat Completions-only endpoint.
+- `getOpenRouterModel()` now throws when `OPENROUTER_MODEL` is unset instead of silently falling back to the invalid slug `openrouter/free`.
+- `.env.example` split into separate OpenRouter (active by default) and MLX (commented out) blocks, replacing slash-separated placeholders like `openrouter_or_mlx` that silently mismatched the code's strict equality checks.
 
 ## [0.1.4] - 2026-09-07
 

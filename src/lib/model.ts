@@ -16,5 +16,5 @@ export function getModel(): LanguageModel {
     }
     return mlx.chat(modelName);
   }
-  return openrouter(getOpenRouterModel());
+  return openrouter.chat(getOpenRouterModel());
 }

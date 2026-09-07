@@ -33,7 +33,7 @@ A notice about this must appear once, globally, in the site footer on every page
 
 Chat generation routes through `getModel()` in [src/lib/model.ts](../src/lib/model.ts), which picks a backend per request based on `LLM_PROVIDER`.
 
-- `openrouter`, the default, proxies Anthropic and OpenAI models through [OpenRouter](https://openrouter.ai)
+- `openrouter`, the default, proxies Anthropic and OpenAI models through [OpenRouter](https://openrouter.ai). Requires `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` — there is no default model, `getModel()` throws without it.
 - `mlx` routes to a local model served by oMLX, for local development only
 
 Embeddings for the manifesto RAG run locally via `@xenova/transformers` by default, regardless of `LLM_PROVIDER`. Set `EMBEDDINGS_PROVIDER=openrouter` to call OpenRouter's hosted embeddings API instead, e.g. where bundling the local model isn't practical.
