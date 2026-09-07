@@ -5,12 +5,17 @@ import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildOneShotPrompt, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { isWithinRateLimit } from "@/lib/rate-limit";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
 import { askRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
+  if (!isWithinRateLimit(req, "ask", 20, 5 * 60_000)) {
+    return errorResponse("För många frågor - vänta en stund och försök igen", 429);
+  }
+
   try {
     const body = await req.json();
     // useCompletion's own default body carries the prompt as `prompt`; the explicit body override

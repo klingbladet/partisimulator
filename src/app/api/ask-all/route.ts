@@ -6,6 +6,7 @@ import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
 import { buildAskAllPrompt, getLongAnswerMaxSentences, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { limitToSentences } from "@/lib/sentence-limit";
 import { cleanText, extractSources, extractStance, splitShortLong, stripStanceMarker } from "@/lib/sources";
@@ -14,6 +15,11 @@ import { askAllRequestSchema } from "@/lib/validation";
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest): Promise<Response> {
+  // Lower budget than the other routes: each request fans out to 8 parallel LLM calls, not 1.
+  if (!isWithinRateLimit(req, "ask-all", 8, 5 * 60_000)) {
+    return errorResponse("För många frågor - vänta en stund och försök igen", 429);
+  }
+
   let body: unknown;
   try {
     body = await req.json();

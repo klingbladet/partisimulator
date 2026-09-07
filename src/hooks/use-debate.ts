@@ -4,6 +4,7 @@ import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources } from "@/lib/sources";
+import { MAX_HISTORY_ENTRIES } from "@/lib/validation";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyId, PartyPersona } from "@/types/party";
 
@@ -27,6 +28,26 @@ function shuffleArray<T>(items: T[]): T[] {
     shuffled[randomIndex] = temp as T;
   }
   return shuffled;
+}
+
+/** The moderator's announcement line for a turn, based on what kind of turn it is. */
+function buildModeratorText(
+  turnKind: Exclude<TurnKind, "targeted">,
+  party: PartyPersona,
+  topic: string,
+  selectedParties: PartyPersona[],
+): string {
+  const firstName = party.displayName.split(" ")[0];
+  if (turnKind === "opening") {
+    const partyList = new Intl.ListFormat("sv", { style: "long", type: "conjunction" }).format(
+      selectedParties.map((selectedParty) => selectedParty.partyName),
+    );
+    return `Välkomna till dagens debatt mellan ${partyList}! Dagens fråga är: "${topic}". Först ut är ${firstName} från ${party.partyName} - varsågod!`;
+  }
+  if (turnKind === "closing") {
+    return `Dags för slutplädering: ${firstName} från ${party.partyName}, sammanfatta ert budskap!`;
+  }
+  return `Turen går till ${firstName} från ${party.partyName}`;
 }
 
 interface UseDebateResult {
@@ -100,9 +121,10 @@ export function useDebate(): UseDebateResult {
   // freshly-shuffled queue can avoid opening with whoever just closed the previous round.
   const lastSpeakerIdRef = useRef<string | null>(null);
   const turnCountRef = useRef(0);
-  // Set right before a manual stop, so a turn that resolves to nothing right afterwards (either
-  // branch below) drops the placeholder silently instead of showing the no-answer fallback — the
-  // user chose to cut it off, that's not the same as the model failing to answer.
+  // Set right before a manual stop. handleStop resolves (or drops) the streaming placeholder
+  // itself, synchronously, before the aborted complete() call below settles — so once it does
+  // settle, stoppedRef tells generateSpeech's cleanup to leave that entry alone rather than
+  // re-touching (or deleting) whatever handleStop already put there.
   const stoppedRef = useRef(false);
 
   // Shuffles a fresh speaking-order queue if the current one is empty, then pops the next speaker.
@@ -303,31 +325,24 @@ export function useDebate(): UseDebateResult {
     setCurrentSpeakerId(partyId);
 
     if (turnKind !== "targeted") {
-      const firstName = party.displayName.split(" ")[0];
-      let moderatorText: string;
-      if (turnKind === "opening") {
-        const partyList = new Intl.ListFormat("sv", { style: "long", type: "conjunction" }).format(
-          selectedParties.map((selectedParty) => selectedParty.partyName),
-        );
-        moderatorText = `Välkomna till dagens debatt mellan ${partyList}! Dagens fråga är: "${topic}". Först ut är ${firstName} från ${party.partyName} - varsågod!`;
-      } else if (turnKind === "closing") {
-        moderatorText = `Dags för slutplädering: ${firstName} från ${party.partyName}, sammanfatta ert budskap!`;
-      } else {
-        moderatorText = `Turen går till ${firstName} från ${party.partyName}`;
-      }
       const moderatorEntry: DebateEntry = {
         id: crypto.randomUUID(),
         sources: [],
         speakerId: "user",
         speakerName: MODERATOR_NAME,
-        text: moderatorText,
+        text: buildModeratorText(turnKind, party, topic, selectedParties),
       };
       currentHistory = [...currentHistory, moderatorEntry];
     }
 
     // The API only sees fully-resolved entries — the placeholder below is display-only, added
     // after this snapshot so it doesn't confuse the prompt with an empty entry from this speaker.
-    const historyForApi = currentHistory;
+    // Windowed to the server's own cap: the full transcript (shown in the UI) grows without limit
+    // over a long debate, but debateRequestSchema rejects a history over MAX_HISTORY_ENTRIES, so
+    // sending the whole thing verbatim would make every turn past that point fail outright once
+    // the debate runs long enough — including every auto-mode turn after a "vill du fortsätta?"
+    // confirmation, since resuming doesn't undo how much history has already piled up.
+    const historyForApi = currentHistory.slice(-MAX_HISTORY_ENTRIES);
 
     const placeholderId = crypto.randomUUID();
     streamingEntryIdRef.current = placeholderId;
@@ -353,80 +368,97 @@ export function useDebate(): UseDebateResult {
       },
     });
 
-    const activeSpeaker = partyId;
-    if (finalResult) {
-      resolveStreamingEntry(activeSpeaker, sanitizeSpeech(finalResult));
-    } else if (stoppedRef.current) {
-      // User cut the turn off manually before anything came back — drop the placeholder rather
-      // than leave a permanent blank bubble.
-      const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== placeholderId);
-      historyRef.current = withoutPlaceholder;
-      setHistory(withoutPlaceholder);
-      clearStreamingState();
-    } else {
-      // Nothing came back (e.g. network error) — show the in-character fallback instead of
-      // leaving a permanent blank bubble in the transcript.
-      const fallback = buildNoAnswerFallback(party);
-      const fallbackHistory = historyRef.current.map((entry) =>
-        entry.id === placeholderId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
-      );
-      historyRef.current = fallbackHistory;
-      setHistory(fallbackHistory);
-      clearStreamingState();
-    }
+    settleTurn(party, placeholderId, finalResult);
+    continueAfterTurn(turnKind);
+  };
 
-    // Closing round: chain straight into the next party still owed a statement, in the order fixed
-    // when "Avsluta" was confirmed — once the queue is empty, the debate actually ends. Bails out
-    // silently if the component unmounted mid-round (debateFinishedRef is forced true then), same
-    // guard the auto-mode chain below uses.
-    if (turnKind === "closing") {
-      if (debateFinishedRef.current) return;
-      const nextClosingSpeakerId = closingQueueRef.current?.shift();
-      if (nextClosingSpeakerId) {
-        generateSpeech(nextClosingSpeakerId, "closing");
-      } else {
-        finishDebate();
+  // After the API call settles, updates history with the final reply — or, if nothing usable came
+  // back and the user didn't stop it manually, the in-character fallback. If the user did stop it,
+  // handleStop already resolved (or dropped) this entry synchronously, before this aborted
+  // complete() call settled, so there's nothing left to do here.
+  const settleTurn = (party: PartyPersona, placeholderId: string, finalResult: string | null | undefined): void => {
+    if (finalResult) {
+      resolveStreamingEntry(party.id, sanitizeSpeech(finalResult));
+      return;
+    }
+    if (stoppedRef.current) return;
+    // Nothing came back (e.g. network error) — show the in-character fallback instead of leaving a
+    // permanent blank bubble in the transcript.
+    const fallback = buildNoAnswerFallback(party);
+    const fallbackHistory = historyRef.current.map((entry) =>
+      entry.id === placeholderId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
+    );
+    historyRef.current = fallbackHistory;
+    setHistory(fallbackHistory);
+    clearStreamingState();
+  };
+
+  // Closing round: chain straight into the next party still owed a statement, in the order fixed
+  // when "Avsluta" was confirmed — once the queue is empty, the debate actually ends. Bails out
+  // silently if the component unmounted mid-round (debateFinishedRef is forced true then), same
+  // guard continueAutoMode uses.
+  const continueClosingRound = (): void => {
+    if (debateFinishedRef.current) return;
+    const nextClosingSpeakerId = closingQueueRef.current?.shift();
+    if (nextClosingSpeakerId) {
+      generateSpeech(nextClosingSpeakerId, "closing");
+    } else {
+      finishDebate();
+    }
+  };
+
+  // Auto mode: chain straight into the next speaker once this reply is done. Re-reads
+  // autoMode/debateFinished from refs since this call may have started well before the user
+  // paused or ended things.
+  const continueAutoMode = (): void => {
+    turnCountRef.current += 1;
+    if (turnCountRef.current < AUTO_MODE_TURN_CAP) {
+      const nextSpeaker = pickNextSpeaker();
+      if (nextSpeaker) {
+        generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
       }
       return;
     }
-
-    // Auto mode: chain straight into the next speaker once this reply is done. Re-reads
-    // autoMode/debateFinished from refs since this call may have started well before the user
-    // paused or ended things. Manual turns (autoMode off) never touch turnCountRef, so stepping
-    // through "Nästa replik" by hand is never capped.
-    if (autoModeRef.current && !debateFinishedRef.current) {
-      turnCountRef.current += 1;
-      if (turnCountRef.current < AUTO_MODE_TURN_CAP) {
-        const nextSpeaker = pickNextSpeaker();
-        if (nextSpeaker) {
-          generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
-        }
-      } else {
-        // Hit the auto-mode ceiling: pause and let the user decide whether to keep going, rather
-        // than silently ending the debate or running away unattended forever.
-        setAutoMode(false);
-        autoModeRef.current = false;
-        const shouldContinue = window.confirm(
-          `Debatten har nått ${AUTO_MODE_TURN_CAP} repliker i automatiskt läge. Vill du fortsätta?`,
-        );
-        if (shouldContinue && !debateFinishedRef.current) {
-          turnCountRef.current = 0;
-          setAutoMode(true);
-          autoModeRef.current = true;
-          const nextSpeaker = pickNextSpeaker();
-          if (nextSpeaker) {
-            generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
-          }
-        }
-      }
-    } else if (targetSpeakerIdRef.current && !debateFinishedRef.current && !isEndingDebateRef.current) {
-      // Manual mode (no auto-chain to pick this up on its own), but a party was targeted while this
-      // turn was still in flight — answer it now instead of leaving the debate silently paused until
-      // an extra "Nästa talare" click. Doesn't interrupt the reply that just finished, just follows it.
+    // Hit the auto-mode ceiling: pause and let the user decide whether to keep going, rather than
+    // silently ending the debate or running away unattended forever.
+    setAutoMode(false);
+    autoModeRef.current = false;
+    const shouldContinue = window.confirm(
+      `Debatten har nått ${AUTO_MODE_TURN_CAP} repliker i automatiskt läge. Vill du fortsätta?`,
+    );
+    if (shouldContinue && !debateFinishedRef.current) {
+      turnCountRef.current = 0;
+      setAutoMode(true);
+      autoModeRef.current = true;
       const nextSpeaker = pickNextSpeaker();
       if (nextSpeaker) {
-        generateSpeech(nextSpeaker.speakerId, "targeted");
+        generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
       }
+    }
+  };
+
+  // Manual mode (no auto-chain to pick this up on its own), but a party was targeted while this
+  // turn was still in flight — answer it now instead of leaving the debate silently paused until
+  // an extra "Nästa talare" click. Doesn't interrupt the reply that just finished, just follows it.
+  const continueTargetedManualTurn = (): void => {
+    if (!targetSpeakerIdRef.current || debateFinishedRef.current || isEndingDebateRef.current) return;
+    const nextSpeaker = pickNextSpeaker();
+    if (nextSpeaker) {
+      generateSpeech(nextSpeaker.speakerId, "targeted");
+    }
+  };
+
+  // Once a turn has settled, decides whether — and how — the next one starts: a closing round
+  // takes priority, then auto mode's own chain, then a manual-mode party that got targeted while
+  // this turn was still in flight. Manual turns (autoMode off) never touch turnCountRef, so
+  // stepping through "Nästa replik" by hand is never capped.
+  const continueAfterTurn = (turnKind: TurnKind): void => {
+    if (turnKind === "closing") {
+      continueClosingRound();
+    } else if (autoModeRef.current && !debateFinishedRef.current) {
+      continueAutoMode();
+    } else {
+      continueTargetedManualTurn();
     }
   };
 
@@ -490,7 +522,7 @@ export function useDebate(): UseDebateResult {
     stop();
     setAutoMode(false);
     if (speaker && completion) {
-      resolveStreamingEntry(speaker, completion);
+      resolveStreamingEntry(speaker, sanitizeSpeech(completion));
     } else if (entryId) {
       // Stopped before any text streamed back — drop the empty placeholder rather than leave it.
       const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);

@@ -10,12 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
-- Each mode's accent color, shared via new `src/lib/mode-colors.ts`, now also tints that page's main input card (light background tint, colored top border, colored focus ring)
-- Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
-- Nav tab font size bumped from `0.9rem` to `1rem`
-- `AppNav` tabs now flash black on press (`:active`), previously no press feedback
-- `globals.css`: removed section-header comments
+- None yet...
 
 ### Removed
 
@@ -44,6 +39,7 @@ All notable changes to this project will be documented in this file.
 - Debate mode: moderator announcements before each turn — a welcome/topic intro for the opening speaker, "Turen går till X" before every other turn, and "Kan du svara på följande fråga, X: ..." (replacing the plain question) when a party is targeted directly.
 - `AppNav`: below the `sm` breakpoint, the inline tabs collapse into a hamburger toggle that opens a dropdown panel with the same three links.
 - `--color-warning` CSS variable reintroduced in `globals.css` (`#fbbf24`), dropped back earlier in 0.1.5 as a text color for contrast reasons — now used as a button background instead, which doesn't have the same contrast problem.
+- Best-effort, in-memory per-IP rate limiting (`src/lib/rate-limit.ts`) on `/api/ask`, `/api/ask-all`, and `/api/debate` - none of them had any limit before, so a direct POST loop could rack up real LLM cost with no throttling at all. Resets on cold start and isn't shared across concurrent serverless instances, so it's a speed bump against casual abuse, not a hard guarantee. Can be turned off via `RATE_LIMIT_ENABLED=false`, e.g. for local development or automated tests
 
 ### Changed
 
@@ -69,6 +65,14 @@ All notable changes to this project will be documented in this file.
 - Debate mode: the mode toggle button's label switched from "Auto"/"Pausa" to "Slå på auto-läge"/"Stäng av auto-läge".
 - `AppNav`'s mobile hamburger toggle (`.nav-menu-toggle`) always shows its white background and black border/shadow instead of only revealing it on hover, matching the neo-brutalist buttons used elsewhere.
 - `DebateModeToggle` is no longer wrapped in a `cartoon-card` box with a separate "Automatiskt läge"/"Manuellt läge" label — just the button itself now, full width, filled with `--color-success` (paused) or `--color-warning` (auto engaged) instead of the flat ghost variant.
+- Landing page mode cards (Direktfråga, Alla partier, Debatt) are now filled with a distinct accent color each, white text/icon, instead of plain white cards
+- Each mode's accent color, shared via new `src/lib/mode-colors.ts`, now also tints that page's main input card (light background tint, colored top border, colored focus ring)
+- Ask-all mode: loading placeholder text changed from "Hämtar manifest-kontext..." to "Förbereder svar..."
+- Nav tab font size bumped from `0.9rem` to `1rem`
+- `AppNav` tabs now flash black on press (`:active`), previously no press feedback
+- `globals.css`: removed section-header comments
+- `MAX_HISTORY_ENTRIES` (`src/lib/validation.ts`) is now exported and reused client-side to window the `history` sent to `/api/ask` and `/api/debate` to its own cap, instead of sending the entire accumulated transcript every time
+- `use-debate.ts`: extracted `generateSpeech`'s moderator-line building, turn-result handling, and turn-continuation logic (closing round / auto mode / targeted manual turn) into separate named functions - fallow flagged `generateSpeech` at cognitive complexity 44 (CRITICAL); the worst function in the file is now `continueAutoMode` at 13 (HIGH)
 
 ### Removed
 
@@ -99,6 +103,10 @@ All notable changes to this project will be documented in this file.
 - Debate mode: a party targeted via the interjection picker is now honored whenever their turn actually opens up (auto-chain continuation, turn-cap resume, or the next manual click), not just if nothing was in flight at the moment of sending — previously the pick was silently dropped in that case.
 - The sentence-length cap (`sentence-limit.ts`) miscounted mid-abbreviation periods (e.g. "t.ex.", "m.m.") as sentence ends, cutting some replies off early; a "." now only counts as a sentence end when followed by whitespace or end-of-text.
 - `AppNav`'s hamburger toggle stayed visible above the `sm` breakpoint despite the `sm:hidden` utility: `.nav-tab`'s unlayered `display: inline-flex` in `globals.css` (no `@layer`) always outranks Tailwind's layered utility classes regardless of source order, so `sm:hidden` never took effect combined on the same element. Moved the breakpoint class onto a plain wrapping `div` instead.
+- Debate mode: a long debate (past ~20 turns) sent its entire accumulated transcript as the `history` field on every turn, which eventually exceeded `debateRequestSchema`'s 40-entry cap and made every subsequent turn fail server-side validation outright - shown as a vanished/fallback reply that streamed in and then disappeared. Each failed turn still counted toward the auto-mode turn cap, so confirming "vill du fortsätta?" just re-hit the same failure loop and re-triggered the same prompt almost immediately
+- Debate mode: stopping a reply mid-stream no longer deletes the partial text it had already shown - `generateSpeech`'s post-stream cleanup was unconditionally dropping the streaming placeholder even after `handleStop` had already resolved it with the partial reply
+- Debate mode: stopping a reply mid-stream now strips chain-of-thought/leak-preamble text (`sanitizeSpeech`) from the partial reply before showing it, same as every other completion path
+- `getParty()` now checks an id is a real party before indexing its lookup object - a request with `partyId: "__proto__"` (or `"constructor"`, etc.) resolved to `Object.prototype` instead of `undefined`, turning the intended "okänt parti" 404 into a crash
 
 ## [0.1.4] - 2026-09-07
 

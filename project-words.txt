@@ -46,6 +46,7 @@ tailwind
 WCAG
 tsconfig
 tsx
+Unkey
 unlayered
 webapplikation
 webp

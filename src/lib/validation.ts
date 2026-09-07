@@ -3,7 +3,10 @@ import { PARTIES } from "./parties";
 
 // A real session can run long, but nothing legitimate needs more turns than this per request -
 // past it, a payload is more likely a forged history inflating LLM token cost than a real chat.
-const MAX_HISTORY_ENTRIES = 40;
+// Exported so callers can window their own history to this same cap before sending it - a long
+// debate or chat easily accumulates more turns than this over its lifetime, and the client's own
+// full transcript must stay under it too, not just reject payloads already over it.
+export const MAX_HISTORY_ENTRIES = 40;
 
 const CONTROL_CHAR_CODES = [
   ...Array.from({ length: 9 }, (_, index) => index), // U+0000-U+0008
