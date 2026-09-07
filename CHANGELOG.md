@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet...
+- Nav logo now reads "Partisimulator 2026" on a single line.
 
 ### Removed
 
