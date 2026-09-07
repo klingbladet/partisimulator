@@ -140,6 +140,7 @@ These environment variables control the model provider.
 - `OPENROUTER_MODEL`, required by `openrouter`, the model slug to request, for example `anthropic/claude-sonnet-4.5` — there's no default, the app throws without it
 - `MLX_BASE_URL`, used by `mlx`, the base URL of your running oMLX server, defaults to `http://localhost:8000/v1`
 - `MLX_MODEL`, used by `mlx`, the model directory name exactly as oMLX reports it under `/v1/models`
+- `MLX_API_KEY`, used by `mlx`, the API key your oMLX server expects, defaults to `local`
 
 #### Examples
 
@@ -187,15 +188,19 @@ Useful where bundling the local model isn't practical, for example some serverle
 
 #### Examples
 
-Local embeddings, the default - `EMBEDDINGS_PROVIDER=local` is what `.env.example` ships with, though the variable is optional and can be left unset entirely:
+Local embeddings, the default behavior when the variable is unset or absent:
 
 ```sh
 EMBEDDINGS_PROVIDER=local
 ```
 
-OpenRouter embeddings, independent of whichever `LLM_PROVIDER` you're running:
+OpenRouter embeddings, independent of whichever `LLM_PROVIDER` you're running - `.env.example` ships with this in its default (OpenRouter) block:
 
 ```sh
 EMBEDDINGS_PROVIDER=openrouter
 OPENROUTER_API_KEY=sk-or-v1-...
 ```
+
+### Test-only parties
+
+`SHREK` in `.env` shows test-only parties, hidden from the default experience. Set it to `true` to see them; it defaults to `false`.
