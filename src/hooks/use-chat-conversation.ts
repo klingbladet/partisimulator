@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { isDuplicateOfLastEntry } from "@/lib/history";
 import { getParty } from "@/lib/parties";
+import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources, extractStance, stripStanceMarker } from "@/lib/sources";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
@@ -55,10 +56,11 @@ export function useChatConversation(): UseChatConversationResult {
   }, [router, searchParams]);
 
   const addAssistantMessage = (rawText: string): void => {
-    const stance = extractStance(rawText);
-    const cleaned = cleanText(stripStanceMarker(rawText));
+    const sanitized = sanitizeSpeech(rawText);
+    const stance = extractStance(sanitized);
+    const cleaned = cleanText(stripStanceMarker(sanitized));
     if (!cleaned) return;
-    const sources = extractSources(rawText);
+    const sources = extractSources(sanitized);
 
     setChatHistory((prev) => {
       // Prevent duplicate entry if both onFinish and complete return
@@ -100,7 +102,7 @@ export function useChatConversation(): UseChatConversationResult {
   // Stream live text into pendingText
   useEffect(() => {
     if (isLoading && completion) {
-      setPendingText(cleanText(completion));
+      setPendingText(cleanText(sanitizeSpeech(completion)));
     }
   }, [completion, isLoading]);
 

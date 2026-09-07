@@ -5,13 +5,20 @@ import { getModel } from "@/lib/model";
 import { PARTIES } from "@/lib/parties";
 import { buildAskAllPrompt, getLongAnswerMaxSentences, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
+import { sanitizeSpeech } from "@/lib/sanitize";
 import { limitToSentences } from "@/lib/sentence-limit";
 import { cleanText, extractSources, extractStance, splitShortLong, stripStanceMarker } from "@/lib/sources";
 
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest): Promise<Response> {
-  const { question } = await req.json();
+  let question: string | undefined;
+  try {
+    ({ question } = await req.json());
+  } catch (error) {
+    console.error("Error in /api/ask-all:", error);
+    return errorResponse("Ogiltig request-body", 400);
+  }
 
   if (!question) {
     return errorResponse("question krävs", 400);
@@ -44,8 +51,9 @@ export async function POST(req: NextRequest): Promise<Response> {
             temperature: 0.3,
           });
 
-          const stance = extractStance(text);
-          const { long, short } = splitShortLong(stripStanceMarker(text));
+          const cleaned = sanitizeSpeech(text);
+          const stance = extractStance(cleaned);
+          const { long, short } = splitShortLong(stripStanceMarker(cleaned));
 
           // Enforce the length caps in code, since not every model follows them from the prompt alone
           const limitedShort = limitToSentences(short, getMaxSentences("ask-all"));

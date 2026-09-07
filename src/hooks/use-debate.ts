@@ -26,7 +26,6 @@ interface UseDebateResult {
   currentSpeakerId: string | null;
   currentSpeakerParty: PartyPersona | null | undefined;
   debateFinished: boolean;
-  debateMode: "auto" | "manual";
   debateStarted: boolean;
   endDebate: () => void;
   handleSelectSpeaker: (partyId: string) => Promise<void>;
@@ -55,7 +54,6 @@ export function useDebate(): UseDebateResult {
   const [topic, setTopic] = useState("");
   const [debateStarted, setDebateStarted] = useState(false);
   const [debateFinished, setDebateFinished] = useState(false);
-  const [debateMode, setDebateMode] = useState<"auto" | "manual">("auto");
   const [history, setHistory] = useState<DebateEntry[]>([]);
   const [currentSpeakerId, setCurrentSpeakerId] = useState<string | null>(null);
   const currentSpeakerRef = useRef<string | null>(null);
@@ -301,7 +299,6 @@ export function useDebate(): UseDebateResult {
     setHistory([]);
     historyRef.current = [];
     setDebateFinished(false);
-    setDebateMode("auto");
     setAutoMode(true);
     autoModeRef.current = true;
     autoModeSpeakerQueueRef.current = [];
@@ -360,7 +357,6 @@ export function useDebate(): UseDebateResult {
   const resetDebate = (): void => {
     setDebateStarted(false);
     setDebateFinished(false);
-    setDebateMode("auto");
     setHistory([]);
     historyRef.current = [];
     setSelectedParties([]);
@@ -388,7 +384,6 @@ export function useDebate(): UseDebateResult {
     currentSpeakerId,
     currentSpeakerParty,
     debateFinished,
-    debateMode,
     debateStarted,
     endDebate,
     handleNextSpeaker,

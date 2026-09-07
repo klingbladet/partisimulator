@@ -14,11 +14,14 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-- None yet...
+- `debateMode` state in `src/hooks/use-debate.ts` — set on start/reset and returned from the hook, but never read by `debatt/page.tsx` (its only consumer) and never set to anything but `"auto"`; fully dead
 
 ### Fixed
 
-- None yet...
+- `sanitizeSpeech()` (strips leaked model "thinking"/instruction text) was only wired into the debate path; one-shot chat (`use-chat-conversation.ts`) and grid mode (`/api/ask-all`) now run replies through it too, before extracting stance/sources
+- `/api/debate` had no error handling at all, and `/api/ask-all` only caught errors inside each party's own promise — a malformed request body, or `getModel()` throwing, escaped as an unstyled 500 instead of the app's usual `{error}` JSON response; both routes now match `/api/ask`'s try/catch and `errorResponse` shape
+- `src/lib/rag.ts` left five debug `console.log`/`console.warn` calls (`--> [RAG] ...`) from tracking down the embeddings regression; removed, and the surviving timeout/error warnings no longer carry the debug prefix
+- `retrieveContext()`'s 30s timeout timer was never cleared once the real retrieval settled first (the common case), leaving a dangling `setTimeout` per call; now cleared in a `finally` block
 
 ## [0.1.3] - 2026-09-06
 
