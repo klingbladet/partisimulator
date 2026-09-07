@@ -26,7 +26,6 @@ function HomeContent(): React.JSX.Element {
     isLoading,
     error,
     handleSendQuestion,
-    handleResetConversation,
     handleStop,
   } = useChatConversation();
 
@@ -59,7 +58,6 @@ function HomeContent(): React.JSX.Element {
             followUpQuestion={followUpQuestion}
             isLoading={isLoading}
             onFollowUpChange={setFollowUpQuestion}
-            onReset={handleResetConversation}
             onSendFollowUp={() => handleSendQuestion(followUpQuestion)}
             onStop={handleStop}
             pendingStance={pendingStance}

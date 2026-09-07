@@ -67,26 +67,14 @@ export default function DebateSetupPanel({
             onClick={onStartDebate}
             type="button"
           >
-            {selectedParties.length < 2 ? (
-              "Välj minst 2 partier nedan..."
-            ) : (
-              <>
-                <Mic aria-hidden="true" className="h-5 w-5" />
-                {`Starta debatten om "${topic || "..."}"`}
-              </>
-            )}
+            <Mic aria-hidden="true" className="h-5 w-5" />
+            Starta
           </button>
         </InputStack>
       </section>
 
       {/* Party selector */}
-      <PartyPickerCard heading="Välj debattörer (minst 2)" isSelected={isSelected} onSelectParty={onToggleParty}>
-        {selectedParties.length > 0 && (
-          <div className="mt-3 font-bold text-gray-600 text-sm">
-            Valda: {selectedParties.map((selectedParty) => selectedParty.displayName).join(", ")}
-          </div>
-        )}
-      </PartyPickerCard>
+      <PartyPickerCard heading="Välj debattörer (minst 2)" isSelected={isSelected} onSelectParty={onToggleParty} />
     </div>
   );
 }

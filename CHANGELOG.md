@@ -28,6 +28,12 @@ All notable changes to this project will be documented in this file.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
 - Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
 - Landing page at `/`: a heading, three mode cards (Direktfråga, Alla partier, Debatt), and a party grid that jumps straight into Direktfråga with a party preselected (`PartyLauncher`).
+- Debate mode: "Avsluta" now runs a closing-statement round (one final reply per party, in a freshly shuffled order) before the debate actually ends, via a new `isClosingStatement` prompt mode; `DebateControls` shows a "Slutpläderingar pågår..." status card meanwhile.
+- Debate mode: interjection composer has a "Rikta frågan till" party picker — picking one routes that turn straight to the chosen party instead of whoever's next in the shuffle queue.
+- Debate mode: sending an interjection now answers immediately (the picked party, or whoever's next) instead of requiring a separate "Nästa talare" click, as long as nothing's already in flight.
+- Debate mode: moderator announcements before each turn — a welcome/topic intro for the opening speaker, "Turen går till X" before every other turn, and "Kan du svara på följande fråga, X: ..." (replacing the plain question) when a party is targeted directly.
+- `AppNav`: below the `sm` breakpoint, the inline tabs collapse into a hamburger toggle that opens a dropdown panel with the same three links.
+- `--color-warning` CSS variable reintroduced in `globals.css` (`#fbbf24`), dropped back earlier in 0.1.5 as a text color for contrast reasons — now used as a button background instead, which doesn't have the same contrast problem.
 
 ### Changed
 
@@ -37,10 +43,27 @@ All notable changes to this project will be documented in this file.
 - Direktfråga moved from `/` to `/direktfraga`, Alla partier moved from `/grid` to `/alla-partier` — updated in `AppNav`, the "Fortsätt chatta" handoff, and the chat-seeding effect in `useChatConversation`, which now also preselects a party from a `party`-only URL instead of requiring a full `party`+`q`+`a` handoff.
 - Nav tabs are flat by default and only pick up the bordered/shadowed cartoon-button look on hover or when active, so the nav bar reads less bulky.
 - `InputStack`'s vertical gap between an input and its button(s) increased from `gap-2` to `gap-3`.
+- Debate now starts paused instead of auto-running; auto mode is opt-in via the play button.
+- Debate mode: party avatars in `DebateStage` are no longer clickable — speaking order is controlled only via "Nästa talare", auto mode, or the new party picker; removed the now-dead `handleSelectSpeaker`.
+- Debate mode: input+send and the stop/next/end controls are now two separate white boxes instead of one, always stacked rather than side-by-side on larger screens; every control button (Skicka, Avbryt, Auto/Pausa, Nästa talare, Avsluta) has a visible label instead of an icon alone, and stretches evenly across its row.
+- Debate mode: the auto/manual mode toggle moved out of the bottom controls bar into its own strip between the topic header and the transcript.
+- Debate mode: the topic/question banner in `DebateStage` no longer truncates to 1–2 lines; long topics now wrap in full.
+- Auto mode's turn cap raised from 8 to 20, and now only applies to its own unattended chaining (manual "Nästa replik" stepping is uncapped). Hitting the cap pauses auto mode and asks the user whether to continue, instead of ending the debate.
+- Debate controls bar wraps onto two rows on small screens (input + send, then the mode/end buttons) instead of squeezing everything onto one line.
+- Submit buttons (Direktfråga, Alla partier, Debatt) now show a static label ("Skicka" / "Starta") instead of embedding the party name or the current question/topic text. Debatt's start button no longer swaps to "Välj minst 2 partier nedan..." text either — it stays "Starta" and relies on the disabled state, same as the other submit buttons.
+- Party grid (`.party-grid`) shows one party per row below 580px, instead of two cramped columns; 2-column and 4-column breakpoints above that are unchanged.
+- Alla partier's answer grid (`.grid-answers`) gets the same 580px breakpoint: one card per row below it, 2 columns from 580px, 3 columns from 1024px (unchanged).
+- Direktfråga's chat banner is no longer a dark full-bleed header — it's now a light `cartoon-card` strip showing the opening question and the party's avatar, matching the question strip used on Alla partier and Debatt.
+- The question/topic strip on Direktfråga, Alla partier, and Debatt now wraps onto 2 lines below the `sm` breakpoint instead of truncating to one line with no way to read the rest.
+- Debate mode: the auto/manual mode toggle moved again, from between the topic header and transcript to directly below the transcript, above `DebateControls`.
+- Debate mode: the mode toggle button's label switched from "Auto"/"Pausa" to "Slå på auto-läge"/"Stäng av auto-läge".
+- `AppNav`'s mobile hamburger toggle (`.nav-menu-toggle`) always shows its white background and black border/shadow instead of only revealing it on hover, matching the neo-brutalist buttons used elsewhere.
+- `DebateModeToggle` is no longer wrapped in a `cartoon-card` box with a separate "Automatiskt läge"/"Manuellt läge" label — just the button itself now, full width, filled with `--color-success` (paused) or `--color-warning` (auto engaged) instead of the flat ghost variant.
 
 ### Removed
 
-- None yet...
+- Direktfråga's "Byt parti / Ny fråga" reset button, and the now-unused `handleResetConversation` it called.
+- Debatt's "Valda: ..." summary line under the party picker, listing the currently selected debaters — redundant with the picker's own selected-state styling.
 
 ### Fixed
 
@@ -57,6 +80,10 @@ All notable changes to this project will be documented in this file.
 - Debate mode's `resolveStreamingEntry` (`src/hooks/use-debate.ts`) no longer strands a permanent blank placeholder bubble, and stale `currentSpeakerId`/`streamingEntryId` state, when `sanitizeSpeech` reduces a reply to nothing.
 - `.cartoon-btn:disabled` (`src/app/globals.css`) no longer dims to 50% opacity, which faded text and background toward the same page color and dropped contrast on the primary variant to roughly 3.4:1. Disabled buttons now use a fixed ink-on-placeholder-gray pair (~7.5:1) regardless of variant, meeting WCAG AA.
 - All decorative `lucide-react` icons now carry `aria-hidden="true"`. Unmarked, each renders as a bare `<svg>` with no accessible name, which screen readers expose as an unlabeled image alongside its adjacent text (or inside buttons whose `aria-label` already names the control).
+- Debate mode: a party targeted via the interjection picker while another party was still generating never got a turn — nothing advances the debate on its own in manual mode, so the pick just sat there until an unrelated action (like "Nästa talare") happened to consume it. The targeted party now speaks automatically the moment the in-flight reply finishes, without interrupting it.
+- Debate mode: a party targeted via the interjection picker is now honored whenever their turn actually opens up (auto-chain continuation, turn-cap resume, or the next manual click), not just if nothing was in flight at the moment of sending — previously the pick was silently dropped in that case.
+- The sentence-length cap (`sentence-limit.ts`) miscounted mid-abbreviation periods (e.g. "t.ex.", "m.m.") as sentence ends, cutting some replies off early; a "." now only counts as a sentence end when followed by whitespace or end-of-text.
+- `AppNav`'s hamburger toggle stayed visible above the `sm` breakpoint despite the `sm:hidden` utility: `.nav-tab`'s unlayered `display: inline-flex` in `globals.css` (no `@layer`) always outranks Tailwind's layered utility classes regardless of source order, so `sm:hidden` never took effect combined on the same element. Moved the breakpoint class onto a plain wrapping `div` instead.
 
 ## [0.1.4] - 2026-09-07
 

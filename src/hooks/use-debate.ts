@@ -8,7 +8,14 @@ import type { DebateEntry } from "@/types/debate";
 import type { PartyId, PartyPersona } from "@/types/party";
 
 const MODERATOR_NAME = "Du (Debattledare)";
-const MAX_DEBATE_TURNS = 8;
+// Caps how many turns auto mode will chain through unattended before pausing itself; manual
+// stepping via "Nästa replik" is never capped.
+const AUTO_MODE_TURN_CAP = 20;
+
+// "opening" gets the debate's welcome announcement; "targeted" skips the moderator line entirely
+// since the interjection that picked this speaker already named them; "closing" gets each party's
+// final-statement announcement instead of the regular "next up" one.
+type TurnKind = "closing" | "opening" | "regular" | "targeted";
 
 /** Fisher-Yates shuffle, used to randomize speaking order each auto-mode round. */
 function shuffleArray<T>(items: T[]): T[] {
@@ -29,19 +36,21 @@ interface UseDebateResult {
   debateFinished: boolean;
   debateStarted: boolean;
   endDebate: () => void;
-  handleSelectSpeaker: (partyId: string) => Promise<void>;
   handleNextSpeaker: () => void;
   handleStop: () => void;
   handleUserInterjection: () => void;
   history: DebateEntry[];
+  isEndingDebate: boolean;
   isLoading: boolean;
   pendingText: string;
   resetDebate: () => void;
   selectedParties: PartyPersona[];
+  setTargetSpeakerId: (partyId: string | null) => void;
   setTopic: (topic: string) => void;
   setUserInterjection: (value: string) => void;
   startDebate: () => void;
   streamingEntryId: string | null;
+  targetSpeakerId: string | null;
   toggleAutoMode: () => void;
   toggleParty: (party: PartyPersona) => void;
   topic: string;
@@ -64,17 +73,29 @@ export function useDebate(): UseDebateResult {
   const streamingEntryIdRef = useRef<string | null>(null);
   const [pendingText, setPendingText] = useState("");
   const [userInterjection, setUserInterjection] = useState("");
+  // Lets the moderator aim a question at a specific party instead of whoever's next in the shuffle
+  // queue; cleared once it's used so it never lingers onto a later, unrelated question.
+  const [targetSpeakerId, setTargetSpeakerId] = useState<string | null>(null);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const [autoMode, setAutoMode] = useState(false);
+  // True from the moment "Avsluta" is confirmed until every party has given its closing statement —
+  // gates the other controls so nothing else can interleave a turn into the closing round.
+  const [isEndingDebate, setIsEndingDebate] = useState(false);
   // Latest-value refs, read after an `await` (once a reply finishes) where the closure that
   // started the request may otherwise see stale values if the user paused or ended it meanwhile.
   const autoModeRef = useRef(false);
   const debateFinishedRef = useRef(false);
   const historyRef = useRef<DebateEntry[]>([]);
+  const targetSpeakerIdRef = useRef<string | null>(null);
+  const isEndingDebateRef = useRef(false);
   autoModeRef.current = autoMode;
   debateFinishedRef.current = debateFinished;
   historyRef.current = history;
+  targetSpeakerIdRef.current = targetSpeakerId;
+  isEndingDebateRef.current = isEndingDebate;
   const autoModeSpeakerQueueRef = useRef<string[]>([]);
+  // Remaining speakers still owed a closing statement, once "Avsluta" has been confirmed.
+  const closingQueueRef = useRef<string[] | null>(null);
   // Tracks who spoke last regardless of currentSpeakerId (which resets to null between turns), so a
   // freshly-shuffled queue can avoid opening with whoever just closed the previous round.
   const lastSpeakerIdRef = useRef<string | null>(null);
@@ -95,6 +116,24 @@ export function useDebate(): UseDebateResult {
       autoModeSpeakerQueueRef.current = shuffled;
     }
     return autoModeSpeakerQueueRef.current.shift();
+  };
+
+  // Every "who speaks next" decision goes through here, so a party targeted via the interjection
+  // picker is honored whenever a turn actually opens up — including a turn that opens up later
+  // (auto mode's own chain, or the next manual "Nästa talare" click), not just one starting right
+  // this instant. Reads/clears the ref directly rather than waiting on the setState + re-render,
+  // since a chained call can run again before React commits that update. `isTargeted` tells
+  // generateSpeech to skip its own "Turen går till" announcement, since the interjection that
+  // targeted this party already addressed them by name.
+  const pickNextSpeaker = (): { speakerId: string; isTargeted: boolean } | undefined => {
+    const requestedSpeakerId = targetSpeakerIdRef.current;
+    if (requestedSpeakerId) {
+      targetSpeakerIdRef.current = null;
+      setTargetSpeakerId(null);
+      return { isTargeted: true, speakerId: requestedSpeakerId };
+    }
+    const speakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
+    return speakerId ? { isTargeted: false, speakerId } : undefined;
   };
 
   // Clears everything that marks a turn as "in flight" once it's resolved one way or another.
@@ -214,21 +253,38 @@ export function useDebate(): UseDebateResult {
     });
   };
 
-  // Always allowed, even mid-stream — the moderator entry lands in history right away, and either
-  // the next auto-mode turn or a manual party click picks it up (generateSpeech reads history fresh).
+  // Always allowed, even mid-stream — the moderator entry lands in history right away. If a party
+  // was targeted, the entry addresses them by name directly (so generateSpeech can skip its own
+  // "Turen går till" line once their turn actually comes up — see the "targeted" TurnKind).
+  // If nothing's in flight and auto mode isn't already chaining its own turns, answer right away
+  // instead of waiting for a separate "Nästa talare" click. If a reply is streaming or auto mode is
+  // running, leave targetSpeakerId untouched rather than firing here — pickNextSpeaker consumes it
+  // whenever the next turn actually opens up (the auto-chain's own continuation, or the next manual click).
   const handleUserInterjection = (): void => {
-    if (!userInterjection.trim() || debateFinished) return;
+    const question = userInterjection.trim();
+    if (!question || debateFinished) return;
+
+    const targetedParty = PARTIES.find((candidateParty) => candidateParty.id === targetSpeakerId);
     const userEntry: DebateEntry = {
       id: crypto.randomUUID(),
       sources: [],
       speakerId: "user",
       speakerName: MODERATOR_NAME,
-      text: userInterjection.trim(),
+      text: targetedParty
+        ? `Kan du svara på följande fråga, ${targetedParty.displayName.split(" ")[0]} från ${targetedParty.partyName}: ${question}`
+        : question,
     };
     const nextHistory = [...historyRef.current, userEntry];
     setHistory(nextHistory);
     historyRef.current = nextHistory;
     setUserInterjection("");
+
+    if (!isLoading && !autoMode && !isEndingDebate) {
+      const nextSpeaker = pickNextSpeaker();
+      if (nextSpeaker) {
+        generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
+      }
+    }
   };
 
   // Generates one party's reply and, in auto mode, immediately recurses into the next speaker —
@@ -236,7 +292,7 @@ export function useDebate(): UseDebateResult {
   // dependency on a re-render happening before the next turn can start. Reads history from
   // historyRef rather than the closure's own `history`, since that's frozen at whatever it was
   // when this exact call was made and a chained call happens before any re-render could refresh it.
-  const generateSpeech = async (partyId: string): Promise<void> => {
+  const generateSpeech = async (partyId: string, turnKind: TurnKind = "regular"): Promise<void> => {
     const party = PARTIES.find((candidateParty) => candidateParty.id === partyId);
     if (!party) return;
 
@@ -245,6 +301,29 @@ export function useDebate(): UseDebateResult {
     stoppedRef.current = false;
     currentSpeakerRef.current = partyId;
     setCurrentSpeakerId(partyId);
+
+    if (turnKind !== "targeted") {
+      const firstName = party.displayName.split(" ")[0];
+      let moderatorText: string;
+      if (turnKind === "opening") {
+        const partyList = new Intl.ListFormat("sv", { style: "long", type: "conjunction" }).format(
+          selectedParties.map((selectedParty) => selectedParty.partyName),
+        );
+        moderatorText = `Välkomna till dagens debatt mellan ${partyList}! Dagens fråga är: "${topic}". Först ut är ${firstName} från ${party.partyName} - varsågod!`;
+      } else if (turnKind === "closing") {
+        moderatorText = `Dags för slutplädering: ${firstName} från ${party.partyName}, sammanfatta ert budskap!`;
+      } else {
+        moderatorText = `Turen går till ${firstName} från ${party.partyName}`;
+      }
+      const moderatorEntry: DebateEntry = {
+        id: crypto.randomUUID(),
+        sources: [],
+        speakerId: "user",
+        speakerName: MODERATOR_NAME,
+        text: moderatorText,
+      };
+      currentHistory = [...currentHistory, moderatorEntry];
+    }
 
     // The API only sees fully-resolved entries — the placeholder below is display-only, added
     // after this snapshot so it doesn't confuse the prompt with an empty entry from this speaker.
@@ -267,6 +346,7 @@ export function useDebate(): UseDebateResult {
     const finalResult = await complete("", {
       body: {
         history: historyForApi,
+        isClosingStatement: turnKind === "closing",
         nextSpeakerId: partyId,
         selectedParties: selectedParties.map((selectedParty) => selectedParty.id),
         topic,
@@ -295,56 +375,86 @@ export function useDebate(): UseDebateResult {
       clearStreamingState();
     }
 
+    // Closing round: chain straight into the next party still owed a statement, in the order fixed
+    // when "Avsluta" was confirmed — once the queue is empty, the debate actually ends. Bails out
+    // silently if the component unmounted mid-round (debateFinishedRef is forced true then), same
+    // guard the auto-mode chain below uses.
+    if (turnKind === "closing") {
+      if (debateFinishedRef.current) return;
+      const nextClosingSpeakerId = closingQueueRef.current?.shift();
+      if (nextClosingSpeakerId) {
+        generateSpeech(nextClosingSpeakerId, "closing");
+      } else {
+        finishDebate();
+      }
+      return;
+    }
+
     // Auto mode: chain straight into the next speaker once this reply is done. Re-reads
     // autoMode/debateFinished from refs since this call may have started well before the user
-    // paused or ended things.
-    turnCountRef.current += 1;
-    if (autoModeRef.current && !debateFinishedRef.current && turnCountRef.current < MAX_DEBATE_TURNS) {
-      const nextSpeakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
-      if (nextSpeakerId) {
-        generateSpeech(nextSpeakerId);
+    // paused or ended things. Manual turns (autoMode off) never touch turnCountRef, so stepping
+    // through "Nästa replik" by hand is never capped.
+    if (autoModeRef.current && !debateFinishedRef.current) {
+      turnCountRef.current += 1;
+      if (turnCountRef.current < AUTO_MODE_TURN_CAP) {
+        const nextSpeaker = pickNextSpeaker();
+        if (nextSpeaker) {
+          generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
+        }
+      } else {
+        // Hit the auto-mode ceiling: pause and let the user decide whether to keep going, rather
+        // than silently ending the debate or running away unattended forever.
+        setAutoMode(false);
+        autoModeRef.current = false;
+        const shouldContinue = window.confirm(
+          `Debatten har nått ${AUTO_MODE_TURN_CAP} repliker i automatiskt läge. Vill du fortsätta?`,
+        );
+        if (shouldContinue && !debateFinishedRef.current) {
+          turnCountRef.current = 0;
+          setAutoMode(true);
+          autoModeRef.current = true;
+          const nextSpeaker = pickNextSpeaker();
+          if (nextSpeaker) {
+            generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
+          }
+        }
       }
-    } else if (turnCountRef.current >= MAX_DEBATE_TURNS && !debateFinishedRef.current) {
-      setDebateFinished(true);
-      debateFinishedRef.current = true;
-      setAutoMode(false);
-      autoModeRef.current = false;
-      clearStreamingState();
+    } else if (targetSpeakerIdRef.current && !debateFinishedRef.current && !isEndingDebateRef.current) {
+      // Manual mode (no auto-chain to pick this up on its own), but a party was targeted while this
+      // turn was still in flight — answer it now instead of leaving the debate silently paused until
+      // an extra "Nästa talare" click. Doesn't interrupt the reply that just finished, just follows it.
+      const nextSpeaker = pickNextSpeaker();
+      if (nextSpeaker) {
+        generateSpeech(nextSpeaker.speakerId, "targeted");
+      }
     }
-  };
-
-  // Public entry point for clicks (stage avatars, speaker selector): guards against starting a
-  // second request while one is already in flight, then hands off to generateSpeech.
-  const handleSelectSpeaker = async (partyId: string): Promise<void> => {
-    if (isLoading || debateFinished) return;
-    await generateSpeech(partyId);
   };
 
   // Manual stepping: advance to next speaker when auto-mode is paused.
   const handleNextSpeaker = (): void => {
-    if (isLoading || debateFinished || autoMode) return;
-    const nextSpeakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
-    if (nextSpeakerId) {
-      generateSpeech(nextSpeakerId);
+    if (isLoading || debateFinished || autoMode || isEndingDebate) return;
+    const nextSpeaker = pickNextSpeaker();
+    if (nextSpeaker) {
+      generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
     }
   };
 
-  // Starts in auto mode with a randomly picked opening speaker, so the debate runs on its own
-  // from the moment it starts instead of waiting for the user to press play.
+  // Starts paused with a randomly picked opening speaker — the user steps through turns by hand
+  // (or presses play to switch to auto mode) rather than the debate running on its own by default.
   const startDebate = (): void => {
     if (selectedParties.length < 2 || !topic.trim()) return;
     setDebateStarted(true);
     setHistory([]);
     historyRef.current = [];
     setDebateFinished(false);
-    setAutoMode(true);
-    autoModeRef.current = true;
+    setAutoMode(false);
+    autoModeRef.current = false;
     autoModeSpeakerQueueRef.current = [];
     turnCountRef.current = 0;
 
     const openingSpeaker = selectedParties[Math.floor(Math.random() * selectedParties.length)];
     if (openingSpeaker) {
-      generateSpeech(openingSpeaker.id);
+      generateSpeech(openingSpeaker.id, "opening");
     }
   };
 
@@ -353,12 +463,18 @@ export function useDebate(): UseDebateResult {
   // after setAutoMode, not inside its updater — a setState updater must stay pure, and generateSpeech
   // itself calls setState (React double-invokes updaters in dev Strict Mode to catch exactly this).
   const toggleAutoMode = (): void => {
+    if (isEndingDebate) return;
     const next = !autoMode;
     setAutoMode(next);
-    if (next && !isLoading && !debateFinished && selectedParties.length >= 2) {
-      const nextSpeakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
-      if (nextSpeakerId) {
-        generateSpeech(nextSpeakerId);
+    if (next) {
+      // Fresh cap for each auto-mode stint, so pausing and resuming doesn't inherit a count from
+      // an earlier run.
+      turnCountRef.current = 0;
+      if (!isLoading && !debateFinished && selectedParties.length >= 2) {
+        const nextSpeaker = pickNextSpeaker();
+        if (nextSpeaker) {
+          generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
+        }
       }
     }
   };
@@ -387,10 +503,32 @@ export function useDebate(): UseDebateResult {
     }
   };
 
-  const endDebate = (): void => {
+  // Actually ends the debate, once every party has had its closing statement (or there were none to give).
+  const finishDebate = (): void => {
     setDebateFinished(true);
     setCurrentSpeakerId(null);
     setAutoMode(false);
+    setIsEndingDebate(false);
+    closingQueueRef.current = null;
+  };
+
+  // "Avsluta" doesn't end the debate outright — it gives every participating party one final
+  // closing statement first (in a freshly shuffled order), then finishDebate ends it for real.
+  const endDebate = (): void => {
+    if (debateFinished || isEndingDebate) return;
+    setAutoMode(false);
+    autoModeRef.current = false;
+    setIsEndingDebate(true);
+    setTargetSpeakerId(null);
+    targetSpeakerIdRef.current = null;
+    const closingOrder = shuffleArray(selectedParties.map((party) => party.id));
+    const firstSpeakerId = closingOrder.shift();
+    closingQueueRef.current = closingOrder;
+    if (firstSpeakerId) {
+      generateSpeech(firstSpeakerId, "closing");
+    } else {
+      finishDebate();
+    }
   };
 
   const resetDebate = (): void => {
@@ -403,9 +541,12 @@ export function useDebate(): UseDebateResult {
     setCurrentSpeakerId(null);
     setPendingText("");
     setUserInterjection("");
+    setTargetSpeakerId(null);
     setStreamingEntryId(null);
     streamingEntryIdRef.current = null;
     setAutoMode(false);
+    setIsEndingDebate(false);
+    closingQueueRef.current = null;
     autoModeSpeakerQueueRef.current = [];
     lastSpeakerIdRef.current = null;
     turnCountRef.current = 0;
@@ -426,18 +567,20 @@ export function useDebate(): UseDebateResult {
     debateStarted,
     endDebate,
     handleNextSpeaker,
-    handleSelectSpeaker,
     handleStop,
     handleUserInterjection,
     history,
+    isEndingDebate,
     isLoading,
     pendingText,
     resetDebate,
     selectedParties,
+    setTargetSpeakerId,
     setTopic,
     setUserInterjection,
     startDebate,
     streamingEntryId,
+    targetSpeakerId,
     toggleAutoMode,
     toggleParty,
     topic,

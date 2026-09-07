@@ -26,11 +26,7 @@ export default function InitialQuestionForm({
   return (
     <div className="space-y-6">
       <QuestionInputCard
-        buttonLabel={
-          selectedParty
-            ? `Fråga ${selectedParty.displayName.split(" ")[0]} från ${selectedParty.partyName}!`
-            : "Fråga partiet!"
-        }
+        buttonLabel="Skicka"
         id="direct-question-input"
         isLoading={isLoading}
         onChange={onQuestionChange}

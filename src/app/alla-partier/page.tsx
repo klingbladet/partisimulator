@@ -152,7 +152,7 @@ function GridContent() {
 
         {/* Question input */}
         <QuestionInputCard
-          buttonLabel="Fråga alla 8!"
+          buttonLabel="Skicka"
           className="mb-6"
           id="grid-question-input"
           isLoading={isLoading}
@@ -199,7 +199,9 @@ function GridContent() {
         {hasStarted && (
           <div className="cartoon-card mb-4 flex items-center gap-2 p-4">
             <Lightbulb aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-amber-500" />
-            <span className="truncate font-black text-gray-800">&quot;{activeQuestion}&quot;</span>
+            <span className="line-clamp-2 min-w-0 font-black text-gray-800 sm:line-clamp-1">
+              &quot;{activeQuestion}&quot;
+            </span>
           </div>
         )}
 

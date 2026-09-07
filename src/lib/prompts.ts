@@ -128,13 +128,17 @@ export function buildDebatePrompt(
   topic: string,
   context: ManifestChunk[],
   conversationHistory: { speaker: string; text: string }[],
+  isClosingStatement = false,
 ): string {
   const lastEntry = conversationHistory[conversationHistory.length - 1];
   const genericClosingInstruction = `Leverera nu ${party.displayName}s replik i debatten om "${topic}". Håll dig STRIKT till ${promptTemplate.mode.debate.lengthConstraint}. Var engagerad och argumentera för ${party.partyName}s lösningar!`;
 
   let immediateReactionRule: string;
   let closingInstruction: string;
-  if (lastEntry === undefined) {
+  if (isClosingStatement) {
+    immediateReactionRule = `Detta är debattens SISTA replik - din slutplädering. Bemöt INTE föregående talare eller enskilda repliker; sammanfatta istället kärnan i ${party.partyName}s budskap i frågan om "${topic}" och avsluta starkt, som om du vänder dig direkt till väljarna.`;
+    closingInstruction = `Leverera nu ${party.displayName}s slutplädering i debatten om "${topic}". Håll dig STRIKT till ${promptTemplate.mode.debate.lengthConstraint}. Sammanfatta ${party.partyName}s budskap kraftfullt och avslutande.`;
+  } else if (lastEntry === undefined) {
     immediateReactionRule = `Detta är debattens första replik - inget att bemöta ännu, sätt tonen med ${party.partyName}s ståndpunkt.`;
     closingInstruction = genericClosingInstruction;
   } else if (lastEntry.speaker.includes("Debattledare")) {
@@ -146,7 +150,7 @@ export function buildDebatePrompt(
   }
 
   const contradictionHuntRule =
-    conversationHistory.length > 1
+    !isClosingStatement && conversationHistory.length > 1
       ? `\n- Skanna ÄVEN hela debatthistoriken (inte bara senaste repliken): om en tidigare talare säger emot något de själva sa TIDIGARE i samma debatt, peka ut DET explicit med konkret hänvisning (t.ex. "Nyss sa du X, men tidigare sa du Y - vilket gäller?"). Använd detta SPARSAMT och bara vid en genuin, tydlig motsägelse - hitta ALDRIG på en motsägelse som inte finns, och gör det inte i varje replik. Detta har LÄGST prioritet av allt i din replik: hoppa över det helt om det tränger undan din huvudreplik, ditt eget partis lösning, eller en källhänvisning inom de 2-3 meningarna.`
       : "";
   const debateReactionRule = `${immediateReactionRule}${contradictionHuntRule}`;

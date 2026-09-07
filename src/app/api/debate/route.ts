@@ -18,11 +18,13 @@ export async function POST(req: NextRequest): Promise<Response> {
       topic,
       history,
       nextSpeakerId,
+      isClosingStatement,
     }: {
       selectedParties: string[];
       topic: string;
       history: DebateEntry[];
       nextSpeakerId: string;
+      isClosingStatement?: boolean;
     } = await req.json();
 
     if (!topic || !nextSpeakerId || !selectedParties?.length) {
@@ -44,12 +46,14 @@ export async function POST(req: NextRequest): Promise<Response> {
     const retrievalQuery = buildRetrievalQuery(topic, recentHistory);
     const context = await retrieveContext(nextSpeakerId, retrievalQuery);
 
-    const systemPrompt = buildDebatePrompt(party, topic, context, recentHistory);
+    const systemPrompt = buildDebatePrompt(party, topic, context, recentHistory, Boolean(isClosingStatement));
 
     const lastEntry = recentHistory[recentHistory.length - 1];
 
     let userMessageContent: string;
-    if (lastEntry?.speaker.includes("Debattledare")) {
+    if (isClosingStatement) {
+      userMessageContent = `Det är dags för ${party.displayName} att ge sin slutplädering i debatten om "${topic}".`;
+    } else if (lastEntry?.speaker.includes("Debattledare")) {
       userMessageContent = `Debattledaren har ställt frågan: "${lastEntry.text}". Ge ${party.displayName}s direkta replik.`;
     } else {
       userMessageContent = `Det är dags för ${party.displayName} att ta ordet i debatten om "${topic}".`;

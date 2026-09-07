@@ -28,6 +28,7 @@
   --color-error-bg: #fff5f5;
   --color-error-border: #f44336;
   --color-success: #22c55e;
+  --color-warning: #fbbf24;
   --color-placeholder: #aaaaaa;
   --color-source-bg: #e8f4fd;
   --color-source-border: #2196f3;
@@ -381,8 +382,14 @@ body {
 
 .party-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 580px) {
+  .party-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (min-width: 768px) {
@@ -393,8 +400,14 @@ body {
 
 .grid-answers {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
+}
+
+@media (min-width: 580px) {
+  .grid-answers {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 1024px) {
@@ -438,6 +451,17 @@ body {
 }
 
 .nav-tab.active:hover {
+  box-shadow: var(--shadow-btn-hover);
+  transform: translate(-1px, -1px);
+}
+
+.nav-menu-toggle {
+  background: var(--color-white);
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
+}
+
+.nav-menu-toggle:hover {
   box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
 }

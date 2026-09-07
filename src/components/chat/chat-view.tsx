@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw, Send, Square } from "lucide-react";
+import { Lightbulb, Send, Square } from "lucide-react";
 import type { RefObject } from "react";
 import Bubble from "@/components/shared/bubble";
 import PartyAvatar from "@/components/shared/party-avatar";
@@ -18,7 +18,6 @@ interface ChatViewProps {
   followUpQuestion: string;
   onFollowUpChange: (value: string) => void;
   onSendFollowUp: () => void;
-  onReset: () => void;
   onStop: () => void;
 }
 
@@ -32,41 +31,29 @@ export default function ChatView({
   followUpQuestion,
   onFollowUpChange,
   onSendFollowUp,
-  onReset,
   onStop,
 }: ChatViewProps): React.JSX.Element {
   return (
     <div className="space-y-4">
-      {/* Active Party Header Banner */}
+      {/* Active question + party banner, matching the question strip on Alla partier and Debatt */}
       {selectedParty && (
-        <div
-          className="cartoon-card flex flex-wrap items-center justify-between gap-3 p-4"
-          style={{ backgroundColor: "#1a1a1a", color: "white" }}
-        >
-          <div className="flex items-center gap-3">
-            <PartyAvatar
-              badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
-              className="relative overflow-hidden rounded-full border-2 border-white"
-              party={selectedParty}
-              size={46}
-              style={{ backgroundColor: selectedParty.color }}
-            />
-            <div>
-              <div className="font-black text-lg text-white">{selectedParty.displayName}</div>
-              <div className="font-bold text-gray-300 text-sm">{selectedParty.partyName}</div>
-            </div>
+        <div className="cartoon-card flex flex-wrap items-center justify-between gap-3 p-4">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <Lightbulb aria-hidden="true" className="h-5 w-5 flex-shrink-0 text-amber-500" />
+            <span className="line-clamp-2 font-black text-gray-800 sm:line-clamp-1">
+              &quot;{chatHistory.find((message) => message.role === "user")?.text}&quot;
+            </span>
           </div>
 
-          <button
-            className="cartoon-btn cartoon-btn-ghost px-3 py-1.5 text-xs"
-            disabled={isLoading}
-            id="reset-chat-btn"
-            onClick={onReset}
-            type="button"
-          >
-            <RotateCcw aria-hidden="true" className="h-3.5 w-3.5" />
-            Byt parti / Ny fråga
-          </button>
+          <div title={`${selectedParty.displayName} (${selectedParty.partyName})`}>
+            <PartyAvatar
+              badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
+              className="relative overflow-hidden rounded-full border-2"
+              party={selectedParty}
+              size={40}
+              style={{ backgroundColor: selectedParty.color, borderColor: "var(--border)" }}
+            />
+          </div>
         </div>
       )}
 

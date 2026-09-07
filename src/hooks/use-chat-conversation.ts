@@ -14,7 +14,6 @@ interface UseChatConversationResult {
   chatHistory: ChatMessage[];
   error: Error | undefined;
   followUpQuestion: string;
-  handleResetConversation: () => void;
   handleSendQuestion: (textToSend: string) => Promise<void>;
   handleStop: () => void;
   isLoading: boolean;
@@ -192,20 +191,11 @@ export function useChatConversation(): UseChatConversationResult {
     chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
-  const handleResetConversation = (): void => {
-    setChatHistory([]);
-    setPendingText("");
-    setPendingStance(undefined);
-    setQuestion("");
-    setFollowUpQuestion("");
-  };
-
   return {
     chatEndRef,
     chatHistory,
     error,
     followUpQuestion,
-    handleResetConversation,
     handleSendQuestion,
     handleStop,
     isLoading,
