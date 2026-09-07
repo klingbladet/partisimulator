@@ -1,4 +1,9 @@
 import { z } from "zod";
+import { PARTIES } from "./parties";
+
+// A real session can run long, but nothing legitimate needs more turns than this per request -
+// past it, a payload is more likely a forged history inflating LLM token cost than a real chat.
+const MAX_HISTORY_ENTRIES = 40;
 
 const CONTROL_CHAR_CODES = [
   ...Array.from({ length: 9 }, (_, index) => index), // U+0000-U+0008
@@ -29,7 +34,7 @@ const chatHistoryEntrySchema = z.object({
 });
 
 export const askRequestSchema = z.object({
-  history: z.array(chatHistoryEntrySchema).optional(),
+  history: z.array(chatHistoryEntrySchema).max(MAX_HISTORY_ENTRIES).optional(),
   partyId: z.string().min(1),
   question: freeText(500),
 });
@@ -39,14 +44,14 @@ export const askAllRequestSchema = z.object({
 });
 
 const debateHistoryEntrySchema = z.object({
-  speakerName: z.string().min(1).max(200),
+  speakerName: freeText(200),
   text: freeText(1000),
 });
 
 export const debateRequestSchema = z.object({
-  history: z.array(debateHistoryEntrySchema),
+  history: z.array(debateHistoryEntrySchema).max(MAX_HISTORY_ENTRIES),
   isClosingStatement: z.boolean().optional(),
   nextSpeakerId: z.string().min(1),
-  selectedParties: z.array(z.string().min(1)).min(1),
+  selectedParties: z.array(z.string().min(1)).min(1).max(PARTIES.length),
   topic: freeText(500),
 });

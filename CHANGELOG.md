@@ -6,8 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Server-side request validation (`zod`, `src/lib/validation.ts`) for `/api/ask`, `/api/ask-all`, and `/api/debate` - the 500-char question/topic limit was only ever enforced by the input's `maxLength`, so any direct POST bypassed it entirely. Also strips zero-width and control characters from free-text fields, and constrains conversation-history `role` to `"user" | "assistant"` so a crafted request body can no longer smuggle an extra role into the message list sent to the model.
-- Debate mode: the interjection input now has the same 500-char limit as the topic and question fields - it had none before, client or server side.
+- None yet...
 
 ### Changed
 
@@ -19,16 +18,17 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Leak-preamble patterns in `sanitize.ts` could swallow an entire streamed reply. A missing end-of-string fallback let a mid-stream leak preamble (for example "Here's a thinking process:") pass through unstripped for one chunk, then get stripped retroactively once more text arrived, leaving the real answer permanently truncated.
-- Restored the "Analyze User Input" and "We need to decide/follow" leak patterns, dropped from `sanitize.ts` without a replacement.
-- Removed the multiline flag from the leak patterns so they only match at the very start of a reply, not partway through legitimate content that happens to start a line with a leak phrase.
-- Bounded the "User Safety" leak pattern to its own line instead of matching to the end of the string, so it can no longer delete real content that follows it.
-- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak — real answers could go silently missing.
+- None yet...
 
 ## [0.1.5] - 2026-09-07
 
 ### Added
 
+- Server-side request validation (`zod`, `src/lib/validation.ts`) for `/api/ask`, `/api/ask-all`, and `/api/debate` - the 500-char question/topic limit was only ever enforced by the input's `maxLength`, so any direct POST bypassed it entirely. Also strips zero-width and control characters from free-text fields, and constrains conversation-history `role` to `"user" | "assistant"` so a crafted request body can no longer smuggle an extra role into the message list sent to the model
+- Debate mode: the interjection input now has the same 500-char limit as the topic and question fields it had none before, client or server side
+- Capped `history` arrays in `/api/ask` and `/api/debate` at 40 entries, and `selectedParties` at the number of real parties, so a direct POST can't smuggle in an unbounded array to inflate LLM cost per request
+- `debateHistoryEntrySchema.speakerName` now goes through the same hidden-character stripping as every other free-text field, instead of a bare length check
+- Prompt injection: retrieved manifest text and debate history are now wrapped in `[DATA BÖRJAR]`/`[DATA SLUTAR]` markers inside the system prompt, with an explicit rule that content between them is data to respond to, never instructions to follow - closes the gap where debate's moderator interjections sat inline with real instructions instead of in their own message role
 - `QuestionInputCard`, `PartyPickerCard`, `PageHeader`, `InputStack`, and `CountedTextarea` shared components, replacing duplicated card/heading/spacing markup across the home, ask-all, and debate pages so their spacing can't drift independently again.
 - Debate topic field now has the same 500-char limit and counter chip as the question inputs.
 - Local copies of each party's manifesto PDF (`public/manifests/`), plus a shared no-answer fallback (`src/lib/no-answer.ts`, `ManifestLink`) shown in place of a dropped or blank reply across chat, debate, and ask-all when nothing usable comes back from the model — stays in character and links to the party's own manifesto instead of leaving silence or an empty bubble.
@@ -72,6 +72,11 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Leak-preamble patterns in `sanitize.ts` could swallow an entire streamed reply. A missing end-of-string fallback let a mid-stream leak preamble (for example "Here's a thinking process:") pass through unstripped for one chunk, then get stripped retroactively once more text arrived, leaving the real answer permanently truncated.
+- Restored the "Analyze User Input" and "We need to decide/follow" leak patterns, dropped from `sanitize.ts` without a replacement.
+- Removed the multiline flag from the leak patterns so they only match at the very start of a reply, not partway through legitimate content that happens to start a line with a leak phrase.
+- Bounded the "User Safety" leak pattern to its own line instead of matching to the end of the string, so it can no longer delete real content that follows it.
+- Fixed a real gap (leaks weren't sanitized mid-stream, only after completion), but the fix itself introduced the swallow bug plus two anchoring regressions. A follow-up commit partially reverted the leak coverage nine minutes later, likely papering over side effects instead of fixing the root cause. Net result before my fix: worse than the original leak — real answers could go silently missing.
 - Ask-all's question card used `p-5` instead of the `p-6` every other card uses.
 - Submit/stop buttons in `QuestionInput` had a stray `mt-2` stacked on top of `InputStack`'s gap, giving them a bigger, inconsistent gap than the debate setup panel's equivalent button — removed so all `InputStack` consumers share the same spacing.
 - Debate's topic input used `mt-3` spacing between the textarea and its buttons instead of the `gap-2` used everywhere else, and its textarea lacked the bottom padding reserved for the character counter, making it look tighter than the other input cards even after the gap fix.
