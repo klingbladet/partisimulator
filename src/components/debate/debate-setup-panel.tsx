@@ -68,7 +68,7 @@ export default function DebateSetupPanel({
             Slumpa fråga
           </button>
 
-          {/* Start button — directly under the input, like the submit button in QuestionInput */}
+          {/* Start button - directly under the input, like the submit button in QuestionInput */}
           <button
             className="cartoon-btn cartoon-btn-primary w-full py-4 text-lg"
             disabled={selectedParties.length < 2 || !topic.trim()}

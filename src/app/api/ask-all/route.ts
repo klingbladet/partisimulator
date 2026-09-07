@@ -37,7 +37,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   // Set up SSE stream
   const encoder = new TextEncoder();
   // A ReadableStream's own start() executor keeps running to completion even after the client
-  // disconnects — only its cancel() callback tells us that happened, so a dedicated controller
+  // disconnects - only its cancel() callback tells us that happened, so a dedicated controller
   // (rather than req.signal, which tracks the already-fully-read request body, not the response
   // being read) is what actually stops the in-flight generateText calls for every party.
   const abortController = new AbortController();
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
           if (!finalShort) {
             // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning
-            // preamble) — show the in-character fallback instead of an empty card.
+            // preamble) - show the in-character fallback instead of an empty card.
             const fallback = buildNoAnswerFallback(party);
             const fallbackEvent = JSON.stringify({
               manifestUrl: fallback.manifestUrl,

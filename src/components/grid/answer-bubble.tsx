@@ -123,7 +123,7 @@ export default function AnswerBubble({
         )}
       </div>
 
-      {/* Footer — sources always last, at the very end of the card */}
+      {/* Footer - sources always last, at the very end of the card */}
       {!isLoading && (
         <div className="answer-bubble-footer">
           {manifestUrl ? (

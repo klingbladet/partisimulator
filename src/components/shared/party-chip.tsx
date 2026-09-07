@@ -11,7 +11,7 @@ interface PartyChipProps {
   size?: "sm" | "md" | "lg";
   showName?: boolean;
   disabled?: boolean;
-  /** Grows to fill its flex row instead of sizing to content — for a flex-wrap layout with few items. */
+  /** Grows to fill its flex row instead of sizing to content - for a flex-wrap layout with few items. */
   fullWidth?: boolean;
 }
 

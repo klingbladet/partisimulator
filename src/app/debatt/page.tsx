@@ -69,7 +69,7 @@ export default function DebattPage(): React.JSX.Element {
         ) : (
           /* Debate view */
           <div className="w-full space-y-4">
-            {/* Topic + who's debating, in one slim strip — the active speaker gets a colored ring */}
+            {/* Topic + who's debating, in one slim strip - the active speaker gets a colored ring */}
             <DebateStage currentSpeakerId={currentSpeakerId} parties={selectedParties} topic={topic} />
 
             {/* Roomy, Higher & Narrower Chat Transcript Window */}

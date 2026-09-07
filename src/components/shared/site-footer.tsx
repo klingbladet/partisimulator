@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** The single, global AI-simulation notice. Same design on every page, pinned to the bottom — never duplicated per answer. */
+/** The single, global AI-simulation notice. Same design on every page, pinned to the bottom - never duplicated per answer. */
 export default function SiteFooter(): React.JSX.Element {
   return (
     <footer

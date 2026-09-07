@@ -82,7 +82,7 @@ export function useChatConversation(): UseChatConversationResult {
     const cleaned = cleanText(stripStanceMarker(sanitized));
     if (!cleaned) {
       // The raw reply sanitized down to nothing (e.g. it was entirely a leaked reasoning
-      // preamble) — show the in-character fallback instead of leaving the question unanswered.
+      // preamble) - show the in-character fallback instead of leaving the question unanswered.
       addFallbackMessage();
       return;
     }
@@ -118,7 +118,7 @@ export function useChatConversation(): UseChatConversationResult {
     streamProtocol: "text",
   });
 
-  // Abort an in-flight answer when the user navigates away — otherwise the stream keeps running
+  // Abort an in-flight answer when the user navigates away - otherwise the stream keeps running
   // server-side with nothing left to render it.
   const stopRef = useRef(stop);
   stopRef.current = stop;
@@ -137,7 +137,7 @@ export function useChatConversation(): UseChatConversationResult {
     }
   }, [completion, isLoading]);
 
-  // Auto-scroll to the newest turn, but only when one is added — not on every streamed chunk,
+  // Auto-scroll to the newest turn, but only when one is added - not on every streamed chunk,
   // so scrolling up to re-read earlier messages during generation isn't fought.
   const chatHistoryLength = chatHistory.length;
   useEffect(() => {
