@@ -1,3 +1,6 @@
 {
-  "git.allowNoVerifyCommit": false
+  "git.allowNoVerifyCommit": false,
+  "git.branchProtection": [
+    "main"
+  ]
 }
