@@ -7,29 +7,21 @@ import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
 import { buildRetrievalQuery, retrieveContext } from "@/lib/rag";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
-import type { DebateEntry } from "@/types/debate";
+import { debateRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
-    const {
-      selectedParties,
-      topic,
-      history,
-      nextSpeakerId,
-      isClosingStatement,
-    }: {
-      selectedParties: string[];
-      topic: string;
-      history: DebateEntry[];
-      nextSpeakerId: string;
-      isClosingStatement?: boolean;
-    } = await req.json();
-
-    if (!topic || !nextSpeakerId || !selectedParties?.length) {
-      return errorResponse("topic, nextSpeakerId och selectedParties krävs", 400);
+    const body = await req.json();
+    const parsed = debateRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return errorResponse(
+        "Ogiltig request - kontrollera ämne, historik och valda partier (max 500 tecken för ämnet)",
+        400,
+      );
     }
+    const { history, isClosingStatement, nextSpeakerId, topic } = parsed.data;
 
     const party = getParty(nextSpeakerId);
     if (!party) {

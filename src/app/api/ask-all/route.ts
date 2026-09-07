@@ -9,21 +9,24 @@ import { retrieveContext } from "@/lib/rag";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { limitToSentences } from "@/lib/sentence-limit";
 import { cleanText, extractSources, extractStance, splitShortLong, stripStanceMarker } from "@/lib/sources";
+import { askAllRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 120;
 
 export async function POST(req: NextRequest): Promise<Response> {
-  let question: string | undefined;
+  let body: unknown;
   try {
-    ({ question } = await req.json());
+    body = await req.json();
   } catch (error) {
     console.error("Error in /api/ask-all:", error);
     return errorResponse("Ogiltig request-body", 400);
   }
 
-  if (!question) {
-    return errorResponse("question krävs", 400);
+  const parsed = askAllRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return errorResponse("Ogiltig fråga - den får inte vara tom eller längre än 500 tecken", 400);
   }
+  const { question } = parsed.data;
 
   // Set up SSE stream
   const encoder = new TextEncoder();

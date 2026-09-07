@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None yet...
+- Server-side request validation (`zod`, `src/lib/validation.ts`) for `/api/ask`, `/api/ask-all`, and `/api/debate` - the 500-char question/topic limit was only ever enforced by the input's `maxLength`, so any direct POST bypassed it entirely. Also strips zero-width and control characters from free-text fields, and constrains conversation-history `role` to `"user" | "assistant"` so a crafted request body can no longer smuggle an extra role into the message list sent to the model.
+- Debate mode: the interjection input now has the same 500-char limit as the topic and question fields - it had none before, client or server side.
 
 ### Changed
 

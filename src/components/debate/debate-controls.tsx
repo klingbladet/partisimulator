@@ -90,6 +90,7 @@ export default function DebateControls({
           <input
             className="cartoon-input flex-1 text-sm"
             id="user-interjection-input"
+            maxLength={500}
             onChange={(event) => onUserInterjectionChange(event.target.value)}
             onKeyDown={(event) => {
               if (event.key === "Enter" && !event.shiftKey) {

@@ -6,19 +6,20 @@ import { getParty } from "@/lib/parties";
 import { buildOneShotPrompt, getMaxSentences } from "@/lib/prompts";
 import { retrieveContext } from "@/lib/rag";
 import { createSentenceLimitTransform } from "@/lib/sentence-limit";
+import { askRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest): Promise<Response> {
   try {
     const body = await req.json();
-    const partyId = body.partyId;
-    const question = body.question || body.prompt;
-    const history: Array<{ role: "user" | "assistant"; content: string }> = body.history || [];
-
-    if (!partyId || !question) {
-      return errorResponse("partyId och question krävs", 400);
+    // useCompletion's own default body carries the prompt as `prompt`; the explicit body override
+    // in use-chat-conversation.ts sends the same text again as `question`, which takes precedence.
+    const parsed = askRequestSchema.safeParse({ ...body, question: body.question || body.prompt });
+    if (!parsed.success) {
+      return errorResponse("Ogiltig fråga - den får inte vara tom eller längre än 500 tecken", 400);
     }
+    const { history = [], partyId, question } = parsed.data;
 
     const party = getParty(partyId);
     if (!party) {
