@@ -46,10 +46,9 @@ export default function DebateSetupPanel({
           value={topic}
         />
         <button
-          className="cartoon-btn cartoon-btn-ghost mt-3 text-xs"
+          className="cartoon-btn cartoon-btn-ghost mt-3 w-full text-xs"
           id="debate-topic-random"
           onClick={() => onTopicChange(getRandomExampleQuestion())}
-          style={{ inlineSize: "100%" }}
           type="button"
         >
           <Shuffle className="h-3.5 w-3.5" />
@@ -58,11 +57,10 @@ export default function DebateSetupPanel({
 
         {/* Start button — directly under the input, like the submit button in QuestionInput */}
         <button
-          className="cartoon-btn cartoon-btn-primary mt-3 py-4 text-lg"
+          className="cartoon-btn cartoon-btn-primary mt-3 w-full py-4 text-lg"
           disabled={selectedParties.length < 2 || !topic.trim()}
           id="start-debate-btn"
           onClick={onStartDebate}
-          style={{ inlineSize: "100%" }}
           type="button"
         >
           {selectedParties.length < 2 ? (

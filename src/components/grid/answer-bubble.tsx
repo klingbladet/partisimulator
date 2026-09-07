@@ -40,7 +40,6 @@ export default function AnswerBubble({
       <div className="answer-bubble-header" style={{ backgroundColor: party.color, borderColor: party.color }}>
         <PartyAvatar
           badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
-          badgeSize={18}
           className="relative overflow-hidden rounded-full border-2 border-white"
           party={party}
           size={42}

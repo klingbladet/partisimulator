@@ -24,7 +24,7 @@ export async function retrieveContext(partyId: string, question: string, topK: n
   console.log("--> [RAG] retrieveContext start for party:", partyId);
   try {
     const timeoutPromise = new Promise<ManifestChunk[]>((_, reject) =>
-      setTimeout(() => reject(new Error("RAG timeout (2.5s) - fortsätter utan manifest")), 2500),
+      setTimeout(() => reject(new Error("RAG timeout (30s) - fortsätter utan manifest")), 30_000),
     );
 
     const retrievalPromise = (async () => {

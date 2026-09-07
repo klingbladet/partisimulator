@@ -1,11 +1,13 @@
 import { useCompletion } from "@ai-sdk/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { PARTIES } from "@/lib/parties";
+import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources } from "@/lib/sources";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyId, PartyPersona } from "@/types/party";
 
 const MODERATOR_NAME = "Du (Debattledare)";
+const MAX_DEBATE_TURNS = 8;
 
 /** Fisher-Yates shuffle, used to randomize speaking order each auto-mode round. */
 function shuffleArray<T>(items: T[]): T[] {
@@ -24,9 +26,11 @@ interface UseDebateResult {
   currentSpeakerId: string | null;
   currentSpeakerParty: PartyPersona | null | undefined;
   debateFinished: boolean;
+  debateMode: "auto" | "manual";
   debateStarted: boolean;
   endDebate: () => void;
   handleSelectSpeaker: (partyId: string) => Promise<void>;
+  handleNextSpeaker: () => void;
   handleStop: () => void;
   handleUserInterjection: () => void;
   history: DebateEntry[];
@@ -51,6 +55,7 @@ export function useDebate(): UseDebateResult {
   const [topic, setTopic] = useState("");
   const [debateStarted, setDebateStarted] = useState(false);
   const [debateFinished, setDebateFinished] = useState(false);
+  const [debateMode, setDebateMode] = useState<"auto" | "manual">("auto");
   const [history, setHistory] = useState<DebateEntry[]>([]);
   const [currentSpeakerId, setCurrentSpeakerId] = useState<string | null>(null);
   const currentSpeakerRef = useRef<string | null>(null);
@@ -74,6 +79,7 @@ export function useDebate(): UseDebateResult {
   // Tracks who spoke last regardless of currentSpeakerId (which resets to null between turns), so a
   // freshly-shuffled queue can avoid opening with whoever just closed the previous round.
   const lastSpeakerIdRef = useRef<string | null>(null);
+  const turnCountRef = useRef(0);
 
   // Shuffles a fresh speaking-order queue if the current one is empty, then pops the next speaker.
   // Swaps the new queue's opening speaker if it would repeat the previous round's closing speaker.
@@ -121,12 +127,6 @@ export function useDebate(): UseDebateResult {
 
   const { completion, complete, isLoading, stop } = useCompletion({
     api: "/api/debate",
-    onFinish: (_prompt, completionText) => {
-      const speaker = currentSpeakerRef.current;
-      if (speaker && completionText) {
-        resolveStreamingEntry(speaker, completionText);
-      }
-    },
     streamProtocol: "text",
   });
 
@@ -146,7 +146,7 @@ export function useDebate(): UseDebateResult {
   // Update pending text as completion streams
   useEffect(() => {
     if (isLoading && completion) {
-      setPendingText(cleanText(completion));
+      setPendingText(cleanText(sanitizeSpeech(completion)));
     }
   }, [completion, isLoading]);
 
@@ -247,8 +247,9 @@ export function useDebate(): UseDebateResult {
       },
     });
 
+    const activeSpeaker = partyId;
     if (finalResult) {
-      resolveStreamingEntry(partyId, finalResult);
+      resolveStreamingEntry(activeSpeaker, sanitizeSpeech(finalResult));
     } else {
       // Nothing came back (e.g. network error) — drop the empty placeholder instead of leaving a
       // permanent blank bubble in the transcript.
@@ -261,11 +262,18 @@ export function useDebate(): UseDebateResult {
     // Auto mode: chain straight into the next speaker once this reply is done. Re-reads
     // autoMode/debateFinished from refs since this call may have started well before the user
     // paused or ended things.
-    if (autoModeRef.current && !debateFinishedRef.current) {
+    turnCountRef.current += 1;
+    if (autoModeRef.current && !debateFinishedRef.current && turnCountRef.current < MAX_DEBATE_TURNS) {
       const nextSpeakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
       if (nextSpeakerId) {
         generateSpeech(nextSpeakerId);
       }
+    } else if (turnCountRef.current >= MAX_DEBATE_TURNS && !debateFinishedRef.current) {
+      setDebateFinished(true);
+      debateFinishedRef.current = true;
+      setAutoMode(false);
+      autoModeRef.current = false;
+      clearStreamingState();
     }
   };
 
@@ -276,6 +284,15 @@ export function useDebate(): UseDebateResult {
     await generateSpeech(partyId);
   };
 
+  // Manual stepping: advance to next speaker when auto-mode is paused.
+  const handleNextSpeaker = (): void => {
+    if (isLoading || debateFinished || autoMode) return;
+    const nextSpeakerId = takeNextAutoSpeaker(lastSpeakerIdRef.current);
+    if (nextSpeakerId) {
+      generateSpeech(nextSpeakerId);
+    }
+  };
+
   // Starts in auto mode with a randomly picked opening speaker, so the debate runs on its own
   // from the moment it starts instead of waiting for the user to press play.
   const startDebate = (): void => {
@@ -284,8 +301,11 @@ export function useDebate(): UseDebateResult {
     setHistory([]);
     historyRef.current = [];
     setDebateFinished(false);
+    setDebateMode("auto");
     setAutoMode(true);
+    autoModeRef.current = true;
     autoModeSpeakerQueueRef.current = [];
+    turnCountRef.current = 0;
 
     const openingSpeaker = selectedParties[Math.floor(Math.random() * selectedParties.length)];
     if (openingSpeaker) {
@@ -340,6 +360,7 @@ export function useDebate(): UseDebateResult {
   const resetDebate = (): void => {
     setDebateStarted(false);
     setDebateFinished(false);
+    setDebateMode("auto");
     setHistory([]);
     historyRef.current = [];
     setSelectedParties([]);
@@ -352,6 +373,7 @@ export function useDebate(): UseDebateResult {
     setAutoMode(false);
     autoModeSpeakerQueueRef.current = [];
     lastSpeakerIdRef.current = null;
+    turnCountRef.current = 0;
   };
 
   let currentSpeakerParty: PartyPersona | null | undefined;
@@ -366,8 +388,10 @@ export function useDebate(): UseDebateResult {
     currentSpeakerId,
     currentSpeakerParty,
     debateFinished,
+    debateMode,
     debateStarted,
     endDebate,
+    handleNextSpeaker,
     handleSelectSpeaker,
     handleStop,
     handleUserInterjection,

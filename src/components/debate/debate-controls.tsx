@@ -1,6 +1,6 @@
 "use client";
 
-import { Flag, Pause, Play, RotateCcw, Send, Square, XCircle } from "lucide-react";
+import { Flag, Pause, Play, RotateCcw, Send, SkipForward, Square, XCircle } from "lucide-react";
 
 interface DebateControlsProps {
   debateFinished: boolean;
@@ -10,6 +10,7 @@ interface DebateControlsProps {
   onUserInterjectionSubmit: () => void;
   autoMode: boolean;
   onToggleAutoMode: () => void;
+  onNextSpeaker: () => void;
   onStop: () => void;
   onEndDebate: () => void;
   onResetDebate: () => void;
@@ -24,6 +25,7 @@ export default function DebateControls({
   onUserInterjectionSubmit,
   autoMode,
   onToggleAutoMode,
+  onNextSpeaker,
   onStop,
   onEndDebate,
   onResetDebate,
@@ -43,7 +45,7 @@ export default function DebateControls({
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="cartoon-card flex items-center gap-2 p-3">
       <input
         className="cartoon-input flex-1 text-sm"
         id="user-interjection-input"
@@ -94,6 +96,21 @@ export default function DebateControls({
       >
         {autoMode ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
       </button>
+
+      {!autoMode && (
+        <button
+          aria-label="Nästa replik"
+          className="cartoon-btn"
+          disabled={isLoading}
+          id="next-speaker-btn"
+          onClick={onNextSpeaker}
+          style={{ backgroundColor: "var(--color-ink)", color: "var(--color-white)" }}
+          title="Nästa replik"
+          type="button"
+        >
+          <SkipForward className="h-4 w-4" />
+        </button>
+      )}
 
       <button
         aria-label="Avsluta debatten"

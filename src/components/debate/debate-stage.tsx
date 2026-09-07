@@ -46,7 +46,6 @@ export default function DebateStage({
             >
               <PartyAvatar
                 badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border border-black overflow-hidden flex items-center justify-center p-0.5"
-                badgeSize={14}
                 className="relative overflow-hidden rounded-full border-2"
                 party={party}
                 size={36}

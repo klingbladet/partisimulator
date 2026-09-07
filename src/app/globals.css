@@ -11,11 +11,13 @@
   --foreground: #1a1a1a;
   --border: #1a1a1a;
   --border-width: 3px;
-  --shadow: 4px 4px 0px #1a1a1a;
-  --shadow-hover: 6px 6px 0px #1a1a1a;
+  --shadow: 4px 4px 0px var(--border);
+  --shadow-hover: 6px 6px 0px var(--border);
+  --shadow-btn: 3px 3px 0px var(--border);
+  --shadow-btn-hover: 5px 5px 0px var(--border);
+  --shadow-btn-active: 1px 1px 0px var(--border);
   --radius: 16px;
   --radius-sm: 10px;
-  --radius-pill: 999px;
 
   /* Party colors */
   --color-s: #ee2524;
@@ -32,6 +34,12 @@
   --color-cream-dark: #f5edd8;
   --color-ink: #1a1a1a;
   --color-white: #ffffff;
+  --color-user: #4338ca;
+  --color-error: #b91c1c;
+  --color-error-bg: #fff5f5;
+  --color-error-border: #f44336;
+  --color-warning: #f0a500;
+  --color-placeholder: #aaaaaa;
   --color-source-bg: #e8f4fd;
   --color-source-border: #2196f3;
   --color-source-text: #0d47a1;
@@ -45,8 +53,19 @@
 *::before,
 *::after {
   box-sizing: border-box;
-  /* Themed gavel cursor everywhere, overriding every other cursor rule (buttons, disabled states, text inputs) */
-  cursor: url("/assets/icons/gavel_32.png"), auto !important;
+  cursor: url("/assets/icons/gavel_32.png"), auto;
+}
+
+/* Disabled elements keep the standard not-allowed cursor */
+:disabled,
+[disabled] {
+  cursor: not-allowed;
+}
+
+/* Global focus-visible ring for keyboard accessibility */
+*:focus-visible {
+  outline: 3px solid var(--color-user);
+  outline-offset: 2px;
 }
 
 h1,
@@ -63,7 +82,7 @@ h6,
 body {
   min-height: 100vh;
   font-family: "Nunito", sans-serif;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--foreground);
   cursor: url("/assets/icons/gavel_32.png"), auto;
@@ -111,17 +130,17 @@ body {
   cursor: pointer;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .cartoon-btn:hover {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
 .cartoon-btn:active {
-  box-shadow: 1px 1px 0px var(--border);
+  box-shadow: var(--shadow-btn-active);
   transform: translate(1px, 1px);
 }
 
@@ -146,7 +165,7 @@ body {
 
 .cartoon-btn:disabled {
   cursor: not-allowed;
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   opacity: 0.5;
   transform: none;
 }
@@ -168,22 +187,22 @@ body {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .party-chip:hover:not(:disabled) {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
 .party-chip:active:not(:disabled) {
-  box-shadow: 1px 1px 0px var(--border);
+  box-shadow: var(--shadow-btn-active);
   transform: translate(1px, 1px);
 }
 
 .party-chip.selected {
-  box-shadow: 5px 5px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-2px, -2px);
 }
 
@@ -259,7 +278,7 @@ body {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 3px 3px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   animation: slideInBubble 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
@@ -302,7 +321,7 @@ body {
 
 .cartoon-input::placeholder {
   font-weight: 500;
-  color: #aaa;
+  color: var(--color-placeholder);
 }
 
 /* ============================================
@@ -412,20 +431,29 @@ body {
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 2px 2px 0px var(--border);
+  box-shadow: var(--shadow-btn);
   transition: all 0.12s ease;
 }
 
 .nav-tab:hover {
-  box-shadow: 4px 4px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
 }
 
 .nav-tab.active {
   color: var(--color-white);
   background: var(--color-ink);
-  box-shadow: 4px 4px 0px var(--border);
+  box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
+}
+
+.app-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-cream);
+  border-bottom: var(--border-width) solid var(--border);
+  box-shadow: 0 3px 0px var(--border);
 }
 
 /* ============================================

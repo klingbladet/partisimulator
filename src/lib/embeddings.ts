@@ -1,33 +1,52 @@
 import { type FeatureExtractionPipeline, pipeline as xenovaPipeline } from "@xenova/transformers";
 
-/**
- * Local embedding helper using @xenova/transformers.
- * Runs entirely on the server — no external API call needed.
- *
- * Model: paraphrase-multilingual-MiniLM-L12-v2
- * - 384 dimensions
- * - Multilingual (supports Swedish)
- * - Downloaded and cached automatically on first use (~120 MB)
- */
-
 let _embedder: FeatureExtractionPipeline | null = null;
 
-export async function getEmbedder(): Promise<FeatureExtractionPipeline> {
-  console.log("--> [EMBEDDINGS] getEmbedder called, cached:", !!_embedder);
+/** Local embedding pipeline, cached after first load (~120MB, paraphrase-multilingual-MiniLM-L12-v2). */
+async function getEmbedder(): Promise<FeatureExtractionPipeline> {
   if (!_embedder) {
-    console.log("--> [EMBEDDINGS] Loading @xenova/transformers pipeline...");
     _embedder = await xenovaPipeline("feature-extraction", "Xenova/paraphrase-multilingual-MiniLM-L12-v2");
-    console.log("--> [EMBEDDINGS] Pipeline loaded successfully!");
   }
   return _embedder;
 }
 
-/**
- * Creates a 384-dimensional embedding vector for a given text.
- * Runs locally – no API key or network call required.
- */
-export async function createEmbedding(text: string): Promise<number[]> {
+async function createLocalEmbedding(text: string): Promise<number[]> {
   const pipe = await getEmbedder();
   const output = await pipe([text], { normalize: true, pooling: "mean" });
   return Array.from(output.data as Float32Array);
+}
+
+async function createOpenRouterEmbedding(text: string): Promise<number[]> {
+  const response = await fetch("https://openrouter.ai/api/v1/embeddings", {
+    body: JSON.stringify({
+      dimensions: 384,
+      input: text,
+      model: "openai/text-embedding-3-small",
+    }),
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`OpenRouter embedding failed (${response.status}): ${body}`);
+  }
+
+  const data = await response.json();
+  return data.data[0].embedding;
+}
+
+/**
+ * Creates a 384-dimensional embedding vector for a given text.
+ * Runs locally by default, with no network call or API key needed. Set EMBEDDINGS_PROVIDER=openrouter
+ * to call OpenRouter's hosted model instead, e.g. where bundling the local model isn't practical.
+ */
+export async function createEmbedding(text: string): Promise<number[]> {
+  if (process.env.EMBEDDINGS_PROVIDER === "openrouter") {
+    return createOpenRouterEmbedding(text);
+  }
+  return createLocalEmbedding(text);
 }

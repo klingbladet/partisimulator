@@ -43,7 +43,6 @@ export default function ChatView({
           <div className="flex items-center gap-3">
             <PartyAvatar
               badgeClassName="absolute -bottom-1 -end-1 rounded-full bg-white border-2 border-black overflow-hidden flex items-center justify-center p-0.5 shadow-sm"
-              badgeSize={22}
               className="relative overflow-hidden rounded-full border-2 border-white"
               party={selectedParty}
               size={46}
@@ -58,7 +57,7 @@ export default function ChatView({
           </div>
 
           <button
-            className="cartoon-btn cartoon-btn-ghost bg-white px-3 py-1.5 text-black text-xs hover:bg-gray-100"
+            className="cartoon-btn cartoon-btn-ghost px-3 py-1.5 text-xs"
             disabled={isLoading}
             id="reset-chat-btn"
             onClick={onReset}
@@ -74,7 +73,7 @@ export default function ChatView({
       <div
         className="cartoon-card flex max-h-[65vh] min-h-80 flex-col gap-4 overflow-y-auto border-3 p-4 md:p-6"
         id="chat-transcript"
-        style={{ backgroundColor: "#fbf9f4" }}
+        style={{ backgroundColor: "var(--color-cream)" }}
       >
         {chatHistory.map((message, index) => {
           if (message.role === "user") {

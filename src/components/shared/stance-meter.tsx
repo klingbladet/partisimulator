@@ -20,7 +20,7 @@ export default function StanceMeter({ stance }: StanceMeterProps): React.JSX.Ele
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border-2 px-2 py-0.5 font-black text-[10px] uppercase tracking-wide ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full border-2 px-2.5 py-0.5 font-bold text-[11px] uppercase tracking-wide ${className}`}
     >
       <Icon className="h-3 w-3" />
       <span>{label}</span>

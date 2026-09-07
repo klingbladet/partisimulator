@@ -1,6 +1,8 @@
 minimumReleaseAge: 1440
+ignoreScripts: false
 
-onlyBuiltDependencies:
-  - esbuild
-  - protobufjs
-  - sharp
+allowBuilds:
+  esbuild: true
+  onnxruntime-node: true
+  protobufjs: true
+  sharp: true

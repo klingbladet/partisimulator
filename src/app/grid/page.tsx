@@ -140,7 +140,7 @@ function GridContent() {
       <PageContainer className="px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Alla partier</h1>
+          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Alla partier</h1>
           <p className="mt-1 font-semibold text-gray-600">
             Ställ en fråga och se hur alla åtta riksdagspartier svarar parallellt.
           </p>

@@ -31,6 +31,7 @@ export default function DebattPage(): React.JSX.Element {
     toggleParty,
     startDebate,
     handleUserInterjection,
+    handleNextSpeaker,
     handleSelectSpeaker,
     handleStop,
     endDebate,
@@ -50,7 +51,7 @@ export default function DebattPage(): React.JSX.Element {
       <PageContainer className="px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Debatt</h1>
+          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Debatt</h1>
           <p className="mt-1 font-semibold text-gray-600">
             Välj partier och låt dem debattera – styr talarordningen själv eller kör automatiskt.
           </p>
@@ -81,7 +82,7 @@ export default function DebattPage(): React.JSX.Element {
               className="cartoon-card flex h-[340px] flex-col gap-3.5 overflow-y-auto border-3 p-3.5 sm:h-[400px] sm:p-5 md:h-[440px]"
               id="debate-transcript"
               ref={transcriptContainerRef}
-              style={{ backgroundColor: "#fbf9f4" }}
+              style={{ backgroundColor: "var(--color-cream)" }}
             >
               {history.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
@@ -117,6 +118,7 @@ export default function DebattPage(): React.JSX.Element {
               debateFinished={debateFinished}
               isLoading={isLoading}
               onEndDebate={handleEndDebate}
+              onNextSpeaker={handleNextSpeaker}
               onResetDebate={resetDebate}
               onStop={handleStop}
               onToggleAutoMode={toggleAutoMode}

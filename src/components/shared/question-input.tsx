@@ -59,18 +59,17 @@ export default function QuestionInput({
         />
         <div
           className="absolute end-4 bottom-3 rounded bg-white px-1.5 py-0.5 font-semibold text-xs"
-          style={{ color: isNearLimit ? "#f0a500" : "#aaa" }}
+          style={{ color: isNearLimit ? "var(--color-warning)" : "var(--color-placeholder)" }}
         >
           {charCount}/{maxLength}
         </div>
       </div>
 
       <button
-        className="cartoon-btn cartoon-btn-ghost text-xs"
+        className="cartoon-btn cartoon-btn-ghost w-full text-xs"
         disabled={disabled || isLoading}
         id={`${id}-random`}
         onClick={() => onChange(getRandomExampleQuestion())}
-        style={{ inlineSize: "100%" }}
         type="button"
       >
         <Shuffle className="h-3.5 w-3.5" />
@@ -80,10 +79,9 @@ export default function QuestionInput({
       {isLoading && onStop ? (
         <button
           aria-label="Avbryt"
-          className="cartoon-btn cartoon-btn-danger"
+          className="cartoon-btn cartoon-btn-danger w-full"
           id={`${id}-stop`}
           onClick={onStop}
-          style={{ inlineSize: "100%" }}
           type="button"
         >
           <Square className="h-4 w-4" />
@@ -92,11 +90,10 @@ export default function QuestionInput({
       ) : (
         <button
           aria-label={buttonLabel}
-          className="cartoon-btn cartoon-btn-primary"
+          className="cartoon-btn cartoon-btn-primary w-full"
           disabled={disabled || submitDisabled || isLoading || !value.trim()}
           id={`${id}-submit`}
           onClick={onSubmit}
-          style={{ inlineSize: "100%" }}
           type="button"
         >
           {isLoading ? (

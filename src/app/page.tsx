@@ -35,7 +35,7 @@ function HomeContent(): React.JSX.Element {
       <PageContainer className="px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-black text-3xl text-black leading-tight">Direktfråga</h1>
+          <h1 className="font-black text-3xl text-[var(--color-ink)] leading-tight">Direktfråga</h1>
           <p className="mt-1 font-semibold text-gray-600">
             Fråga ett enskilt parti hur de ställer sig i en eller flera frågor.
           </p>
@@ -72,9 +72,9 @@ function HomeContent(): React.JSX.Element {
         {error && (
           <div
             className="cartoon-card mt-6 flex items-center gap-2 border-red-400 p-4"
-            style={{ backgroundColor: "#fff5f5", borderColor: "#f44336" }}
+            style={{ backgroundColor: "var(--color-error-bg)", borderColor: "var(--color-error-border)" }}
           >
-            <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "#b91c1c" }} />
+            <XCircle className="h-4 w-4 flex-shrink-0" style={{ color: "var(--color-error)" }} />
             <p className="font-bold text-red-700">Något gick fel: {error.message}</p>
           </div>
         )}
