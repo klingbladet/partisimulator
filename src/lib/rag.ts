@@ -1,6 +1,11 @@
 import type { ManifestChunk } from "@/types/manifest";
+import { logDebug, logDuration } from "./debug-log";
 import { createEmbedding } from "./embeddings";
 import { getSupabaseAdmin } from "./supabase";
+
+// The hard timeout below is 30s; a search that takes meaningfully longer than this is worth
+// flagging in dev, since it's still a bad answer time even though it hasn't hit the ceiling.
+const RAG_SLOW_THRESHOLD_MS = 1500;
 
 /**
  * Builds the semantic search query for a debate turn.
@@ -21,6 +26,7 @@ export function buildRetrievalQuery(topic: string, history: { text: string }[], 
  * using cosine similarity search via Supabase pgvector.
  */
 export async function retrieveContext(partyId: string, question: string, topK: number = 5): Promise<ManifestChunk[]> {
+  const startedAt = Date.now();
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
     const timeoutPromise = new Promise<ManifestChunk[]>((_, reject) => {
@@ -49,7 +55,16 @@ export async function retrieveContext(partyId: string, question: string, topK: n
       }));
     })();
 
-    return await Promise.race([retrievalPromise, timeoutPromise]);
+    const result = await Promise.race([retrievalPromise, timeoutPromise]);
+    logDuration(`RAG retrieval (${partyId})`, Date.now() - startedAt, RAG_SLOW_THRESHOLD_MS);
+    // No chunk cleared the similarity threshold - not an error, but a silent one: the party falls
+    // back to answering on persona alone with nothing in the console to explain why.
+    if (result.length === 0) {
+      console.warn(`RAG retrieval (${partyId}) found no matching chunks - answering on persona alone`);
+    } else {
+      logDebug(`RAG retrieval (${partyId}): ${result.length} chunk(s)`);
+    }
+    return result;
   } catch (error) {
     console.warn(`RAG retrieval failed/timed out for party ${partyId}, proceeding with persona only:`, error);
     return [];

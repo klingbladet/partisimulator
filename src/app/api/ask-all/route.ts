@@ -1,6 +1,7 @@
 import { generateText } from "ai";
 import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
+import { withDuration } from "@/lib/debug-log";
 import { getModel } from "@/lib/model";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { PARTIES } from "@/lib/parties";
@@ -14,6 +15,10 @@ import { createSseResponse } from "@/lib/sse";
 import { askAllRequestSchema } from "@/lib/validation";
 
 export const maxDuration = 120;
+
+// Same reasoning as the single-party routes: worth flagging in dev well before the maxDuration
+// ceiling above is anywhere near hit.
+const LLM_SLOW_THRESHOLD_MS = 8000;
 
 export async function POST(req: NextRequest): Promise<Response> {
   // Lower budget than the other routes: each request fans out to 8 parallel LLM calls, not 1.
@@ -47,15 +52,20 @@ export async function POST(req: NextRequest): Promise<Response> {
         const context = await retrieveContext(party.id, question);
         const systemPrompt = buildAskAllPrompt(party, context);
 
-        const { finishReason, text } = await generateText({
-          abortSignal: signal,
-          maxOutputTokens: 600,
-          maxRetries: 0,
-          messages: [{ content: question, role: "user" }],
-          model: getModel(),
-          system: systemPrompt,
-          temperature: 0.3,
-        });
+        const { finishReason, text } = await withDuration(
+          `LLM generation (ask-all, ${party.id})`,
+          LLM_SLOW_THRESHOLD_MS,
+          () =>
+            generateText({
+              abortSignal: signal,
+              maxOutputTokens: 600,
+              maxRetries: 0,
+              messages: [{ content: question, role: "user" }],
+              model: getModel(),
+              system: systemPrompt,
+              temperature: 0.3,
+            }),
+        );
 
         const cleaned = sanitizeSpeech(text);
         const stance = extractStance(cleaned);
@@ -65,13 +75,21 @@ export async function POST(req: NextRequest): Promise<Response> {
         // alone - and if the model got cut off before finishing even one sentence (a free/lower-
         // tier model burning its budget on reasoning tokens `reasoning.exclude` hides but doesn't
         // refund), treat that half as unusable rather than showing the raw, truncated fragment.
-        const limitedShort = extractCompleteText(short, finishReason, getMaxSentences("ask-all"));
-        const limitedLong = long ? extractCompleteText(long, finishReason, getLongAnswerMaxSentences()) : undefined;
+        const limitedShort = extractCompleteText(
+          short,
+          finishReason,
+          getMaxSentences("ask-all"),
+          `ask-all, ${party.id}`,
+        );
+        const limitedLong = long
+          ? extractCompleteText(long, finishReason, getLongAnswerMaxSentences(), `ask-all long, ${party.id}`)
+          : undefined;
         const finalShort = cleanText(limitedShort);
 
         if (!finalShort) {
           // Sanitizing removed everything (e.g. the whole raw reply was a leaked reasoning
           // preamble) - show the in-character fallback instead of an empty card.
+          console.warn(`Reply discarded (ask-all, ${party.id}): sanitized down to nothing`);
           const fallback = buildNoAnswerFallback(party);
           emitter.send({
             manifestUrl: fallback.manifestUrl,

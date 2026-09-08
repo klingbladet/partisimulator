@@ -193,8 +193,8 @@
         }
       ]
     },
-    "enabled": false,
-    "failIfUnavailable": false,
+    "enabled": true,
+    "failIfUnavailable": true,
     "filesystem": {
       "allowWrite": [
         "/tmp"
