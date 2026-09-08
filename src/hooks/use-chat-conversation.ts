@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { findPrecedingUserEntry, isDuplicateOfLastEntry } from "@/lib/history";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
+import { playAnswerSound } from "@/lib/notification-sound";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources, extractStance, type Stance, stripStanceMarker } from "@/lib/sources";
@@ -99,6 +100,7 @@ export function useChatConversation(): UseChatConversationResult {
     }
     setPendingText("");
     setPendingStance(undefined);
+    playAnswerSound();
   };
 
   const addAssistantMessage = (rawText: string, targetMessageId?: string): void => {
@@ -141,6 +143,7 @@ export function useChatConversation(): UseChatConversationResult {
     }
     setPendingText("");
     setPendingStance(undefined);
+    playAnswerSound();
   };
 
   const { completion, complete, isLoading, error, stop } = useCompletion({

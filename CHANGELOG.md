@@ -33,6 +33,7 @@ All notable changes to this project will be documented in this file.
 - `DEBUG=true` env var (`src/lib/debug-log.ts`) logs RAG and LLM generation durations, RAG chunk counts, and the resolved model per request to the console; without it, only durations over a threshold are logged as a warning - local dev only, no log shipping
 - Replies discarded for hitting their token budget mid-sentence, or for a RAG search that returned zero matching chunks, or (in `/api/ask-all`) for sanitizing down to nothing, now log a `console.warn` naming the route and party - previously silent, always showing the same generic fallback with no trail in the console
 - `/api/about`'s model-reachability probe now logs the actual error via `console.error` instead of swallowing it - previously an unreachable model (bad API key, wrong model name, provider outage) produced an empty cast list with nothing explaining why
+- A chime (`public/assets/sounds/answer-received.wav`) plays when a reply finishes streaming in one-shot chat and debate mode, and a mute toggle in `AppNav` (desktop nav bar and mobile menu) turns it off - the mute flag persists via `localStorage` and stays in sync across components through `useSyncExternalStore` (`src/lib/notification-sound.ts`)
 
 ### Changed
 

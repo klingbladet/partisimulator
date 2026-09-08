@@ -1,5 +1,6 @@
 import { type RefObject, useRef, useState } from "react";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
+import { playAnswerSound } from "@/lib/notification-sound";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { cleanText, extractSources } from "@/lib/sources";
@@ -121,6 +122,7 @@ export function useDebateTranscript(): UseDebateTranscriptResult {
       );
       setHistory(fallbackHistory);
       clearStreamingState();
+      playAnswerSound();
       return;
     }
 
@@ -129,6 +131,7 @@ export function useDebateTranscript(): UseDebateTranscriptResult {
     );
     setHistory(resolvedHistory);
     clearStreamingState();
+    playAnswerSound();
   };
 
   // After the API call settles, updates history with the final reply - or, if nothing usable came
@@ -151,6 +154,7 @@ export function useDebateTranscript(): UseDebateTranscriptResult {
     );
     setHistory(fallbackHistory);
     clearStreamingState();
+    playAnswerSound();
   };
 
   const resetTranscript = (): void => {

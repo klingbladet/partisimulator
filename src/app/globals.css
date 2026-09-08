@@ -412,6 +412,24 @@ body {
   transform: translate(-1px, -1px);
 }
 
+.nav-mute-toggle {
+  /* Muted state, borrowed from parti-s's red */
+  color: var(--color-white);
+  background: #ee2524;
+  border-color: var(--border);
+  box-shadow: var(--shadow-btn);
+}
+
+.nav-mute-toggle:hover {
+  box-shadow: var(--shadow-btn-hover);
+  transform: translate(-1px, -1px);
+}
+
+.nav-mute-toggle.unmuted {
+  /* Unmuted state, borrowed from parti-c's green */
+  background: #009933;
+}
+
 .app-nav {
   position: sticky;
   top: 0;
