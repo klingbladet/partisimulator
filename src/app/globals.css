@@ -37,8 +37,41 @@
   cursor: url("/assets/icons/gavel_32.png"), auto;
 }
 
+button,
+[role="button"],
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+select,
+summary,
+.cartoon-btn,
+.party-chip,
+.nav-tab,
+.nav-menu-toggle,
+.cursor-pointer {
+  cursor: url("/assets/icons/gavel_32.png"), pointer;
+}
+
+button:hover:not(:disabled),
+[role="button"]:hover:not(:disabled),
+a:hover,
+input[type="button"]:hover:not(:disabled),
+input[type="submit"]:hover:not(:disabled),
+input[type="reset"]:hover:not(:disabled),
+select:hover:not(:disabled),
+summary:hover,
+.cartoon-btn:hover:not(:disabled),
+.party-chip:hover:not(:disabled),
+.nav-tab:hover,
+.nav-menu-toggle:hover,
+.cursor-pointer:hover {
+  cursor: url("/assets/icons/gavel-faced-down_32.png"), pointer;
+}
+
 :disabled,
-[disabled] {
+[disabled],
+.cartoon-btn:disabled {
   cursor: not-allowed;
 }
 
@@ -98,7 +131,6 @@ body {
   font-weight: 800;
   white-space: nowrap;
   text-decoration: none;
-  cursor: pointer;
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-btn);
@@ -151,7 +183,6 @@ body {
   min-width: 80px;
   padding: 0.75rem 0.5rem;
   overflow: hidden;
-  cursor: pointer;
   background: var(--color-white);
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
@@ -247,6 +278,7 @@ body {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -299,6 +331,7 @@ body {
 .typing-dots span:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .typing-dots span:nth-child(3) {
   animation-delay: 0.4s;
 }
@@ -310,6 +343,7 @@ body {
     transform: scale(0.6);
     opacity: 0.5;
   }
+
   40% {
     transform: scale(1);
     opacity: 1;
@@ -328,6 +362,7 @@ body {
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
@@ -379,7 +414,6 @@ body {
   font-weight: 800;
   color: var(--color-ink);
   text-decoration: none;
-  cursor: pointer;
   background: transparent;
   border: var(--border-width) solid transparent;
   border-radius: var(--radius-sm);
@@ -460,6 +494,7 @@ body {
 .text-ink {
   color: var(--color-ink);
 }
+
 .bg-cream {
   background-color: var(--background);
 }
@@ -474,6 +509,7 @@ body {
     transform: scale(1);
     opacity: 1;
   }
+
   50% {
     transform: scale(1.05);
     opacity: 0.8;
@@ -489,9 +525,11 @@ body {
   100% {
     transform: rotate(0deg);
   }
+
   25% {
     transform: rotate(-3deg);
   }
+
   75% {
     transform: rotate(3deg);
   }
