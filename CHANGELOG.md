@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+- `sentence-limit.ts`: Swedish abbreviations ending in a dot (e.g. "t.ex.", "bl.a.", "m.fl.") no longer trip the sentence cap mid-sentence
 
 ## [0.1.6] - 2026-09-08
 

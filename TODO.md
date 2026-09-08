@@ -4,7 +4,7 @@
 
 - [ ] Make the app 100% modular
 - [ ] Add automated tests - none exist yet
-- [ ] `sentence-limit.ts` can miscount sentences on abbreviations like "t.ex."
+- [x] `sentence-limit.ts` can miscount sentences on abbreviations like "t.ex."
 
 ## Design and UX
 
