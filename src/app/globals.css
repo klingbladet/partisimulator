@@ -77,14 +77,6 @@ body {
   border: var(--border-width) solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  transition:
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
-}
-
-.cartoon-card:hover {
-  box-shadow: var(--shadow-hover);
-  transform: translate(-1px, -1px);
 }
 
 .cartoon-btn {

@@ -57,6 +57,7 @@ All notable changes to this project will be documented in this file.
 
 - Icon on the "Starta" button in debate setup
 - Scratch scripts used to verify the sentence-limit and SSE-helper fixes (`scripts/verify-sentence-limit.ts`, `scripts/verify-sentence-limit-stream.ts`, `scripts/verify-sse.ts`) - not part of the app, deleted after use
+- Removed the hover lift/shadow from .cartoon-card
 
 ### Fixed
 
