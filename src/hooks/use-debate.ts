@@ -12,7 +12,7 @@ import type { PartyId, PartyPersona } from "@/types/party";
 const MODERATOR_NAME = "Du (Debattledare)";
 // Caps how many turns auto mode will chain through unattended before pausing itself; manual
 // stepping via "Nästa replik" is never capped.
-const AUTO_MODE_TURN_CAP = 20;
+export const AUTO_MODE_TURN_CAP = 20;
 
 // "opening" gets the debate's welcome announcement; "targeted" skips the moderator line entirely
 // since the interjection that picked this speaker already named them; "closing" gets each party's
@@ -41,10 +41,12 @@ function buildModeratorText(
 
 interface UseDebateResult {
   autoMode: boolean;
+  confirmContinueAfterCap: () => void;
   currentSpeakerId: string | null;
   currentSpeakerParty: PartyPersona | null | undefined;
   debateFinished: boolean;
   debateStarted: boolean;
+  dismissTurnCapDialog: () => void;
   endDebate: () => void;
   handleNextSpeaker: () => void;
   handleStop: () => void;
@@ -53,11 +55,13 @@ interface UseDebateResult {
   isEndingDebate: boolean;
   isLoading: boolean;
   pendingText: string;
+  regenerateEntry: (entryId: string) => Promise<void>;
   resetDebate: () => void;
   selectedParties: PartyPersona[];
   setTargetSpeakerId: (partyId: string | null) => void;
   setTopic: (topic: string) => void;
   setUserInterjection: (value: string) => void;
+  showTurnCapDialog: boolean;
   startDebate: () => void;
   streamingEntryId: string | null;
   targetSpeakerId: string | null;
@@ -88,6 +92,8 @@ export function useDebate(): UseDebateResult {
   const [targetSpeakerId, setTargetSpeakerId] = useState<string | null>(null);
   const transcriptContainerRef = useRef<HTMLDivElement>(null);
   const [autoMode, setAutoMode] = useState(false);
+  // True while the auto-mode turn-cap confirm dialog is open, waiting on the user's choice.
+  const [showTurnCapDialog, setShowTurnCapDialog] = useState(false);
   // True from the moment "Avsluta" is confirmed until every party has given its closing statement -
   // gates the other controls so nothing else can interleave a turn into the closing round.
   const [isEndingDebate, setIsEndingDebate] = useState(false);
@@ -115,6 +121,11 @@ export function useDebate(): UseDebateResult {
   // settle, stoppedRef tells generateSpeech's cleanup to leave that entry alone rather than
   // re-touching (or deleting) whatever handleStop already put there.
   const stoppedRef = useRef(false);
+  // Id of the entry currently being regenerated, if the in-flight request is a retry of an
+  // existing (previously failed) entry rather than a brand-new turn's placeholder - so a manual
+  // stop with nothing usable back leaves that entry's prior text in place instead of deleting it,
+  // since (unlike a fresh placeholder) it already held a real turn's slot in the transcript.
+  const regeneratingEntryIdRef = useRef<string | null>(null);
 
   // Shuffles a fresh speaking-order queue if the current one is empty, then pops the next speaker.
   // Swaps the new queue's opening speaker if it would repeat the previous round's closing speaker.
@@ -172,6 +183,12 @@ export function useDebate(): UseDebateResult {
     const cleaned = cleanText(rawText);
     if (!cleaned) {
       if (stoppedRef.current) {
+        if (regeneratingEntryIdRef.current === entryId) {
+          // Regenerating an existing entry - leave its prior (fallback) text in place instead of
+          // deleting the turn it belongs to.
+          clearStreamingState();
+          return;
+        }
         // User cut the turn off manually before anything usable arrived - drop the placeholder
         // rather than leave a permanent blank bubble, same as the "nothing came back" branches.
         const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);
@@ -184,7 +201,9 @@ export function useDebate(): UseDebateResult {
       // show the in-character fallback instead of leaving a permanent blank bubble.
       const fallback = buildNoAnswerFallback(party);
       const fallbackHistory = historyRef.current.map((entry) =>
-        entry.id === entryId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
+        entry.id === entryId
+          ? { ...entry, isError: true, manifestUrl: fallback.manifestUrl, text: fallback.text }
+          : entry,
       );
       historyRef.current = fallbackHistory;
       setHistory(fallbackHistory);
@@ -193,7 +212,7 @@ export function useDebate(): UseDebateResult {
     }
 
     const resolvedHistory = historyRef.current.map((entry) =>
-      entry.id === entryId ? { ...entry, sources: extractSources(rawText), text: cleaned } : entry,
+      entry.id === entryId ? { ...entry, isError: false, sources: extractSources(rawText), text: cleaned } : entry,
     );
     historyRef.current = resolvedHistory;
     setHistory(resolvedHistory);
@@ -338,6 +357,7 @@ export function useDebate(): UseDebateResult {
     setStreamingEntryId(placeholderId);
     const placeholderEntry: DebateEntry = {
       id: placeholderId,
+      isClosingStatement: turnKind === "closing",
       sources: [],
       speakerId: partyId,
       speakerName: party.displayName,
@@ -375,11 +395,46 @@ export function useDebate(): UseDebateResult {
     // permanent blank bubble in the transcript.
     const fallback = buildNoAnswerFallback(party);
     const fallbackHistory = historyRef.current.map((entry) =>
-      entry.id === placeholderId ? { ...entry, manifestUrl: fallback.manifestUrl, text: fallback.text } : entry,
+      entry.id === placeholderId
+        ? { ...entry, isError: true, manifestUrl: fallback.manifestUrl, text: fallback.text }
+        : entry,
     );
     historyRef.current = fallbackHistory;
     setHistory(fallbackHistory);
     clearStreamingState();
+  };
+
+  // Re-runs a failed turn's request and updates that same entry in place via the same
+  // resolveStreamingEntry/settleTurn machinery a fresh turn uses - it just skips continueAfterTurn,
+  // since the turn sequence already moved on past this entry by the time it originally failed.
+  const regenerateEntry = async (entryId: string): Promise<void> => {
+    if (isLoading || isEndingDebate) return;
+    const entryIndex = historyRef.current.findIndex((entry) => entry.id === entryId);
+    const entry = historyRef.current[entryIndex];
+    if (entryIndex === -1 || !entry?.isError) return;
+    const party = PARTIES.find((candidateParty) => candidateParty.id === entry.speakerId);
+    if (!party) return;
+
+    stoppedRef.current = false;
+    regeneratingEntryIdRef.current = entryId;
+    currentSpeakerRef.current = entry.speakerId;
+    setCurrentSpeakerId(entry.speakerId);
+    streamingEntryIdRef.current = entryId;
+    setStreamingEntryId(entryId);
+
+    const historyForApi = historyRef.current.slice(0, entryIndex).slice(-MAX_HISTORY_ENTRIES);
+
+    const finalResult = await complete("", {
+      body: {
+        history: historyForApi,
+        isClosingStatement: entry.isClosingStatement ?? false,
+        nextSpeakerId: entry.speakerId,
+        selectedParties: selectedParties.map((selectedParty) => selectedParty.id),
+        topic,
+      },
+    });
+
+    settleTurn(party, entryId, finalResult);
   };
 
   // Closing round: chain straight into the next party still owed a statement, in the order fixed
@@ -412,18 +467,25 @@ export function useDebate(): UseDebateResult {
     // silently ending the debate or running away unattended forever.
     setAutoMode(false);
     autoModeRef.current = false;
-    const shouldContinue = window.confirm(
-      `Debatten har nått ${AUTO_MODE_TURN_CAP} repliker i automatiskt läge. Vill du fortsätta?`,
-    );
-    if (shouldContinue && !debateFinishedRef.current) {
-      turnCountRef.current = 0;
-      setAutoMode(true);
-      autoModeRef.current = true;
-      const nextSpeaker = pickNextSpeaker();
-      if (nextSpeaker) {
-        generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
-      }
+    setShowTurnCapDialog(true);
+  };
+
+  // Confirms the turn-cap dialog: gives auto mode a fresh cap and resumes the chain.
+  const confirmContinueAfterCap = (): void => {
+    setShowTurnCapDialog(false);
+    if (debateFinishedRef.current) return;
+    turnCountRef.current = 0;
+    setAutoMode(true);
+    autoModeRef.current = true;
+    const nextSpeaker = pickNextSpeaker();
+    if (nextSpeaker) {
+      generateSpeech(nextSpeaker.speakerId, nextSpeaker.isTargeted ? "targeted" : "regular");
     }
+  };
+
+  // Declines the turn-cap dialog: auto mode stays paused, same as today.
+  const dismissTurnCapDialog = (): void => {
+    setShowTurnCapDialog(false);
   };
 
   // Manual mode (no auto-chain to pick this up on its own), but a party was targeted while this
@@ -512,6 +574,10 @@ export function useDebate(): UseDebateResult {
     setAutoMode(false);
     if (speaker && completion) {
       resolveStreamingEntry(speaker, sanitizeSpeech(completion));
+    } else if (entryId && regeneratingEntryIdRef.current === entryId) {
+      // Regenerating an existing entry - leave its prior (fallback) text in place instead of
+      // deleting the turn it belongs to.
+      clearStreamingState();
     } else if (entryId) {
       // Stopped before any text streamed back - drop the empty placeholder rather than leave it.
       const withoutPlaceholder = historyRef.current.filter((entry) => entry.id !== entryId);
@@ -567,6 +633,7 @@ export function useDebate(): UseDebateResult {
     streamingEntryIdRef.current = null;
     setAutoMode(false);
     setIsEndingDebate(false);
+    setShowTurnCapDialog(false);
     closingQueueRef.current = null;
     autoModeSpeakerQueueRef.current = [];
     lastSpeakerIdRef.current = null;
@@ -582,10 +649,12 @@ export function useDebate(): UseDebateResult {
 
   return {
     autoMode,
+    confirmContinueAfterCap,
     currentSpeakerId,
     currentSpeakerParty,
     debateFinished,
     debateStarted,
+    dismissTurnCapDialog,
     endDebate,
     handleNextSpeaker,
     handleStop,
@@ -594,11 +663,13 @@ export function useDebate(): UseDebateResult {
     isEndingDebate,
     isLoading,
     pendingText,
+    regenerateEntry,
     resetDebate,
     selectedParties,
     setTargetSpeakerId,
     setTopic,
     setUserInterjection,
+    showTurnCapDialog,
     startDebate,
     streamingEntryId,
     targetSpeakerId,

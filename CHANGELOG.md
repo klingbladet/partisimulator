@@ -10,16 +10,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- `/api/about`, `/api/ask-all`: extracted the shared SSE stream/response boilerplate into `createSseResponse` (`src/lib/sse.ts`), removing duplicated `ReadableStream`/`AbortController`/event-encoding code between the two routes
-- `stream-about.ts`, `stream-ask-all.ts`: extracted the shared client-side SSE-reading loop into `readSseStream` (`src/lib/read-sse-stream.ts`)
+- None yet...
 
 ### Removed
 
-- Scratch scripts used to verify the sentence-limit and SSE-helper fixes (`scripts/verify-sentence-limit.ts`, `scripts/verify-sentence-limit-stream.ts`, `scripts/verify-sse.ts`) - not part of the app, deleted after use
+- None yet...
 
 ### Fixed
 
-- `sentence-limit.ts`: Swedish abbreviations ending in a dot (e.g. "t.ex.", "bl.a.", "m.fl.") no longer trip the sentence cap mid-sentence
+- None yet...
 
 ## [0.1.6] - 2026-09-08
 
@@ -30,6 +29,8 @@ All notable changes to this project will be documented in this file.
     - A "cast list" giving each real maker a fresh, absurd one-line "boast bio" per visit, blending a made-up title and an exaggerated experience claim into a single sentence that names them directly. Names are read from the optional `MAKER_NAMES` env var (`src/lib/makers.ts`) rather than committed to source, so they never end up in git history; unset just means an empty cast list, not a crash.
     - `src/lib/about-notes.json`: a freeform scratchpad of words/phrases anyone can add to by hand, woven into every generated piece as optional inspiration.
     - Cast list and story each show their own loading indicator, switched over via an explicit `castDone` stream event rather than inferring the phase change from event timing.
+- A regenerate button on any failed reply (one-shot chat, ask-all grid, and debate), re-running just that reply in place instead of leaving the generic "kan inte svara" fallback as the final word
+- Om oss: a "Försök igen" regenerate button on the story's error banner and its empty-story fallback, re-running `handleTellStory` in place of a dead end
 
 ### Changed
 
@@ -39,15 +40,22 @@ All notable changes to this project will be documented in this file.
 - `/api/about`, `/api/ask`, `/api/ask-all`: disabled the AI SDK's default retries (`maxRetries: 0`) on all model calls, so a failure surfaces after one attempt instead of three
 - `/api/about`: pads an unreachable-model failure out to at least one second (`src/lib/sleep.ts`) so the loading dots don't flash on and immediately off when the probe fails near-instantly
 - `src/app/api/about/route.ts`: dropped a redundant array copy before `shuffleArray` (it already copies internally)
+- `/api/about`, `/api/ask-all`: extracted the shared SSE stream/response boilerplate into `createSseResponse` (`src/lib/sse.ts`), removing duplicated `ReadableStream`/`AbortController`/event-encoding code between the two routes
+- `stream-about.ts`, `stream-ask-all.ts`: extracted the shared client-side SSE-reading loop into `readSseStream` (`src/lib/read-sse-stream.ts`)
+- `/api/ask-all`: accepts an optional `partyIds` filter, so a single party's answer can be regenerated without re-asking all 8
+- Debatt: replaced the native `window.confirm` prompts (auto-mode turn cap, "Avsluta debatten?") with a cartoon-styled `ConfirmDialog`
+- Debatt: the auto/manual mode toggle now hides itself while closing statements are generating or after the debate ends, instead of just disabling
 
 ### Removed
 
 - Icon on the "Starta" button in debate setup
+- Scratch scripts used to verify the sentence-limit and SSE-helper fixes (`scripts/verify-sentence-limit.ts`, `scripts/verify-sentence-limit-stream.ts`, `scripts/verify-sse.ts`) - not part of the app, deleted after use
 
 ### Fixed
 
 - `/om-projektet`: aborts its in-flight story stream when the page unmounts, matching `alla-partier`'s cleanup - previously a stream kept running server-side after the user navigated away
 - `/om-projektet`: shows a single in-character fallback line in the story card instead of an empty white box when every beat comes back empty
+- `sentence-limit.ts`: Swedish abbreviations ending in a dot (e.g. "t.ex.", "bl.a.", "m.fl.") no longer trip the sentence cap mid-sentence
 
 ## [0.1.5] - 2026-09-07
 

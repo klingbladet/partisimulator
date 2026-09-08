@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
+import RegenerateButton from "@/components/shared/regenerate-button";
 import SiteFooter from "@/components/shared/site-footer";
 import TypingDots from "@/components/shared/typing-dots";
 import { streamAbout } from "@/lib/stream-about";
@@ -100,7 +101,7 @@ export default function AboutPage(): React.JSX.Element {
         <section className="mb-10 text-center">
           <h1 className="font-black text-4xl text-[var(--color-ink)] leading-tight">Vår historia</h1>
           <p className="mt-2 font-semibold text-gray-600">
-            Samma AI som spelar partiledare får hitta på en om oss. Ny historia varje gång, sanning valfri.
+            Alla har sin historia värd att berätta. Vår är unik varje gång.
           </p>
 
           <button
@@ -132,7 +133,10 @@ export default function AboutPage(): React.JSX.Element {
         {(sections.length > 0 || phase === "story") && (
           <div className="cartoon-card p-6">
             {sections.length === 0 && !isLoading ? (
-              <p className="font-semibold text-gray-700">{STORY_FALLBACK_TEXT}</p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="font-semibold text-gray-700">{STORY_FALLBACK_TEXT}</p>
+                <RegenerateButton onClick={handleTellStory} />
+              </div>
             ) : (
               <div className="flex flex-col gap-6">
                 {sections.map((section, index) => (
@@ -152,7 +156,12 @@ export default function AboutPage(): React.JSX.Element {
           </div>
         )}
 
-        {error && <p className="font-bold text-red-700">Något gick fel: {error}</p>}
+        {error && (
+          <div className="cartoon-card mt-6 flex flex-wrap items-center justify-between gap-3 p-4">
+            <p className="font-bold text-red-700">Något gick fel: {error}</p>
+            <RegenerateButton onClick={handleTellStory} />
+          </div>
+        )}
       </PageContainer>
 
       <SiteFooter />

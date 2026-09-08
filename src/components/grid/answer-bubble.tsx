@@ -4,6 +4,7 @@ import { Send } from "lucide-react";
 import Image from "next/image";
 import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
+import RegenerateButton from "@/components/shared/regenerate-button";
 import SourcesList from "@/components/shared/sources-list";
 import StanceMeter from "@/components/shared/stance-meter";
 import TypingDots from "@/components/shared/typing-dots";
@@ -22,6 +23,9 @@ interface AnswerBubbleProps {
   onContinueChat?: () => void;
   /** Set when `text` is the no-answer fallback, to link to the party's full manifesto instead of a source citation. */
   manifestUrl?: string | null;
+  hasError?: boolean;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
 export default function AnswerBubble({
@@ -35,6 +39,9 @@ export default function AnswerBubble({
   compact = false,
   onContinueChat,
   manifestUrl,
+  hasError = false,
+  onRegenerate,
+  isRegenerating = false,
 }: AnswerBubbleProps): React.JSX.Element {
   const isLoading = isEmpty && isStreaming;
 
@@ -130,6 +137,12 @@ export default function AnswerBubble({
             <ManifestLink href={manifestUrl} />
           ) : (
             <SourcesList emptyLabel="Ingen källa finns" sources={sources} />
+          )}
+
+          {hasError && onRegenerate && (
+            <div className="mt-2">
+              <RegenerateButton isRegenerating={isRegenerating} onClick={onRegenerate} />
+            </div>
           )}
         </div>
       )}

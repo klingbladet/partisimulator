@@ -19,6 +19,8 @@ interface ChatViewProps {
   onFollowUpChange: (value: string) => void;
   onSendFollowUp: () => void;
   onStop: () => void;
+  onRegenerateMessage: (messageId: string) => void;
+  regeneratingMessageId: string | null;
 }
 
 export default function ChatView({
@@ -32,6 +34,8 @@ export default function ChatView({
   onFollowUpChange,
   onSendFollowUp,
   onStop,
+  onRegenerateMessage,
+  regeneratingMessageId,
 }: ChatViewProps): React.JSX.Element {
   return (
     <div className="space-y-4">
@@ -72,15 +76,19 @@ export default function ChatView({
             return null;
           }
 
+          const isRegenerating = message.id === regeneratingMessageId;
           return (
             <Bubble
-              isStreaming={false}
+              isError={message.isError}
+              isRegenerating={isLoading}
+              isStreaming={isRegenerating}
               key={message.id}
               manifestUrl={message.manifestUrl}
+              onRegenerate={message.isError ? () => onRegenerateMessage(message.id) : undefined}
               party={selectedParty}
               sources={message.sources}
               stance={message.stance}
-              text={message.text}
+              text={isRegenerating ? pendingText : message.text}
               turnNumber={index + 1}
               variant="chat"
             />

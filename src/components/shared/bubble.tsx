@@ -3,6 +3,7 @@
 import { Mic, User } from "lucide-react";
 import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
+import RegenerateButton from "@/components/shared/regenerate-button";
 import SourcesList from "@/components/shared/sources-list";
 import StanceMeter from "@/components/shared/stance-meter";
 import TypingDots from "@/components/shared/typing-dots";
@@ -22,6 +23,10 @@ interface BubbleProps {
   turnNumber: number;
   /** Set when `text` is the no-answer fallback, to link to the party's full manifesto instead of a source citation. */
   manifestUrl?: string | null;
+  /** Set when `text` is the no-answer fallback, to offer a way to regenerate it. */
+  isError?: boolean;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
 export default function Bubble({
@@ -35,6 +40,9 @@ export default function Bubble({
   isStreaming = false,
   turnNumber,
   manifestUrl,
+  isError = false,
+  onRegenerate,
+  isRegenerating = false,
 }: BubbleProps): React.JSX.Element {
   const idPrefix = variant === "debate" ? "debate-turn" : "chat-turn";
 
@@ -64,6 +72,12 @@ export default function Bubble({
         {manifestUrl && (
           <div className="mt-2.5 border-gray-100 border-t pt-2">
             <ManifestLink className="answer-bubble-source text-xs" href={manifestUrl} />
+          </div>
+        )}
+
+        {isError && onRegenerate && !isStreaming && (
+          <div className="mt-2.5 border-gray-100 border-t pt-2">
+            <RegenerateButton isRegenerating={isRegenerating} onClick={onRegenerate} />
           </div>
         )}
       </>

@@ -4,20 +4,14 @@ import { Pause, Play } from "lucide-react";
 
 interface DebateModeToggleProps {
   autoMode: boolean;
-  disabled?: boolean;
   onToggleAutoMode: () => void;
 }
 
-export default function DebateModeToggle({
-  autoMode,
-  disabled = false,
-  onToggleAutoMode,
-}: DebateModeToggleProps): React.JSX.Element {
+export default function DebateModeToggle({ autoMode, onToggleAutoMode }: DebateModeToggleProps): React.JSX.Element {
   return (
     <button
       aria-label={autoMode ? "Stäng av auto-läge" : "Slå på auto-läge"}
       className={`cartoon-btn w-full ${autoMode ? "text-[var(--color-ink)]" : "text-white"}`}
-      disabled={disabled}
       id="auto-mode-toggle-btn"
       onClick={onToggleAutoMode}
       style={{ backgroundColor: autoMode ? "var(--color-warning)" : "var(--color-success)" }}

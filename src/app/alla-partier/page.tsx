@@ -38,7 +38,9 @@ function GridContent() {
   const [answers, setAnswers] = useState<Record<string, PartyAnswer>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [allDone, setAllDone] = useState(false);
+  const [regeneratingPartyId, setRegeneratingPartyId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const regenerateAbortControllerRef = useRef<AbortController | null>(null);
 
   const handleAskAllEvent = useCallback((event: AskAllEvent) => {
     if (event.type === "answer" && event.partyId) {
@@ -108,6 +110,33 @@ function GridContent() {
     }
   }, [question, handleAskAllEvent]);
 
+  // Re-runs one party's failed answer, leaving the other 7 untouched. Reuses the same
+  // handleAskAllEvent handler as the main run, filtered server-side to just this party.
+  const regenerateParty = useCallback(
+    async (partyId: string) => {
+      if (isLoading || regeneratingPartyId) return;
+      setRegeneratingPartyId(partyId);
+      setAnswers((prev) => ({
+        ...prev,
+        [partyId]: { hasError: false, isDone: false, partyId, sources: [], text: "" },
+      }));
+
+      const abortController = new AbortController();
+      regenerateAbortControllerRef.current = abortController;
+
+      try {
+        await streamAskAll(activeQuestion, handleAskAllEvent, abortController.signal, [partyId]);
+      } catch (error) {
+        if (!abortController.signal.aborted) {
+          console.error(error);
+        }
+      } finally {
+        setRegeneratingPartyId(null);
+      }
+    },
+    [activeQuestion, handleAskAllEvent, isLoading, regeneratingPartyId],
+  );
+
   // Cancel every still-running party stream: whatever partial text each one has already
   // received stays on screen, marked done, instead of being discarded.
   const handleStopAll = (): void => {
@@ -126,6 +155,7 @@ function GridContent() {
   useEffect(() => {
     return () => {
       abortControllerRef.current?.abort();
+      regenerateAbortControllerRef.current?.abort();
     };
   }, []);
 
@@ -215,7 +245,9 @@ function GridContent() {
               return (
                 <AnswerBubble
                   compact
+                  hasError={answer?.hasError}
                   isEmpty={!answer?.text && !answer?.isDone}
+                  isRegenerating={isLoading || regeneratingPartyId !== null}
                   isStreaming={!answer?.isDone}
                   key={party.id}
                   longAnswer={answer?.longAnswer}
@@ -230,6 +262,7 @@ function GridContent() {
                         }
                       : undefined
                   }
+                  onRegenerate={answer?.hasError ? () => regenerateParty(party.id) : undefined}
                   party={party}
                   sources={answer?.sources ?? []}
                   stance={answer?.stance}

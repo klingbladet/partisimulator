@@ -27,6 +27,8 @@ function HomeContent(): React.JSX.Element {
     error,
     handleSendQuestion,
     handleStop,
+    regenerateMessage,
+    regeneratingMessageId,
   } = useChatConversation();
 
   return (
@@ -58,10 +60,12 @@ function HomeContent(): React.JSX.Element {
             followUpQuestion={followUpQuestion}
             isLoading={isLoading}
             onFollowUpChange={setFollowUpQuestion}
+            onRegenerateMessage={regenerateMessage}
             onSendFollowUp={() => handleSendQuestion(followUpQuestion)}
             onStop={handleStop}
             pendingStance={pendingStance}
             pendingText={pendingText}
+            regeneratingMessageId={regeneratingMessageId}
             selectedParty={selectedParty}
           />
         )}

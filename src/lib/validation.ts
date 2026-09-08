@@ -43,6 +43,8 @@ export const askRequestSchema = z.object({
 });
 
 export const askAllRequestSchema = z.object({
+  // Set to regenerate only specific parties' answers instead of fanning out to all of them.
+  partyIds: z.array(z.string().min(1)).min(1).max(PARTIES.length).optional(),
   question: freeText(500),
 });
 

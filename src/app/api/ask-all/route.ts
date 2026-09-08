@@ -33,15 +33,16 @@ export async function POST(req: NextRequest): Promise<Response> {
   if (!parsed.success) {
     return errorResponse("Ogiltig fråga - den får inte vara tom eller längre än 500 tecken", 400);
   }
-  const { question } = parsed.data;
+  const { partyIds, question } = parsed.data;
+  const parties = partyIds ? PARTIES.filter((party) => partyIds.includes(party.id)) : PARTIES;
 
   // A ReadableStream's own start() executor keeps running to completion even after the client
   // disconnects - only its cancel() callback tells us that happened, so the signal createSseResponse
   // hands back (rather than req.signal, which tracks the already-fully-read request body, not the
   // response being read) is what actually stops the in-flight generateText calls for every party.
   return createSseResponse(async (emitter, signal) => {
-    // Run all 8 parties in parallel
-    const promises = PARTIES.map(async (party) => {
+    // Run every requested party in parallel
+    const promises = parties.map(async (party) => {
       try {
         const context = await retrieveContext(party.id, question);
         const systemPrompt = buildAskAllPrompt(party, context);

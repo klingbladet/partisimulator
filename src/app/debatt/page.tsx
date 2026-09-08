@@ -1,16 +1,18 @@
 "use client";
 
 import { MessageCircle } from "lucide-react";
+import { useState } from "react";
 import DebateControls from "@/components/debate/debate-controls";
 import DebateModeToggle from "@/components/debate/debate-mode-toggle";
 import DebateSetupPanel from "@/components/debate/debate-setup-panel";
 import DebateStage from "@/components/debate/debate-stage";
 import AppNav from "@/components/shared/app-nav";
 import Bubble from "@/components/shared/bubble";
+import ConfirmDialog from "@/components/shared/confirm-dialog";
 import PageContainer from "@/components/shared/page-container";
 import PageHeader from "@/components/shared/page-header";
 import SiteFooter from "@/components/shared/site-footer";
-import { useDebate } from "@/hooks/use-debate";
+import { AUTO_MODE_TURN_CAP, useDebate } from "@/hooks/use-debate";
 import { PARTIES } from "@/lib/parties";
 
 export default function DebattPage(): React.JSX.Element {
@@ -40,13 +42,13 @@ export default function DebattPage(): React.JSX.Element {
     handleStop,
     endDebate,
     resetDebate,
+    showTurnCapDialog,
+    confirmContinueAfterCap,
+    dismissTurnCapDialog,
+    regenerateEntry,
   } = useDebate();
 
-  const handleEndDebate = (): void => {
-    if (window.confirm("Vill du avsluta debatten? Varje parti får en sista slutplädering innan debatten avslutas.")) {
-      endDebate();
-    }
-  };
+  const [endDebateDialogOpen, setEndDebateDialogOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
@@ -94,10 +96,15 @@ export default function DebattPage(): React.JSX.Element {
                 const isUser = entry.speakerId === "user";
                 return (
                   <Bubble
+                    isError={entry.isError}
+                    isRegenerating={isLoading}
                     isStreaming={isEntryStreaming}
                     isUser={isUser}
                     key={entry.id}
                     manifestUrl={entry.manifestUrl}
+                    onRegenerate={
+                      !isUser && entry.isError && !isEndingDebate ? () => regenerateEntry(entry.id) : undefined
+                    }
                     party={party}
                     sources={entry.sources}
                     speakerName={entry.speakerName}
@@ -109,14 +116,16 @@ export default function DebattPage(): React.JSX.Element {
               })}
             </div>
 
-            <DebateModeToggle autoMode={autoMode} disabled={isEndingDebate} onToggleAutoMode={toggleAutoMode} />
+            {!isEndingDebate && !debateFinished && (
+              <DebateModeToggle autoMode={autoMode} onToggleAutoMode={toggleAutoMode} />
+            )}
 
             <DebateControls
               autoMode={autoMode}
               debateFinished={debateFinished}
               isEndingDebate={isEndingDebate}
               isLoading={isLoading}
-              onEndDebate={handleEndDebate}
+              onEndDebate={() => setEndDebateDialogOpen(true)}
               onNextSpeaker={handleNextSpeaker}
               onResetDebate={resetDebate}
               onStop={handleStop}
@@ -130,6 +139,29 @@ export default function DebattPage(): React.JSX.Element {
           </div>
         )}
       </PageContainer>
+
+      <ConfirmDialog
+        cancelLabel="Nej, avsluta"
+        confirmLabel="Ja, fortsätt"
+        description={`Debatten har nått ${AUTO_MODE_TURN_CAP} repliker i automatiskt läge. Vill du fortsätta?`}
+        onCancel={dismissTurnCapDialog}
+        onConfirm={confirmContinueAfterCap}
+        open={showTurnCapDialog}
+        title="Fortsätta debattera?"
+      />
+
+      <ConfirmDialog
+        cancelLabel="Avbryt"
+        confirmLabel="Ja, avsluta"
+        description="Varje parti får en sista slutplädering innan debatten avslutas."
+        onCancel={() => setEndDebateDialogOpen(false)}
+        onConfirm={() => {
+          setEndDebateDialogOpen(false);
+          endDebate();
+        }}
+        open={endDebateDialogOpen}
+        title="Avsluta debatten?"
+      />
 
       <SiteFooter />
     </div>

@@ -21,6 +21,8 @@ interface UseChatConversationResult {
   pendingStance: Stance | undefined;
   pendingText: string;
   question: string;
+  regenerateMessage: (messageId: string) => Promise<void>;
+  regeneratingMessageId: string | null;
   selectedParty: PartyPersona | null;
   setFollowUpQuestion: (value: string) => void;
   setQuestion: (value: string) => void;
@@ -42,6 +44,11 @@ export function useChatConversation(): UseChatConversationResult {
   // also settles once the abort resolves) knows not to add its own fallback message on top of
   // whatever handleStop already added for the partial reply.
   const stoppedRef = useRef(false);
+  // Id of the failed message currently being regenerated, if any - tells addAssistantMessage /
+  // addFallbackMessage (and onFinish, below) to replace that message in place instead of
+  // appending a new one. Mirrored into state so the UI can disable/animate its regenerate button.
+  const [regeneratingMessageId, setRegeneratingMessageId] = useState<string | null>(null);
+  const regeneratingMessageIdRef = useRef<string | null>(null);
 
   // Preselect a party from a landing-page link, and/or seed a full conversation from a
   // "Fortsätt chatta" handoff (e.g. from the grid page), then strip the params.
@@ -65,45 +72,73 @@ export function useChatConversation(): UseChatConversationResult {
     router.replace("/direktfraga");
   }, [router, searchParams]);
 
-  const addFallbackMessage = (): void => {
+  // `targetMessageId` set means this is regenerating a specific failed message - replace it in
+  // place instead of appending, and clear whatever error state it was showing.
+  const addFallbackMessage = (targetMessageId?: string): void => {
     if (!selectedParty) return;
     const fallback = buildNoAnswerFallback(selectedParty);
-    setChatHistory((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), manifestUrl: fallback.manifestUrl, role: "assistant", text: fallback.text },
-    ]);
+    if (targetMessageId) {
+      setChatHistory((prev) =>
+        prev.map((message) =>
+          message.id === targetMessageId
+            ? { ...message, isError: true, manifestUrl: fallback.manifestUrl, text: fallback.text }
+            : message,
+        ),
+      );
+    } else {
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          isError: true,
+          manifestUrl: fallback.manifestUrl,
+          role: "assistant",
+          text: fallback.text,
+        },
+      ]);
+    }
     setPendingText("");
     setPendingStance(undefined);
   };
 
-  const addAssistantMessage = (rawText: string): void => {
+  const addAssistantMessage = (rawText: string, targetMessageId?: string): void => {
     const sanitized = sanitizeSpeech(rawText);
     const stance = extractStance(sanitized);
     const cleaned = cleanText(stripStanceMarker(sanitized));
     if (!cleaned) {
       // The raw reply sanitized down to nothing (e.g. it was entirely a leaked reasoning
       // preamble) - show the in-character fallback instead of leaving the question unanswered.
-      addFallbackMessage();
+      addFallbackMessage(targetMessageId);
       return;
     }
     const sources = extractSources(sanitized);
 
-    setChatHistory((prev) => {
-      // Prevent duplicate entry if both onFinish and complete return
-      if (isDuplicateOfLastEntry(prev, (lastEntry) => lastEntry.role === "assistant" && lastEntry.text === cleaned)) {
-        return prev;
-      }
-      return [
-        ...prev,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          sources,
-          stance,
-          text: cleaned,
-        },
-      ];
-    });
+    if (targetMessageId) {
+      setChatHistory((prev) =>
+        prev.map((message) =>
+          message.id === targetMessageId
+            ? { id: message.id, role: "assistant", sources, stance, text: cleaned }
+            : message,
+        ),
+      );
+    } else {
+      setChatHistory((prev) => {
+        // Prevent duplicate entry if both onFinish and complete return
+        if (isDuplicateOfLastEntry(prev, (lastEntry) => lastEntry.role === "assistant" && lastEntry.text === cleaned)) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            sources,
+            stance,
+            text: cleaned,
+          },
+        ];
+      });
+    }
     setPendingText("");
     setPendingStance(undefined);
   };
@@ -112,7 +147,7 @@ export function useChatConversation(): UseChatConversationResult {
     api: "/api/ask",
     onFinish: (_prompt, completionText) => {
       if (completionText) {
-        addAssistantMessage(completionText);
+        addAssistantMessage(completionText, regeneratingMessageIdRef.current ?? undefined);
       }
     },
     streamProtocol: "text",
@@ -182,15 +217,62 @@ export function useChatConversation(): UseChatConversationResult {
     }
   };
 
+  // Re-runs a failed reply's request and replaces it in place once it settles, rather than
+  // appending a new message - the question it answered is the nearest preceding user message.
+  const regenerateMessage = async (messageId: string): Promise<void> => {
+    if (!selectedParty || isLoading) return;
+
+    const messageIndex = chatHistory.findIndex((message) => message.id === messageId);
+    if (messageIndex === -1) return;
+
+    let userQuestionIndex = -1;
+    for (let index = messageIndex - 1; index >= 0; index -= 1) {
+      if (chatHistory[index]?.role === "user") {
+        userQuestionIndex = index;
+        break;
+      }
+    }
+    const userQuestion = userQuestionIndex === -1 ? undefined : chatHistory[userQuestionIndex]?.text;
+    if (!userQuestion) return;
+
+    stoppedRef.current = false;
+    regeneratingMessageIdRef.current = messageId;
+    setRegeneratingMessageId(messageId);
+
+    const apiHistory = chatHistory
+      .slice(0, userQuestionIndex)
+      .slice(-MAX_HISTORY_ENTRIES)
+      .map((message) => ({ content: message.text, role: message.role }));
+
+    const result = await complete(userQuestion, {
+      body: {
+        history: apiHistory,
+        partyId: selectedParty.id,
+        question: userQuestion,
+      },
+    });
+
+    if (result) {
+      addAssistantMessage(result, messageId);
+    } else if (!stoppedRef.current) {
+      addFallbackMessage(messageId);
+    }
+    regeneratingMessageIdRef.current = null;
+    setRegeneratingMessageId(null);
+  };
+
   // Cancel a running answer: abort the stream, keep whatever text arrived so far as the final
   // message (onFinish never fires on an aborted stream), then snap the view back to the bottom.
   const handleStop = (): void => {
     if (!isLoading) return;
     stoppedRef.current = true;
     stop();
+    const targetMessageId = regeneratingMessageIdRef.current ?? undefined;
     if (completion) {
-      addAssistantMessage(completion);
+      addAssistantMessage(completion, targetMessageId);
     }
+    regeneratingMessageIdRef.current = null;
+    setRegeneratingMessageId(null);
     chatEndRef.current?.scrollIntoView({ behavior: "auto" });
   };
 
@@ -205,6 +287,8 @@ export function useChatConversation(): UseChatConversationResult {
     pendingStance,
     pendingText,
     question,
+    regenerateMessage,
+    regeneratingMessageId,
     selectedParty,
     setFollowUpQuestion,
     setQuestion,
