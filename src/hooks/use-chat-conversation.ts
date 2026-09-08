@@ -1,7 +1,7 @@
 import { useCompletion } from "@ai-sdk/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type RefObject, useEffect, useRef, useState } from "react";
-import { isDuplicateOfLastEntry } from "@/lib/history";
+import { findPrecedingUserEntry, isDuplicateOfLastEntry } from "@/lib/history";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
@@ -225,30 +225,23 @@ export function useChatConversation(): UseChatConversationResult {
     const messageIndex = chatHistory.findIndex((message) => message.id === messageId);
     if (messageIndex === -1) return;
 
-    let userQuestionIndex = -1;
-    for (let index = messageIndex - 1; index >= 0; index -= 1) {
-      if (chatHistory[index]?.role === "user") {
-        userQuestionIndex = index;
-        break;
-      }
-    }
-    const userQuestion = userQuestionIndex === -1 ? undefined : chatHistory[userQuestionIndex]?.text;
-    if (!userQuestion) return;
+    const precedingQuestion = findPrecedingUserEntry(chatHistory, messageIndex);
+    if (!precedingQuestion) return;
 
     stoppedRef.current = false;
     regeneratingMessageIdRef.current = messageId;
     setRegeneratingMessageId(messageId);
 
     const apiHistory = chatHistory
-      .slice(0, userQuestionIndex)
+      .slice(0, precedingQuestion.index)
       .slice(-MAX_HISTORY_ENTRIES)
       .map((message) => ({ content: message.text, role: message.role }));
 
-    const result = await complete(userQuestion, {
+    const result = await complete(precedingQuestion.text, {
       body: {
         history: apiHistory,
         partyId: selectedParty.id,
-        question: userQuestion,
+        question: precedingQuestion.text,
       },
     });
 

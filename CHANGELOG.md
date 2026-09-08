@@ -10,8 +10,6 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet
-
 ### Removed
 
 - None yet...
@@ -52,6 +50,8 @@ All notable changes to this project will be documented in this file.
 - `/api/about`: cast-entry generation now runs in batches of 3 instead of one full 8-way parallel fan-out - a free/lower-tier model's tighter concurrency limit could silently drop every simultaneous call (no retries, `maxRetries: 0`), sometimes emptying the whole "I rollerna" list even though the same model handles one request at a time fine
 - `/api/about`'s reachability probe now uses the same 100-token budget as its real beat/cast calls instead of 5 - some OpenRouter models reject (or otherwise choke on) a budget too small to fit even a minimal reasoning trace, misreporting a model that works fine at normal budgets as unreachable and blocking the whole page from generating anything
 - `extractCompleteText` (`src/lib/sentence-limit.ts`) generalizes `/api/about`'s truncated-reply guard into a shared helper, now also used by `/api/ask-all` (for both the short and long answer) and the `createSentenceLimitTransform` streaming path shared by `/api/ask` and `/api/debate`
+- `useDebate` split into `useDebateTranscript` and `useDebateSequencing` (internal, composed by `useDebate`) - was flagged as the repo's top refactoring target (607-line function, cognitive complexity 36); public return shape is unchanged.
+- `useChatConversation`'s `regenerateMessage` extracted its "find the preceding user question" loop into `findPrecedingUserEntry` (`src/lib/history.ts`), clearing its CRITICAL complexity flag.
 
 ### Removed
 

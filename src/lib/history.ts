@@ -7,3 +7,22 @@ export function isDuplicateOfLastEntry<Entry>(history: Entry[], isSameEntry: (la
   const lastEntry = history[history.length - 1];
   return lastEntry !== undefined && isSameEntry(lastEntry);
 }
+
+interface RoleTextEntry {
+  role: "assistant" | "user";
+  text: string;
+}
+
+/** The nearest user entry before `beforeIndex`, with its own index - or undefined if there is none. */
+export function findPrecedingUserEntry<Entry extends RoleTextEntry>(
+  history: Entry[],
+  beforeIndex: number,
+): { index: number; text: string } | undefined {
+  for (let index = beforeIndex - 1; index >= 0; index -= 1) {
+    const entry = history[index];
+    if (entry?.role === "user") {
+      return { index, text: entry.text };
+    }
+  }
+  return undefined;
+}
