@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import AppNav from "@/components/shared/app-nav";
 import PageContainer from "@/components/shared/page-container";
 import SiteFooter from "@/components/shared/site-footer";
@@ -22,6 +22,11 @@ interface CastEntry {
 // these two phases (cast entries all finish before the first beat starts), so the UI shouldn't
 // either: only one card is ever "the one still generating" at a time.
 type Phase = "idle" | "cast" | "story";
+
+// Shown instead of an empty story card when every beat failed or came back empty - stays in
+// character rather than leaving a blank white box with no explanation.
+const STORY_FALLBACK_TEXT =
+  "Just nu är det inte möjligt att berätta hur allt började, men du kan lita på att det var helt sjukt episkt!";
 
 export default function AboutPage(): React.JSX.Element {
   const [phase, setPhase] = useState<Phase>("idle");
@@ -79,6 +84,14 @@ export default function AboutPage(): React.JSX.Element {
     setIsLoading(false);
   }, []);
 
+  // Abort an in-flight story stream when the user navigates away - otherwise it keeps running
+  // server-side with nothing left to render it.
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col" style={{ backgroundColor: "var(--background)" }}>
       <AppNav />
@@ -118,20 +131,24 @@ export default function AboutPage(): React.JSX.Element {
 
         {(sections.length > 0 || phase === "story") && (
           <div className="cartoon-card p-6">
-            <div className="flex flex-col gap-6">
-              {sections.map((section, index) => (
-                <div key={section.heading}>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-black text-orange-600 text-sm">{String(index + 1).padStart(2, "0")}</span>
-                    <h3 className="font-black text-2xl text-[var(--color-ink)] leading-tight">{section.heading}</h3>
+            {sections.length === 0 && !isLoading ? (
+              <p className="font-semibold text-gray-700">{STORY_FALLBACK_TEXT}</p>
+            ) : (
+              <div className="flex flex-col gap-6">
+                {sections.map((section, index) => (
+                  <div key={section.heading}>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-black text-orange-600 text-sm">{String(index + 1).padStart(2, "0")}</span>
+                      <h3 className="font-black text-2xl text-[var(--color-ink)] leading-tight">{section.heading}</h3>
+                    </div>
+                    <p className="mt-1 whitespace-pre-wrap font-semibold text-gray-700">{section.text}</p>
                   </div>
-                  <p className="mt-1 whitespace-pre-wrap font-semibold text-gray-700">{section.text}</p>
-                </div>
-              ))}
-              {isLoading && phase === "story" && (
-                <TypingDots ariaLabel="Hittar på mer" className="typing-dots" color="var(--color-ink)" />
-              )}
-            </div>
+                ))}
+                {isLoading && phase === "story" && (
+                  <TypingDots ariaLabel="Hittar på mer" className="typing-dots" color="var(--color-ink)" />
+                )}
+              </div>
+            )}
           </div>
         )}
 

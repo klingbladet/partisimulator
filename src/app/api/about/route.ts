@@ -13,6 +13,7 @@ import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { limitToSentences } from "@/lib/sentence-limit";
 import { shuffleArray } from "@/lib/shuffle";
+import { sleep } from "@/lib/sleep";
 
 export const maxDuration = 120;
 
@@ -28,6 +29,27 @@ function stripLeakedFormatting(text: string): string {
     .replace(/^["“”']+|["“”']+$/g, "")
     .trim();
 }
+
+/**
+ * One cheap, non-retrying call used to fail fast when the model is unreachable (missing/invalid
+ * API key, provider outage, local MLX server not running). Without this check, that same failure
+ * would only surface after all ~19 cast + beat calls below each exhaust the SDK's default retries
+ * - fine for the 8 cast entries since they run in parallel, but the 11 beats run one after another,
+ * multiplying that wasted wait into a long spinner with nothing to show for it.
+ */
+async function isModelReachable(signal: AbortSignal): Promise<boolean> {
+  try {
+    await generateText({ abortSignal: signal, maxOutputTokens: 5, maxRetries: 0, model: getModel(), prompt: "Hej" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// A misconfigured model (e.g. a missing env var) fails the reachability check near-instantly,
+// which reads as a glitch - the loading dots flash on then immediately off. Padding the
+// unreachable path out to at least this long makes it look like an attempt was actually made.
+const MIN_UNREACHABLE_DELAY_MS = 1000;
 
 export async function POST(req: NextRequest): Promise<Response> {
   // Lower budget than /api/ask: each request runs one call per story beat, not one call total.
@@ -45,13 +67,28 @@ export async function POST(req: NextRequest): Promise<Response> {
       abortController.abort(reason);
     },
     async start(controller) {
+      const reachabilityCheckStartedAt = Date.now();
+      if (!(await isModelReachable(abortController.signal))) {
+        const elapsedMs = Date.now() - reachabilityCheckStartedAt;
+        if (elapsedMs < MIN_UNREACHABLE_DELAY_MS && !abortController.signal.aborted) {
+          await sleep(MIN_UNREACHABLE_DELAY_MS - elapsedMs);
+        }
+        if (!abortController.signal.aborted) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "castDone" })}\n\n`));
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: "done" })}\n\n`));
+          controller.close();
+        }
+        return;
+      }
+
       // Cast entries are independent of each other (unlike the beats below), so they run in
       // parallel and stream in whatever order they finish - same fan-out shape as /api/ask-all.
-      const castPromises = shuffleArray([...MAKER_NAMES]).map(async (name) => {
+      const castPromises = shuffleArray(MAKER_NAMES).map(async (name) => {
         try {
           const { text } = await generateText({
             abortSignal: abortController.signal,
             maxOutputTokens: 100,
+            maxRetries: 0,
             model: getModel(),
             prompt: "Ge mig texten.",
             system: buildCastEntryPrompt(name),
@@ -87,6 +124,7 @@ export async function POST(req: NextRequest): Promise<Response> {
             // Small, tight budget per beat - the hard guarantee that every heading gets content
             // instead of one rambling beat eating the whole story's token budget.
             maxOutputTokens: 100,
+            maxRetries: 0,
             model: getModel(),
             prompt: "Fortsätt historien.",
             system: buildAboutBeatPrompt(index, beatTexts),

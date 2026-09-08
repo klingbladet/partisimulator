@@ -52,6 +52,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       abortSignal: req.signal,
       experimental_transform: createSentenceLimitTransform(getMaxSentences("one-shot")),
       maxOutputTokens: 400,
+      maxRetries: 0,
       messages,
       model: getModel(),
       system: systemPrompt,
