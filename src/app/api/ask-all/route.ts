@@ -8,7 +8,7 @@ import { buildAskAllPrompt, getLongAnswerMaxSentences, getMaxSentences } from "@
 import { retrieveContext } from "@/lib/rag";
 import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { limitToSentences } from "@/lib/sentence-limit";
+import { extractCompleteText } from "@/lib/sentence-limit";
 import { cleanText, extractSources, extractStance, splitShortLong, stripStanceMarker } from "@/lib/sources";
 import { createSseResponse } from "@/lib/sse";
 import { askAllRequestSchema } from "@/lib/validation";
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest): Promise<Response> {
         const context = await retrieveContext(party.id, question);
         const systemPrompt = buildAskAllPrompt(party, context);
 
-        const { text } = await generateText({
+        const { finishReason, text } = await generateText({
           abortSignal: signal,
           maxOutputTokens: 600,
           maxRetries: 0,
@@ -61,9 +61,12 @@ export async function POST(req: NextRequest): Promise<Response> {
         const stance = extractStance(cleaned);
         const { long, short } = splitShortLong(stripStanceMarker(cleaned));
 
-        // Enforce the length caps in code, since not every model follows them from the prompt alone
-        const limitedShort = limitToSentences(short, getMaxSentences("ask-all"));
-        const limitedLong = long ? limitToSentences(long, getLongAnswerMaxSentences()) : undefined;
+        // Enforce the length caps in code, since not every model follows them from the prompt
+        // alone - and if the model got cut off before finishing even one sentence (a free/lower-
+        // tier model burning its budget on reasoning tokens `reasoning.exclude` hides but doesn't
+        // refund), treat that half as unusable rather than showing the raw, truncated fragment.
+        const limitedShort = extractCompleteText(short, finishReason, getMaxSentences("ask-all"));
+        const limitedLong = long ? extractCompleteText(long, finishReason, getLongAnswerMaxSentences()) : undefined;
         const finalShort = cleanText(limitedShort);
 
         if (!finalShort) {

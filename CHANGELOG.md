@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - `/api/about`: cast-entry generation now runs in batches of 3 instead of one full 8-way parallel fan-out - a free/lower-tier model's tighter concurrency limit could silently drop every simultaneous call (no retries, `maxRetries: 0`), sometimes emptying the whole "I rollerna" list even though the same model handles one request at a time fine
+- `/api/about`'s reachability probe now uses the same 100-token budget as its real beat/cast calls instead of 5 - some OpenRouter models reject (or otherwise choke on) a budget too small to fit even a minimal reasoning trace, misreporting a model that works fine at normal budgets as unreachable and blocking the whole page from generating anything
+- `extractCompleteText` (`src/lib/sentence-limit.ts`) generalizes `/api/about`'s truncated-reply guard into a shared helper, now also used by `/api/ask-all` (for both the short and long answer) and the `createSentenceLimitTransform` streaming path shared by `/api/ask` and `/api/debate`
 
 ### Removed
 
@@ -18,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- `/api/about`: a free/lower-tier model that burned part of its 100-token beat/cast-entry budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply.
+- `/api/about`, `/api/ask-all`, `/api/ask`, `/api/debate`: a free/lower-tier model that burned part of its token budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply, across every route that generates a reply, not just `/api/about`.
 
 ## [0.1.6] - 2026-09-08
 

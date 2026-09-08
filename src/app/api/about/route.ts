@@ -1,4 +1,4 @@
-import { generateText } from "ai";
+import { type FinishReason, generateText } from "ai";
 import type { NextRequest } from "next/server";
 import {
   ABOUT_STORY_BEAT_COUNT,
@@ -11,7 +11,7 @@ import { MAKER_NAMES } from "@/lib/makers";
 import { getModel } from "@/lib/model";
 import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { findSentenceBoundary, limitToSentences } from "@/lib/sentence-limit";
+import { extractCompleteText } from "@/lib/sentence-limit";
 import { shuffleArray } from "@/lib/shuffle";
 import { sleep } from "@/lib/sleep";
 import { createSseResponse, type SseEmitter } from "@/lib/sse";
@@ -31,21 +31,10 @@ function stripLeakedFormatting(text: string): string {
     .trim();
 }
 
-/**
- * Each beat/cast entry gets a small, fixed token budget (below) - plenty for the "max two
- * sentences" the prompt asks for, unless the model burns part of it on reasoning tokens that
- * `reasoning.exclude` strips from the response but not from the budget. A free or lower-tier model
- * doing that runs out before finishing a single sentence, and `limitToSentences` has no boundary to
- * cut at, so it would otherwise return the raw, cut-off fragment verbatim. `finishReason === "length"`
- * combined with no complete sentence anywhere in the text means it's not a real (if short) reply -
- * treated the same as an empty one instead of shown as broken, half-finished text.
- */
-function extractCompleteReply(rawText: string, finishReason: string, maxSentences: number): string {
+/** Sanitizes, then applies extractCompleteText's truncation guard and strips leaked meta-formatting. */
+function extractCompleteReply(rawText: string, finishReason: FinishReason, maxSentences: number): string {
   const sanitized = sanitizeSpeech(rawText);
-  if (finishReason === "length" && findSentenceBoundary(sanitized, 1) === null) {
-    return "";
-  }
-  return stripLeakedFormatting(limitToSentences(sanitized, maxSentences));
+  return stripLeakedFormatting(extractCompleteText(sanitized, finishReason, maxSentences));
 }
 
 /**
@@ -54,10 +43,15 @@ function extractCompleteReply(rawText: string, finishReason: string, maxSentence
  * would only surface after all ~19 cast + beat calls below each exhaust the SDK's default retries
  * - fine for the 8 cast entries since they run in small parallel batches, but the 11 beats run one
  * after another, multiplying that wasted wait into a long spinner with nothing to show for it.
+ *
+ * maxOutputTokens matches the real per-beat/cast budget rather than an even smaller value - some
+ * OpenRouter models reject (or otherwise choke on) a request whose budget is too small to fit even
+ * a minimal reasoning trace once `reasoning` is enabled, which would misreport a model that works
+ * fine at normal budgets as unreachable.
  */
 async function isModelReachable(signal: AbortSignal): Promise<boolean> {
   try {
-    await generateText({ abortSignal: signal, maxOutputTokens: 5, maxRetries: 0, model: getModel(), prompt: "Hej" });
+    await generateText({ abortSignal: signal, maxOutputTokens: 100, maxRetries: 0, model: getModel(), prompt: "Hej" });
     return true;
   } catch {
     return false;

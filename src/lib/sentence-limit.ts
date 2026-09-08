@@ -1,4 +1,4 @@
-import type { TextStreamPart, ToolSet } from "ai";
+import type { FinishReason, TextStreamPart, ToolSet } from "ai";
 import { sanitizeSpeech } from "@/lib/sanitize";
 
 /**
@@ -74,6 +74,21 @@ export function limitToSentences(text: string, maxSentences: number): string {
 }
 
 /**
+ * Same as limitToSentences, but for a reply that hit its token budget (finishReason "length")
+ * before completing even one sentence - a free or lower-tier model can burn part of a small budget
+ * on reasoning tokens that `reasoning.exclude` strips from the response but not from the budget,
+ * leaving nothing but a bare mid-sentence cutoff. limitToSentences has no boundary to cut at in
+ * that case and would return the raw fragment verbatim; this treats it as unusable instead, the
+ * same as an empty reply.
+ */
+export function extractCompleteText(text: string, finishReason: FinishReason, maxSentences: number): string {
+  if (finishReason === "length" && findSentenceBoundary(text, 1) === null) {
+    return "";
+  }
+  return limitToSentences(text, maxSentences);
+}
+
+/**
  * A streamText `experimental_transform` that stops generation the moment maxSentences complete
  * sentences have streamed, so the length limit holds regardless of whether the configured model
  * (OpenRouter-hosted or local via MLX) actually follows the prompt's own length instruction.
@@ -92,6 +107,9 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
     let emittedLength = 0;
     let stopped = false;
     let lastChunk: Extract<TextStreamPart<TOOLS>, { type: "text-delta" }> | undefined;
+    // Captured off the stream's own "finish" chunk, once it arrives - only relevant here if the
+    // stream ends on its own (stopped stays false) rather than being cut short by the sentence cap.
+    let finishReason: FinishReason | undefined;
 
     return new TransformStream({
       flush(controller) {
@@ -99,6 +117,11 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
           return;
         }
         const sanitized = sanitizeSpeech(accumulatedText);
+        // The model hit its token budget before finishing a single sentence - nothing usable to
+        // show, same "cut off, not just short" case /api/about and /api/ask-all guard against.
+        if (finishReason === "length" && findSentenceBoundary(sanitized, 1) === null) {
+          return;
+        }
         const remaining = sanitized.slice(emittedLength);
         if (remaining.length > 0) {
           controller.enqueue({ ...lastChunk, text: remaining });
@@ -106,6 +129,11 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
       },
       transform(chunk, controller) {
         if (stopped) {
+          return;
+        }
+        if (chunk.type === "finish") {
+          finishReason = chunk.finishReason;
+          controller.enqueue(chunk);
           return;
         }
         if (chunk.type !== "text-delta") {
