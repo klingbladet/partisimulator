@@ -48,7 +48,7 @@ export default function HomePage(): React.JSX.Element {
         <section className="mb-12 grid grid-cols-1 gap-4 md:grid-cols-3">
           {MODES.map((mode) => (
             <Link
-              className="cartoon-card flex flex-col items-start gap-3 p-6 text-white"
+              className="cartoon-card cartoon-card-hover flex flex-col items-start gap-3 p-6 text-white"
               href={mode.href}
               key={mode.href}
               style={{ backgroundColor: mode.color }}

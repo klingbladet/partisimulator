@@ -112,6 +112,15 @@ body {
   box-shadow: var(--shadow);
 }
 
+.cartoon-card-hover {
+  transition: all 0.12s ease;
+}
+
+.cartoon-card-hover:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translate(-2px, -2px);
+}
+
 .cartoon-btn {
   display: inline-flex;
   gap: 0.5rem;
