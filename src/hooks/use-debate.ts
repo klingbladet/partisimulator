@@ -1,6 +1,7 @@
 import { useCompletion } from "@ai-sdk/react";
 import { type RefObject, useEffect, useRef, useState } from "react";
 import { buildNoAnswerFallback } from "@/lib/no-answer";
+import { playAnswerSound } from "@/lib/notification-sound";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
 import { shuffleArray } from "@/lib/shuffle";
@@ -208,6 +209,7 @@ export function useDebate(): UseDebateResult {
       historyRef.current = fallbackHistory;
       setHistory(fallbackHistory);
       clearStreamingState();
+      playAnswerSound();
       return;
     }
 
@@ -217,6 +219,7 @@ export function useDebate(): UseDebateResult {
     historyRef.current = resolvedHistory;
     setHistory(resolvedHistory);
     clearStreamingState();
+    playAnswerSound();
   };
 
   const { completion, complete, isLoading, stop } = useCompletion({
@@ -402,6 +405,7 @@ export function useDebate(): UseDebateResult {
     historyRef.current = fallbackHistory;
     setHistory(fallbackHistory);
     clearStreamingState();
+    playAnswerSound();
   };
 
   // Re-runs a failed turn's request and updates that same entry in place via the same

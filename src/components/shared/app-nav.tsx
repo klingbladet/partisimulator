@@ -1,13 +1,15 @@
 "use client";
 
-import { LayoutGrid, Menu, Mic, Target, X } from "lucide-react";
+import { LayoutGrid, Menu, Mic, Target, Volume2, VolumeX, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { isSoundMuted, subscribeSoundMuted, toggleSoundMuted } from "@/lib/notification-sound";
 
 export default function AppNav(): React.JSX.Element {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isMuted = useSyncExternalStore(subscribeSoundMuted, isSoundMuted, () => false);
 
   const tabs = [
     { href: "/direktfraga", Icon: Target, id: "nav-direct", label: "Direktfråga" },
@@ -24,7 +26,7 @@ export default function AppNav(): React.JSX.Element {
         </a>
 
         {/* Nav tabs - inline from sm upward */}
-        <div className="hidden flex-wrap items-center gap-2 sm:flex">
+        <div className="hidden flex-wrap items-stretch gap-2 sm:flex">
           {tabs.map((tab) => (
             <Link
               className={`nav-tab ${pathname === tab.href ? "active" : ""}`}
@@ -36,6 +38,25 @@ export default function AppNav(): React.JSX.Element {
               {tab.label}
             </Link>
           ))}
+          <div
+            aria-hidden="true"
+            className="mx-2 my-1 self-stretch border-l"
+            style={{ borderColor: "var(--border)", borderLeftWidth: "var(--border-width)" }}
+          />
+          <button
+            aria-label={isMuted ? "Slå på ljud" : "Stäng av ljud"}
+            aria-pressed={isMuted}
+            className={`nav-tab nav-mute-toggle ${isMuted ? "" : "unmuted"}`}
+            id="nav-mute-toggle"
+            onClick={toggleSoundMuted}
+            type="button"
+          >
+            {isMuted ? (
+              <VolumeX aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <Volume2 aria-hidden="true" className="h-4 w-4" />
+            )}
+          </button>
         </div>
 
         {/* Hamburger toggle - below sm only */}
@@ -76,6 +97,20 @@ export default function AppNav(): React.JSX.Element {
               {tab.label}
             </Link>
           ))}
+          <button
+            aria-pressed={isMuted}
+            className={`nav-tab nav-mute-toggle justify-center ${isMuted ? "" : "unmuted"}`}
+            id="nav-mute-toggle-mobile"
+            onClick={toggleSoundMuted}
+            type="button"
+          >
+            {isMuted ? (
+              <VolumeX aria-hidden="true" className="h-4 w-4" />
+            ) : (
+              <Volume2 aria-hidden="true" className="h-4 w-4" />
+            )}
+            {isMuted ? "Slå på ljud" : "Stäng av ljud"}
+          </button>
         </div>
       )}
     </nav>
