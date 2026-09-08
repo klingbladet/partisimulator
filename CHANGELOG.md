@@ -6,16 +6,11 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- `error.tsx`, `global-error.tsx`, `not-found.tsx`: custom error/404 pages matching the site's own look, instead of falling through to Next's defaults
-- `DEBUG=true` env var (`src/lib/debug-log.ts`) logs RAG and LLM generation durations, RAG chunk counts, and the resolved model per request to the console; without it, only durations over a threshold are logged as a warning - local dev only, no log shipping
-- Replies discarded for hitting their token budget mid-sentence, or for a RAG search that returned zero matching chunks, or (in `/api/ask-all`) for sanitizing down to nothing, now log a `console.warn` naming the route and party - previously silent, always showing the same generic fallback with no trail in the console
-- `/api/about`'s model-reachability probe now logs the actual error via `console.error` instead of swallowing it - previously an unreachable model (bad API key, wrong model name, provider outage) produced an empty cast list with nothing explaining why
+- None yet
 
 ### Changed
 
-- `/api/about`: cast-entry generation now runs in batches of 3 instead of one full 8-way parallel fan-out - a free/lower-tier model's tighter concurrency limit could silently drop every simultaneous call (no retries, `maxRetries: 0`), sometimes emptying the whole "I rollerna" list even though the same model handles one request at a time fine
-- `/api/about`'s reachability probe now uses the same 100-token budget as its real beat/cast calls instead of 5 - some OpenRouter models reject (or otherwise choke on) a budget too small to fit even a minimal reasoning trace, misreporting a model that works fine at normal budgets as unreachable and blocking the whole page from generating anything
-- `extractCompleteText` (`src/lib/sentence-limit.ts`) generalizes `/api/about`'s truncated-reply guard into a shared helper, now also used by `/api/ask-all` (for both the short and long answer) and the `createSentenceLimitTransform` streaming path shared by `/api/ask` and `/api/debate`
+- None yet
 
 ### Removed
 
@@ -23,8 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- `/api/ask`, `/api/debate`: an unexpected server error no longer leaks the raw exception message to the client - now returns the same generic message `/api/ask-all` and `/api/about` already used
-- `/api/about`, `/api/ask-all`, `/api/ask`, `/api/debate`: a free/lower-tier model that burned part of its token budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply, across every route that generates a reply, not just `/api/about`.
+- None yet...
 
 ## [0.1.6] - 2026-09-08
 
@@ -37,6 +31,10 @@ All notable changes to this project will be documented in this file.
     - Cast list and story each show their own loading indicator, switched over via an explicit `castDone` stream event rather than inferring the phase change from event timing.
 - A regenerate button on any failed reply (one-shot chat, ask-all grid, and debate), re-running just that reply in place instead of leaving the generic "kan inte svara" fallback as the final word
 - Om oss: a "Försök igen" regenerate button on the story's error banner and its empty-story fallback, re-running `handleTellStory` in place of a dead end
+- `error.tsx`, `global-error.tsx`, `not-found.tsx`: custom error/404 pages matching the site's own look, instead of falling through to Next's defaults
+- `DEBUG=true` env var (`src/lib/debug-log.ts`) logs RAG and LLM generation durations, RAG chunk counts, and the resolved model per request to the console; without it, only durations over a threshold are logged as a warning - local dev only, no log shipping
+- Replies discarded for hitting their token budget mid-sentence, or for a RAG search that returned zero matching chunks, or (in `/api/ask-all`) for sanitizing down to nothing, now log a `console.warn` naming the route and party - previously silent, always showing the same generic fallback with no trail in the console
+- `/api/about`'s model-reachability probe now logs the actual error via `console.error` instead of swallowing it - previously an unreachable model (bad API key, wrong model name, provider outage) produced an empty cast list with nothing explaining why
 
 ### Changed
 
@@ -51,6 +49,9 @@ All notable changes to this project will be documented in this file.
 - `/api/ask-all`: accepts an optional `partyIds` filter, so a single party's answer can be regenerated without re-asking all 8
 - Debatt: replaced the native `window.confirm` prompts (auto-mode turn cap, "Avsluta debatten?") with a cartoon-styled `ConfirmDialog`
 - Debatt: the auto/manual mode toggle now hides itself while closing statements are generating or after the debate ends, instead of just disabling
+- `/api/about`: cast-entry generation now runs in batches of 3 instead of one full 8-way parallel fan-out - a free/lower-tier model's tighter concurrency limit could silently drop every simultaneous call (no retries, `maxRetries: 0`), sometimes emptying the whole "I rollerna" list even though the same model handles one request at a time fine
+- `/api/about`'s reachability probe now uses the same 100-token budget as its real beat/cast calls instead of 5 - some OpenRouter models reject (or otherwise choke on) a budget too small to fit even a minimal reasoning trace, misreporting a model that works fine at normal budgets as unreachable and blocking the whole page from generating anything
+- `extractCompleteText` (`src/lib/sentence-limit.ts`) generalizes `/api/about`'s truncated-reply guard into a shared helper, now also used by `/api/ask-all` (for both the short and long answer) and the `createSentenceLimitTransform` streaming path shared by `/api/ask` and `/api/debate`
 
 ### Removed
 
@@ -62,6 +63,9 @@ All notable changes to this project will be documented in this file.
 - `/om-projektet`: aborts its in-flight story stream when the page unmounts, matching `alla-partier`'s cleanup - previously a stream kept running server-side after the user navigated away
 - `/om-projektet`: shows a single in-character fallback line in the story card instead of an empty white box when every beat comes back empty
 - `sentence-limit.ts`: Swedish abbreviations ending in a dot (e.g. "t.ex.", "bl.a.", "m.fl.") no longer trip the sentence cap mid-sentence
+
+- `/api/ask`, `/api/debate`: an unexpected server error no longer leaks the raw exception message to the client - now returns the same generic message `/api/ask-all` and `/api/about` already used
+- `/api/about`, `/api/ask-all`, `/api/ask`, `/api/debate`: a free/lower-tier model that burned part of its token budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply, across every route that generates a reply, not just `/api/about`.
 
 ## [0.1.5] - 2026-09-07
 
