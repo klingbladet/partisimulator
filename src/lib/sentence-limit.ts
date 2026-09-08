@@ -54,7 +54,7 @@ function isSentenceEnd(text: string, index: number): boolean {
 }
 
 /** Index right after the Nth sentence-ending punctuation mark in text, or null if it has fewer sentences. */
-function findSentenceBoundary(text: string, sentenceCount: number): number | null {
+export function findSentenceBoundary(text: string, sentenceCount: number): number | null {
   let count = 0;
   for (let index = 0; index < text.length; index++) {
     if (isSentenceEnd(text, index)) {

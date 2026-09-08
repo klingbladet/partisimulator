@@ -11,7 +11,7 @@ import { MAKER_NAMES } from "@/lib/makers";
 import { getModel } from "@/lib/model";
 import { isWithinRateLimit } from "@/lib/rate-limit";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { limitToSentences } from "@/lib/sentence-limit";
+import { findSentenceBoundary, limitToSentences } from "@/lib/sentence-limit";
 import { shuffleArray } from "@/lib/shuffle";
 import { sleep } from "@/lib/sleep";
 import { createSseResponse } from "@/lib/sse";
@@ -29,6 +29,23 @@ function stripLeakedFormatting(text: string): string {
     .replace(/\*\*/g, "")
     .replace(/^["“”']+|["“”']+$/g, "")
     .trim();
+}
+
+/**
+ * Each beat/cast entry gets a small, fixed token budget (below) - plenty for the "max two
+ * sentences" the prompt asks for, unless the model burns part of it on reasoning tokens that
+ * `reasoning.exclude` strips from the response but not from the budget. A free or lower-tier model
+ * doing that runs out before finishing a single sentence, and `limitToSentences` has no boundary to
+ * cut at, so it would otherwise return the raw, cut-off fragment verbatim. `finishReason === "length"`
+ * combined with no complete sentence anywhere in the text means it's not a real (if short) reply -
+ * treated the same as an empty one instead of shown as broken, half-finished text.
+ */
+function extractCompleteReply(rawText: string, finishReason: string, maxSentences: number): string {
+  const sanitized = sanitizeSpeech(rawText);
+  if (finishReason === "length" && findSentenceBoundary(sanitized, 1) === null) {
+    return "";
+  }
+  return stripLeakedFormatting(limitToSentences(sanitized, maxSentences));
 }
 
 /**
@@ -77,7 +94,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     // parallel and stream in whatever order they finish - same fan-out shape as /api/ask-all.
     const castPromises = shuffleArray(MAKER_NAMES).map(async (name) => {
       try {
-        const { text } = await generateText({
+        const { finishReason, text } = await generateText({
           abortSignal: signal,
           maxOutputTokens: 100,
           maxRetries: 0,
@@ -87,7 +104,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           temperature: 0.8,
         });
 
-        const bio = stripLeakedFormatting(limitToSentences(sanitizeSpeech(text), 2));
+        const bio = extractCompleteReply(text, finishReason, 2);
         if (!bio || signal.aborted) return;
 
         emitter.send({ name, text: bio, type: "cast" });
@@ -108,7 +125,7 @@ export async function POST(req: NextRequest): Promise<Response> {
       if (signal.aborted) break;
 
       try {
-        const { text } = await generateText({
+        const { finishReason, text } = await generateText({
           abortSignal: signal,
           // Small, tight budget per beat - the hard guarantee that every heading gets content
           // instead of one rambling beat eating the whole story's token budget.
@@ -120,7 +137,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           temperature: 0.7,
         });
 
-        const cleaned = stripLeakedFormatting(limitToSentences(sanitizeSpeech(text), 2));
+        const cleaned = extractCompleteReply(text, finishReason, 2);
         if (!cleaned) continue;
 
         beatTexts.push(cleaned);

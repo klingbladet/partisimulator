@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+- `/api/about`: a free/lower-tier model that burned part of its 100-token beat/cast-entry budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply.
 
 ## [0.1.6] - 2026-09-08
 
