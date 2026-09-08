@@ -79,10 +79,18 @@ export function limitToSentences(text: string, maxSentences: number): string {
  * on reasoning tokens that `reasoning.exclude` strips from the response but not from the budget,
  * leaving nothing but a bare mid-sentence cutoff. limitToSentences has no boundary to cut at in
  * that case and would return the raw fragment verbatim; this treats it as unusable instead, the
- * same as an empty reply.
+ * same as an empty reply. `label` identifies the caller in the resulting warning - otherwise this
+ * looks identical in the console to every other reason a reply ends up empty (RAG failure,
+ * sanitizeSpeech stripping a leaked preamble, ...).
  */
-export function extractCompleteText(text: string, finishReason: FinishReason, maxSentences: number): string {
+export function extractCompleteText(
+  text: string,
+  finishReason: FinishReason,
+  maxSentences: number,
+  label: string,
+): string {
   if (finishReason === "length" && findSentenceBoundary(text, 1) === null) {
+    console.warn(`Reply discarded (${label}): hit token budget before completing a sentence`);
     return "";
   }
   return limitToSentences(text, maxSentences);
@@ -97,7 +105,7 @@ export function extractCompleteText(text: string, finishReason: FinishReason, ma
  * chunk, holding back a trailing "." until more text resolves whether it's a real sentence end -
  * a chunk boundary can otherwise land right after a mid-abbreviation dot.
  */
-export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences: number) {
+export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences: number, label: string) {
   return ({
     stopStream,
   }: {
@@ -120,6 +128,7 @@ export function createSentenceLimitTransform<TOOLS extends ToolSet>(maxSentences
         // The model hit its token budget before finishing a single sentence - nothing usable to
         // show, same "cut off, not just short" case /api/about and /api/ask-all guard against.
         if (finishReason === "length" && findSentenceBoundary(sanitized, 1) === null) {
+          console.warn(`Reply discarded (${label}): hit token budget before completing a sentence`);
           return;
         }
         const remaining = sanitized.slice(emittedLength);

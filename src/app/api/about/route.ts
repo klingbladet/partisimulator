@@ -32,9 +32,14 @@ function stripLeakedFormatting(text: string): string {
 }
 
 /** Sanitizes, then applies extractCompleteText's truncation guard and strips leaked meta-formatting. */
-function extractCompleteReply(rawText: string, finishReason: FinishReason, maxSentences: number): string {
+function extractCompleteReply(
+  rawText: string,
+  finishReason: FinishReason,
+  maxSentences: number,
+  label: string,
+): string {
   const sanitized = sanitizeSpeech(rawText);
-  return stripLeakedFormatting(extractCompleteText(sanitized, finishReason, maxSentences));
+  return stripLeakedFormatting(extractCompleteText(sanitized, finishReason, maxSentences, label));
 }
 
 /**
@@ -53,7 +58,9 @@ async function isModelReachable(signal: AbortSignal): Promise<boolean> {
   try {
     await generateText({ abortSignal: signal, maxOutputTokens: 100, maxRetries: 0, model: getModel(), prompt: "Hej" });
     return true;
-  } catch {
+  } catch (error) {
+    if (signal.aborted) return false;
+    console.error("Model unreachable:", error);
     return false;
   }
 }
@@ -81,7 +88,7 @@ async function generateCastEntry(name: string, signal: AbortSignal, emitter: Sse
       temperature: 0.8,
     });
 
-    const bio = extractCompleteReply(text, finishReason, 2);
+    const bio = extractCompleteReply(text, finishReason, 2, `about cast, ${name}`);
     if (!bio || signal.aborted) return;
 
     emitter.send({ name, text: bio, type: "cast" });
@@ -144,7 +151,7 @@ export async function POST(req: NextRequest): Promise<Response> {
           temperature: 0.7,
         });
 
-        const cleaned = extractCompleteReply(text, finishReason, 2);
+        const cleaned = extractCompleteReply(text, finishReason, 2, `about beat ${index}`);
         if (!cleaned) continue;
 
         beatTexts.push(cleaned);

@@ -6,7 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None yet...
+- `error.tsx`, `global-error.tsx`, `not-found.tsx`: custom error/404 pages matching the site's own look, instead of falling through to Next's defaults
+- `DEBUG=true` env var (`src/lib/debug-log.ts`) logs RAG and LLM generation durations, RAG chunk counts, and the resolved model per request to the console; without it, only durations over a threshold are logged as a warning - local dev only, no log shipping
+- Replies discarded for hitting their token budget mid-sentence, or for a RAG search that returned zero matching chunks, or (in `/api/ask-all`) for sanitizing down to nothing, now log a `console.warn` naming the route and party - previously silent, always showing the same generic fallback with no trail in the console
+- `/api/about`'s model-reachability probe now logs the actual error via `console.error` instead of swallowing it - previously an unreachable model (bad API key, wrong model name, provider outage) produced an empty cast list with nothing explaining why
 
 ### Changed
 
@@ -20,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- `/api/ask`, `/api/debate`: an unexpected server error no longer leaks the raw exception message to the client - now returns the same generic message `/api/ask-all` and `/api/about` already used
 - `/api/about`, `/api/ask-all`, `/api/ask`, `/api/debate`: a free/lower-tier model that burned part of its token budget on reasoning (stripped from the response by `reasoning.exclude`, but not from the budget) could get cut off before finishing a single sentence - `limitToSentences` had no boundary to cut at, so it showed the raw, truncated fragment verbatim instead of dropping it. `finishReason === "length"` combined with no complete sentence anywhere in the text is now treated the same as an empty reply, across every route that generates a reply, not just `/api/about`.
 
 ## [0.1.6] - 2026-09-08
