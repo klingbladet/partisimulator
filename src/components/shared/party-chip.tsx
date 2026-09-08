@@ -44,7 +44,6 @@ export default function PartyChip({
         backgroundColor: selected ? party.color : "white",
         borderColor: selected ? party.color : "var(--border)",
         boxShadow: selected ? `5px 5px 0px ${party.color}88` : "3px 3px 0px var(--border)",
-        cursor: disabled ? "not-allowed" : "pointer",
         opacity: disabled && !selected ? 0.6 : 1,
       }}
       title={`${party.displayName} (${party.partyName})`}
