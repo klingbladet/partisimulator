@@ -1,6 +1,6 @@
 "use client";
 
-import { Send } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import Image from "next/image";
 import ManifestLink from "@/components/shared/manifest-link";
 import PartyAvatar from "@/components/shared/party-avatar";
@@ -105,13 +105,25 @@ export default function AnswerBubble({
               </p>
 
               {longAnswer && (
-                <details className="mt-2.5 text-sm">
-                  <summary className="cursor-pointer font-bold" style={{ color: party.color }}>
-                    Läs mer
+                <details className="group mt-2.5 text-sm">
+                  <summary
+                    className="cartoon-btn cartoon-btn-ghost list-none [&::-webkit-details-marker]:hidden"
+                    style={{ fontSize: "0.875rem", padding: "0.25rem 0.5rem" }}
+                  >
+                    <ChevronDown aria-hidden="true" className="h-3 w-3 transition-transform group-open:rotate-180" />
+                    <span className="group-open:hidden">Läs mer</span>
+                    <span className="hidden group-open:inline">Läs mindre</span>
                   </summary>
-                  <p className="mt-1.5 whitespace-pre-wrap" style={{ color: "var(--color-ink)" }}>
-                    {longAnswer}
-                  </p>
+                  <div className="mt-2 border-gray-100 border-t pt-2">
+                    <div
+                      className="rounded-[var(--radius-sm)] border-2 border-black p-3"
+                      style={{ background: "var(--color-cream)" }}
+                    >
+                      <p className="whitespace-pre-wrap text-base" style={{ color: "var(--color-ink)" }}>
+                        {longAnswer}
+                      </p>
+                    </div>
+                  </div>
                 </details>
               )}
             </div>
