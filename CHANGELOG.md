@@ -10,11 +10,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet...
+- `/api/about`, `/api/ask-all`: extracted the shared SSE stream/response boilerplate into `createSseResponse` (`src/lib/sse.ts`), removing duplicated `ReadableStream`/`AbortController`/event-encoding code between the two routes
+- `stream-about.ts`, `stream-ask-all.ts`: extracted the shared client-side SSE-reading loop into `readSseStream` (`src/lib/read-sse-stream.ts`)
 
 ### Removed
 
-- None yet...
+- Scratch scripts used to verify the sentence-limit and SSE-helper fixes (`scripts/verify-sentence-limit.ts`, `scripts/verify-sentence-limit-stream.ts`, `scripts/verify-sse.ts`) - not part of the app, deleted after use
 
 ### Fixed
 

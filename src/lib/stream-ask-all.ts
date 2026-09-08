@@ -1,3 +1,4 @@
+import { readSseStream } from "@/lib/read-sse-stream";
 import type { AskAllEvent } from "@/types/stream";
 
 /** Posts a question to /api/ask-all and invokes onEvent for each SSE "data:" line as it streams in. */
@@ -12,29 +13,5 @@ export async function streamAskAll(
     method: "POST",
     signal,
   });
-
-  if (!res.body) throw new Error("Inget svar från servern");
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (!line.startsWith("data: ")) continue;
-
-      try {
-        onEvent(JSON.parse(line.slice(6)));
-      } catch {
-        // ignore parse errors
-      }
-    }
-  }
+  await readSseStream(res, onEvent);
 }

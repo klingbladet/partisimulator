@@ -140,6 +140,8 @@ There exists local branch protection ("pre push" hook and branch protection in p
 - `pnpm lint-format-markdown` lints and formats markdown
 - `pnpm spellcheck` spellchecks
 - `pnpm analyze-code` checks for unused code, circular dependencies, duplication, and complexity
+    - Known false positive: it flags `dotenv` as a "dev dependency used in production" - it's only imported by `scripts/seed.ts`, a manual seeding script that never ships in the Next.js build, so it correctly stays a devDependency
+    - Known false positive: it flags `@cspell/dict-sv` as unused - it's wired in via `cspell.json`'s `import` field, not a source import, so the tool's import scanner can't see the reference
 
 Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spellcheck` on staged files before each commit, wired up automatically by `pnpm install`.
 
