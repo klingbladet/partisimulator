@@ -455,12 +455,17 @@ body {
 }
 
 .nav-mute-toggle:hover {
+  background: #ee2524;
   box-shadow: var(--shadow-btn-hover);
   transform: translate(-1px, -1px);
 }
 
 .nav-mute-toggle.unmuted {
   /* Unmuted state, borrowed from parti-c's green */
+  background: #009933;
+}
+
+.nav-mute-toggle.unmuted:hover {
   background: #009933;
 }
 
