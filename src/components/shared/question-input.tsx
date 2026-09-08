@@ -1,6 +1,6 @@
 "use client";
 
-import { Shuffle, Square } from "lucide-react";
+import { Dices, Square } from "lucide-react";
 import CountedTextarea from "@/components/shared/counted-textarea";
 import InputStack from "@/components/shared/input-stack";
 import TypingDots from "@/components/shared/typing-dots";
@@ -61,47 +61,49 @@ export default function QuestionInput({
         value={value}
       />
 
-      <button
-        className="cartoon-btn cartoon-btn-ghost w-full text-xs"
-        disabled={disabled || isLoading}
-        id={`${id}-random`}
-        onClick={() => onChange(getRandomExampleQuestion())}
-        type="button"
-      >
-        <Shuffle aria-hidden="true" className="h-3.5 w-3.5" />
-        Slumpa fråga
-      </button>
+      <div className="flex gap-3">
+        <button
+          className="cartoon-btn cartoon-btn-ghost text-xs"
+          disabled={disabled || isLoading}
+          id={`${id}-random`}
+          onClick={() => onChange(getRandomExampleQuestion())}
+          type="button"
+        >
+          <Dices aria-hidden="true" className="h-3.5 w-3.5" />
+          Slumpa fråga
+        </button>
 
-      {isLoading && onStop ? (
-        <button
-          aria-label="Avbryt"
-          className="cartoon-btn cartoon-btn-danger w-full"
-          id={`${id}-stop`}
-          onClick={onStop}
-          type="button"
-        >
-          <Square aria-hidden="true" className="h-4 w-4" fill="currentColor" />
-          Avbryt
-        </button>
-      ) : (
-        <button
-          aria-label={buttonLabel}
-          className="cartoon-btn cartoon-btn-primary w-full"
-          disabled={disabled || submitDisabled || isLoading || !value.trim()}
-          id={`${id}-submit`}
-          onClick={onSubmit}
-          type="button"
-        >
-          {isLoading ? (
-            <span className="flex items-center gap-2">
-              <TypingDots dotColor="white" />
-              Tänker...
-            </span>
-          ) : (
-            buttonLabel
-          )}
-        </button>
-      )}
+        {isLoading && onStop ? (
+          <button
+            aria-label="Avbryt"
+            className="cartoon-btn cartoon-btn-danger flex-1"
+            id={`${id}-stop`}
+            onClick={onStop}
+            type="button"
+          >
+            <Square aria-hidden="true" className="h-4 w-4" fill="currentColor" />
+            Avbryt
+          </button>
+        ) : (
+          <button
+            aria-label={buttonLabel}
+            className="cartoon-btn cartoon-btn-primary flex-1"
+            disabled={disabled || submitDisabled || isLoading || !value.trim()}
+            id={`${id}-submit`}
+            onClick={onSubmit}
+            type="button"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <TypingDots dotColor="white" />
+                Tänker...
+              </span>
+            ) : (
+              buttonLabel
+            )}
+          </button>
+        )}
+      </div>
     </InputStack>
   );
 }

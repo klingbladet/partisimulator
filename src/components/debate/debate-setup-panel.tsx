@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare, Shuffle } from "lucide-react";
+import { Dices, MessageSquare } from "lucide-react";
 import CountedTextarea from "@/components/shared/counted-textarea";
 import InputStack from "@/components/shared/input-stack";
 import PartyPickerCard from "@/components/shared/party-picker-card";
@@ -58,26 +58,28 @@ export default function DebateSetupPanel({
             placeholder={`T.ex. "Hur ska Sverige bekämpa brottsligheten?"`}
             value={topic}
           />
-          <button
-            className="cartoon-btn cartoon-btn-ghost w-full text-xs"
-            id="debate-topic-random"
-            onClick={() => onTopicChange(getRandomExampleQuestion())}
-            type="button"
-          >
-            <Shuffle aria-hidden="true" className="h-3.5 w-3.5" />
-            Slumpa fråga
-          </button>
+          {/* Random + start buttons, side by side like in QuestionInput */}
+          <div className="flex gap-3">
+            <button
+              className="cartoon-btn cartoon-btn-ghost text-xs"
+              id="debate-topic-random"
+              onClick={() => onTopicChange(getRandomExampleQuestion())}
+              type="button"
+            >
+              <Dices aria-hidden="true" className="h-3.5 w-3.5" />
+              Slumpa fråga
+            </button>
 
-          {/* Start button - directly under the input, like the submit button in QuestionInput */}
-          <button
-            className="cartoon-btn cartoon-btn-primary w-full py-4 text-lg"
-            disabled={selectedParties.length < 2 || !topic.trim()}
-            id="start-debate-btn"
-            onClick={onStartDebate}
-            type="button"
-          >
-            Starta
-          </button>
+            <button
+              className="cartoon-btn cartoon-btn-primary flex-1 py-4 text-lg"
+              disabled={selectedParties.length < 2 || !topic.trim()}
+              id="start-debate-btn"
+              onClick={onStartDebate}
+              type="button"
+            >
+              Starta
+            </button>
+          </div>
         </InputStack>
       </section>
 
