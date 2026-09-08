@@ -34,6 +34,10 @@ All notable changes to this project will be documented in this file.
 
 - Grew the nav logo's tap target to match the nav tabs' padding, without shifting its visible position
 - `shuffleArray` extracted from `use-debate.ts` into shared `src/lib/shuffle.ts`, reused to randomize the about page's cast-list order each visit
+- `/api/about`: fail fast on an unreachable model via a single cheap, non-retrying probe call instead of letting all 8 cast + 11 sequential story-beat calls each exhaust their retries - previously turned a model outage into a very long wait before the about page's "couldn't tell the story" fallback appeared
+- `/api/about`, `/api/ask`, `/api/ask-all`: disabled the AI SDK's default retries (`maxRetries: 0`) on all model calls, so a failure surfaces after one attempt instead of three
+- `/api/about`: pads an unreachable-model failure out to at least one second (`src/lib/sleep.ts`) so the loading dots don't flash on and immediately off when the probe fails near-instantly
+- `src/app/api/about/route.ts`: dropped a redundant array copy before `shuffleArray` (it already copies internally)
 
 ### Removed
 
@@ -41,7 +45,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+- `/om-projektet`: aborts its in-flight story stream when the page unmounts, matching `alla-partier`'s cleanup - previously a stream kept running server-side after the user navigated away
+- `/om-projektet`: shows a single in-character fallback line in the story card instead of an empty white box when every beat comes back empty
 
 ## [0.1.5] - 2026-09-07
 
