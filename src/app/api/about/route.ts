@@ -14,7 +14,7 @@ import { sanitizeSpeech } from "@/lib/sanitize";
 import { findSentenceBoundary, limitToSentences } from "@/lib/sentence-limit";
 import { shuffleArray } from "@/lib/shuffle";
 import { sleep } from "@/lib/sleep";
-import { createSseResponse } from "@/lib/sse";
+import { createSseResponse, type SseEmitter } from "@/lib/sse";
 
 export const maxDuration = 120;
 
@@ -52,8 +52,8 @@ function extractCompleteReply(rawText: string, finishReason: string, maxSentence
  * One cheap, non-retrying call used to fail fast when the model is unreachable (missing/invalid
  * API key, provider outage, local MLX server not running). Without this check, that same failure
  * would only surface after all ~19 cast + beat calls below each exhaust the SDK's default retries
- * - fine for the 8 cast entries since they run in parallel, but the 11 beats run one after another,
- * multiplying that wasted wait into a long spinner with nothing to show for it.
+ * - fine for the 8 cast entries since they run in small parallel batches, but the 11 beats run one
+ * after another, multiplying that wasted wait into a long spinner with nothing to show for it.
  */
 async function isModelReachable(signal: AbortSignal): Promise<boolean> {
   try {
@@ -68,6 +68,34 @@ async function isModelReachable(signal: AbortSignal): Promise<boolean> {
 // which reads as a glitch - the loading dots flash on then immediately off. Padding the
 // unreachable path out to at least this long makes it look like an attempt was actually made.
 const MIN_UNREACHABLE_DELAY_MS = 1000;
+
+// Free/lower-tier models often enforce a much tighter concurrency limit than a full 8-way fan-out
+// - hitting it silently drops every simultaneous call (no retries, see maxRetries: 0 below), which
+// can empty the whole cast list even though the same model handles one request at a time fine.
+// Small batches keep most of the parallelism's speed while staying under that ceiling.
+const CAST_BATCH_SIZE = 3;
+
+async function generateCastEntry(name: string, signal: AbortSignal, emitter: SseEmitter): Promise<void> {
+  try {
+    const { finishReason, text } = await generateText({
+      abortSignal: signal,
+      maxOutputTokens: 100,
+      maxRetries: 0,
+      model: getModel(),
+      prompt: "Ge mig texten.",
+      system: buildCastEntryPrompt(name),
+      temperature: 0.8,
+    });
+
+    const bio = extractCompleteReply(text, finishReason, 2);
+    if (!bio || signal.aborted) return;
+
+    emitter.send({ name, text: bio, type: "cast" });
+  } catch (error) {
+    if (signal.aborted) return;
+    console.error(`Error generating cast entry for ${name}:`, error);
+  }
+}
 
 export async function POST(req: NextRequest): Promise<Response> {
   // Lower budget than /api/ask: each request runs one call per story beat, not one call total.
@@ -90,30 +118,15 @@ export async function POST(req: NextRequest): Promise<Response> {
       return;
     }
 
-    // Cast entries are independent of each other (unlike the beats below), so they run in
-    // parallel and stream in whatever order they finish - same fan-out shape as /api/ask-all.
-    const castPromises = shuffleArray(MAKER_NAMES).map(async (name) => {
-      try {
-        const { finishReason, text } = await generateText({
-          abortSignal: signal,
-          maxOutputTokens: 100,
-          maxRetries: 0,
-          model: getModel(),
-          prompt: "Ge mig texten.",
-          system: buildCastEntryPrompt(name),
-          temperature: 0.8,
-        });
-
-        const bio = extractCompleteReply(text, finishReason, 2);
-        if (!bio || signal.aborted) return;
-
-        emitter.send({ name, text: bio, type: "cast" });
-      } catch (error) {
-        if (signal.aborted) return;
-        console.error(`Error generating cast entry for ${name}:`, error);
-      }
-    });
-    await Promise.all(castPromises);
+    // Cast entries are independent of each other (unlike the beats below), so they run in small
+    // parallel batches and stream in whatever order they finish within each batch - see
+    // CAST_BATCH_SIZE for why it's batches rather than one full 8-way fan-out.
+    const castNames = shuffleArray(MAKER_NAMES);
+    for (let batchStart = 0; batchStart < castNames.length; batchStart += CAST_BATCH_SIZE) {
+      if (signal.aborted) break;
+      const batch = castNames.slice(batchStart, batchStart + CAST_BATCH_SIZE);
+      await Promise.all(batch.map((name) => generateCastEntry(name, signal, emitter)));
+    }
     // Lets the page know the cast list is done and switch its loading indicator over to the
     // story card - there's otherwise no signal that phase changed, since a slow cast entry can
     // leave the client waiting with no events at all right up until the first beat arrives.

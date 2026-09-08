@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- None yet...
+- `/api/about`: cast-entry generation now runs in batches of 3 instead of one full 8-way parallel fan-out - a free/lower-tier model's tighter concurrency limit could silently drop every simultaneous call (no retries, `maxRetries: 0`), sometimes emptying the whole "I rollerna" list even though the same model handles one request at a time fine
 
 ### Removed
 
