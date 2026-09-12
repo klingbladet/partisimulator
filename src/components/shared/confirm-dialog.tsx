@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useNativeDialog } from "@/hooks/use-native-dialog";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -22,14 +22,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps): React.JSX.Element {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
+  const dialogRef = useNativeDialog(open);
 
   return (
     <dialog

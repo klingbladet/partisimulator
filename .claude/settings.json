@@ -163,7 +163,9 @@
       "Bash(csrutil:*)",
       "Bash(spctl:*)",
       "Bash(dscl:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Edit(.claude/settings.json)",
+      "Write(.claude/settings.json)"
     ],
     "disableAutoMode": "disable",
     "disableBypassPermissionsMode": "disable"
@@ -193,8 +195,8 @@
         }
       ]
     },
-    "enabled": false,
-    "failIfUnavailable": false,
+    "enabled": true,
+    "failIfUnavailable": true,
     "filesystem": {
       "allowWrite": [
         "/tmp"

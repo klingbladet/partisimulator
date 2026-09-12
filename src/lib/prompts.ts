@@ -21,7 +21,11 @@ function formatManifestContext(context: ManifestChunk[]): string {
 function buildManifestSection(context: ManifestChunk[], emptyFallback: string): string {
   const { header } = promptTemplate.shared.manifestContext;
   if (context.length === 0) {
-    return `${header}: ${emptyFallback}`;
+    // No chunk cleared the RAG similarity threshold - the model may still answer from ideology
+    // (see the alwaysAnswer rule), but it has nothing real to cite, so a [KÄLLA: ...] marker here
+    // would always be fabricated. rag.ts's route callers enforce this server-side too, since an
+    // instruction alone doesn't guarantee compliance.
+    return `${header}: ${emptyFallback} Ange INGEN källhänvisning ([KÄLLA: ...]) i detta svar - inga manifest-utdrag är tillgängliga för denna fråga.`;
   }
   return `${header}:\n${DATA_START}\n${formatManifestContext(context)}\n${DATA_END}`;
 }

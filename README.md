@@ -1,12 +1,10 @@
 # Partisimulator
 
-Partisimulator lets you talk to your favorite (or un-favorite) politician. Chat, discuss, and ask questions.
+Partisimulator lets you talk to your favorite (or un-favorite) politician. Chat, discuss, and ask questions. Where do you stand politically?
 
-If you're feeling up for it, you can even host your own panel debate.
+If you're feeling up for it, you can even host your own panel debate!
 
-Each party answers only from its own election manifesto.
-
-Partisimulator embeds and retrieves each manifesto per party with RAG. That keeps each voice grounded in its own source. It doesn't borrow another party's positions.
+Partisimulator embeds and retrieves each political party's manifesto and uses RAG to get accurate responses. That keeps each voice grounded in its own source. It doesn't borrow another party's positions.
 
 ## Tech stack
 
@@ -14,11 +12,11 @@ Partisimulator embeds and retrieves each manifesto per party with RAG. That keep
 - React
 - Tailwind CSS
 - Supabase (Postgres with pgvector)
-- Vercel AI SDK, with Anthropic and OpenAI providers
+- Vercel AI SDK, via OpenRouter (proxying Anthropic, OpenAI, and other models) or a local OpenAI-compatible endpoint (oMLX)
 
 ## Prerequisites
 
-- Node.js 22 or later
+- Node.js 22.18 or later
 - pnpm
 - A Supabase project, for the database and pgvector
 
@@ -36,12 +34,30 @@ Create a `.env` file in the repository root with the required variables.
 
 Use `.env.example` as a template.
 
+Next.js loads `.env` automatically, and `scripts/seed.ts` reads it too.
+One file covers both the dev server and the seed script below.
+
 `MAKER_NAMES` is optional and only used by the "about us" page (`/om-projektet`): a comma-separated list of the project's real first names, kept out of source control on purpose. Leave it unset to skip that page's AI-generated cast list.
+
+### Database setup
+
+Create the `manifest_chunks` table and its search function by running [supabase/schema.sql](supabase/schema.sql) in your Supabase project's SQL editor.
+
+Set `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env` to your Supabase project's URL and service role key.
+
+Then seed each party's manifesto into that table.
+
+```sh
+pnpm run seed
+```
+
+This embeds the PDFs in `scripts/manifests/` and writes the resulting chunks to Supabase.
+Without this step, retrieval finds no manifest chunks for any party, and every reply falls back to the ungrounded, persona-only path.
 
 ### Start the development server
 
 ```sh
-pnpm dev
+pnpm run dev
 ```
 
 ## Tooling
@@ -49,19 +65,19 @@ pnpm dev
 ### Lint and format code
 
 ```sh
-pnpm lint-format-code
+pnpm run lint-format-code
 ```
 
 ### Lint and format markdown
 
 ```sh
-pnpm lint-format-markdown
+pnpm run lint-format-markdown
 ```
 
 ### Spellcheck
 
 ```sh
-pnpm spellcheck
+pnpm run spellcheck
 ```
 
 ### Analyze the codebase
@@ -69,12 +85,13 @@ pnpm spellcheck
 Checks for unused code, circular dependencies, duplication, and complexity.
 
 ```sh
-pnpm analyze-code
+pnpm run analyze-code
 ```
 
 Read the [coding guide](docs/CODING-GUIDE.md), the [tone of voice guide](docs/TONE-OF-VOICE.md), and the [markdown guide](docs/MARKDOWN-GUIDE.md) before contributing.
 
 Write code, comments, commit messages, and documentation in English.
+
 The app's own output stays Swedish - that's by design, not an exception to work around.
 
 ## Claude Code hooks
@@ -89,7 +106,8 @@ Restart Claude Code after changing a hook or the settings file.
 
 Husky and lint-staged run `lint-format-code`, `lint-format-markdown`, and `spellcheck` on staged files before each commit.
 
-`pnpm install` wires this up automatically through the `prepare` script.
+`pnpm install` wires this up automatically through the "prepare" script.
+
 No extra setup step is needed.
 
 Only the staged content is committed.
@@ -115,7 +133,6 @@ It works anywhere you deploy the app, including on Vercel.
 
 `mlx` routes to a local model that [oMLX](https://github.com/jundot/omlx) serves on your own machine.
 It requires Apple Silicon.
-It only works for local development, since a deployed instance can't reach a server running on your laptop.
 
 #### Your Claude or ChatGPT login won't work here
 
@@ -206,3 +223,52 @@ OPENROUTER_API_KEY=sk-or-v1-...
 ### Test-only parties
 
 `SHREK` in `.env` shows test-only parties, hidden from the default experience. Set it to `true` to see them; it defaults to `false`.
+
+### Debugging and rate limiting
+
+`DEBUG=true` in `.env` logs RAG and LLM generation durations, RAG chunk counts, and the resolved model per request to the console. Local dev only, no log shipping.
+
+`RATE_LIMIT_ENABLED=false` in `.env` turns off the best-effort, in-memory per-IP rate limiting on `/api/ask`, `/api/ask-all`, and `/api/debate`. It defaults to enabled.
+
+## AI reflection
+
+This assignment asks for a reflection on the AI technology used, written directly in this README.
+
+### Which new AI technology did we identify, and how did we apply it?
+
+We identified retrieval-augmented generation, RAG for short, paired with Supabase's pgvector extension.
+Each party's manifesto gets split into overlapping chunks and embedded once, ahead of time, by `scripts/seed.ts`.
+At request time, `retrieveContext()` in [src/lib/rag.ts](src/lib/rag.ts) embeds the user's question and runs a cosine similarity search against those chunks through a `match_manifest_chunks` Postgres function.
+The matching chunks get folded into that party's system prompt, so its answer only draws on lines its own manifesto actually contains.
+
+We also built a grounding check on top of retrieval.
+`createGroundingMarkerTransform()` in [src/lib/grounding-transform.ts](src/lib/grounding-transform.ts) stamps a reply as ungrounded, server side, whenever retrieval found no matching chunks.
+A model can still claim a source in its own text, so the client never trusts that claim on its own.
+
+Chat generation itself streams through the Vercel AI SDK, which lets one code path (`getModel()` in [src/lib/model.ts](src/lib/model.ts)) swap between OpenRouter's hosted models and a local oMLX server with one environment variable.
+
+### Why did we choose that technology?
+
+Eight parties needed eight distinct, non-interchangeable voices, each backed by its own real source text.
+RAG was the direct fit: it grounds each party in its own manifesto chunks instead of one shared prompt, so no party can drift into citing another party's policy.
+
+Embeddings beat keyword search here because a voter's question rarely uses the same words as a manifesto.
+"Vad tycker ni om klimatet?" and a manifesto section titled "Miljö och hållbar utveckling" share no keywords, but sit close together in embedding space.
+
+Local embeddings, through `@xenova/transformers`, run for free with no API key and no network round trip, so retrieval adds no extra latency or cost to most requests.
+OpenRouter over a single-provider SDK meant the app could compare answers from different frontier models, or fail over between them, by changing one environment variable instead of a line of code, and it still works on a serverless deploy target like Vercel, unlike the local-only MLX path.
+
+### Why was the AI component needed, and could we have solved it another way?
+
+The core feature, answering an open-ended political question in a specific party's voice, is inherently generative.
+A user can ask anything, in any phrasing, so no fixed set of canned replies or a decision tree could cover it.
+
+The RAG layer specifically replaces what would otherwise be manual, per-party keyword tagging of manifesto passages, decided by us instead of by whatever the user actually asks.
+That approach breaks the moment a question uses different words than the tags anticipated, which is often, given how varied real questions turn out to be.
+
+AI was not free of tradeoffs.
+A language model can still hallucinate a stance no manifesto supports, so this app leans on retrieval grounding (the ungrounded marker above) and a visible link to the real manifesto PDF, rather than trusting the model's own claims about its sources.
+
+## Changelog
+
+A [changelog](CHANGELOG.md) exists for those curious.

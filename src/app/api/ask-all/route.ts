@@ -50,6 +50,7 @@ export async function POST(req: NextRequest): Promise<Response> {
     const promises = parties.map(async (party) => {
       try {
         const context = await retrieveContext(party.id, question);
+        const grounded = context.length > 0;
         const systemPrompt = buildAskAllPrompt(party, context);
 
         const { finishReason, text } = await withDuration(
@@ -100,7 +101,11 @@ export async function POST(req: NextRequest): Promise<Response> {
           return;
         }
 
-        const sources = [...extractSources(limitedShort), ...(limitedLong ? extractSources(limitedLong) : [])];
+        // Trust retrieveContext's own result, not the model's self-reported [KÄLLA: ...] markers -
+        // the model can still emit one out of habit even when told there's nothing to cite.
+        const sources = grounded
+          ? [...extractSources(limitedShort), ...(limitedLong ? extractSources(limitedLong) : [])]
+          : [];
 
         emitter.send({
           longAnswer: limitedLong ? cleanText(limitedLong) : undefined,

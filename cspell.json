@@ -25,7 +25,7 @@
     "*.tsbuildinfo",
     "next-env.d.ts",
     "public/**",
-    "scripts/manifests/**",
+    "data/pdfs/**",
     "project-words.txt",
     "swedish-words.txt",
     ".claude/settings.json"

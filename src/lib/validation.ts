@@ -1,11 +1,8 @@
 import { z } from "zod";
 import { PARTIES } from "./parties";
 
-// A real session can run long, but nothing legitimate needs more turns than this per request -
-// past it, a payload is more likely a forged history inflating LLM token cost than a real chat.
-// Exported so callers can window their own history to this same cap before sending it - a long
-// debate or chat easily accumulates more turns than this over its lifetime, and the client's own
-// full transcript must stay under it too, not just reject payloads already over it.
+// Past this many turns, a payload reads as a forged history inflating LLM cost, not a real chat.
+// Exported so a long debate or chat can window its own client-side transcript to the same cap.
 export const MAX_HISTORY_ENTRIES = 40;
 
 const CONTROL_CHAR_CODES = [

@@ -4,7 +4,7 @@ import { type TurnKind, useDebateSequencing } from "@/hooks/use-debate-sequencin
 import { useDebateTranscript } from "@/hooks/use-debate-transcript";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { cleanText } from "@/lib/sources";
+import { cleanText, stripUngroundedMarker } from "@/lib/sources";
 import { MAX_HISTORY_ENTRIES } from "@/lib/validation";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyPersona } from "@/types/party";
@@ -99,7 +99,7 @@ export function useDebate(): UseDebateResult {
   // Update pending text as completion streams
   useEffect(() => {
     if (isLoading && completion) {
-      transcript.setPendingText(cleanText(sanitizeSpeech(completion)));
+      transcript.setPendingText(cleanText(stripUngroundedMarker(sanitizeSpeech(completion))));
     }
   }, [completion, isLoading, transcript.setPendingText]);
 

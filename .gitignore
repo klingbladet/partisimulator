@@ -59,3 +59,15 @@ Icon?
 Network Trash
 Temporary Items
 .apdisk
+
+# Python
+
+venv/
+env/
+ENV/
+.env/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so

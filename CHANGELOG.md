@@ -6,8 +6,6 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- None yet
-
 ### Changed
 
 ### Removed
@@ -16,7 +14,33 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- None yet...
+## [0.1.7] - 2026-09-12
+
+### Added
+
+- The "no source" bar's inline text now says outright that the model guessed the answer and it shouldn't be trusted, with a "Läs varför" link opening a modal (`src/components/shared/ungrounded-notice.tsx`, `src/components/shared/info-dialog.tsx`) that explains RAG and why the fallback happens - previously it just said "Ingen källa finns" with no explanation
+
+### Changed
+
+- `ConfirmDialog`'s dialog open/close effect extracted into a shared `useNativeDialog` hook (`src/hooks/use-native-dialog.ts`), reused by the new `InfoDialog` modal
+- `README.md`: added an "AI reflection" section answering the assignment's required questions on the RAG/embeddings tech chosen and why; documented database setup (`supabase/schema.sql`, `pnpm seed`) and the previously-undocumented `DEBUG`/`RATE_LIMIT_ENABLED` env vars; corrected the tech stack's model-provider description - there's no direct Anthropic SDK provider, only OpenRouter proxying it
+- `scripts/seed.ts` now reads party manifestos from `data/pdfs/` instead of `scripts/manifests/`, cutting a redundant third copy of the same 8 PDFs; `.fallowrc.json` and `cspell.json` updated to match
+- `scripts/seed.ts`: translated its Swedish header comment to English and removed emoji from its console output, matching this project's own comment rules
+- `.claude/CLAUDE.md`/`AGENTS.md`: removed the "Where to start?" section and its link to the now-deleted `TODO.md`
+- `.claude/settings.json`: added a permission rule denying Claude Code's own Edit/Write tools from modifying this file
+- `project-words.txt`: added `Kodinlämning`, `Pococks`, `välkommenterad` so `docs/ASSIGNMENT-REQUIREMENT.md` (the course's own assignment brief) passes spellcheck without editing its wording
+
+### Removed
+
+- `scripts/manifests/` (8 duplicate party PDFs plus `.gitkeep`), superseded by `data/pdfs/` as the seed script's source
+- `TODO.md`
+
+### Fixed
+
+- `scripts/seed.ts` loaded `.env.local` instead of `.env`, the file `README.md` actually instructs setup to use - `pnpm dev` picked up Supabase/OpenRouter credentials fine (Next.js loads `.env` itself), but `pnpm seed` silently failed to find them unless a separate `.env.local` also existed
+- A reply is never shown as sourced unless `retrieveContext` actually found manifest chunks - previously the "Ingen källa finns" bar (and its equivalent in chat/debate) trusted the model's own `[KÄLLA: ...]` marker, which it could still emit even when told to answer from ideology alone. `/api/ask` and `/api/debate` now stamp an ungrounded reply with a route-written `[GRUNDAD: NEJ]` marker (`src/lib/grounding-transform.ts`) the client can't spoof; `/api/ask-all` gates its `sources` field the same way. Chat and debate bubbles also gained the same "no source" bar `alla-partier` already had.
+- `.fallowrc.json`'s manual entry list still pointed at `src/app/grid/page.tsx`, a route renamed to `/alla-partier` back in 0.1.5 - silently dropped from `pnpm analyze-code`'s dead-code scan instead of erroring
+- `src/lib/rag.ts`'s "not an error, but a silent one" comment used the false-contrast phrasing `docs/TONE-OF-VOICE.md` bans; `src/lib/validation.ts`'s 5-line comment tightened to two
 
 ## [0.1.6] - 2026-09-08
 

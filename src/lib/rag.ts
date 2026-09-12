@@ -57,8 +57,8 @@ export async function retrieveContext(partyId: string, question: string, topK: n
 
     const result = await Promise.race([retrievalPromise, timeoutPromise]);
     logDuration(`RAG retrieval (${partyId})`, Date.now() - startedAt, RAG_SLOW_THRESHOLD_MS);
-    // No chunk cleared the similarity threshold - not an error, but a silent one: the party falls
-    // back to answering on persona alone with nothing in the console to explain why.
+    // No chunk cleared the similarity threshold - a valid outcome, but a silent one without this
+    // warning: the party falls back to answering on persona alone with nothing else explaining why.
     if (result.length === 0) {
       console.warn(`RAG retrieval (${partyId}) found no matching chunks - answering on persona alone`);
     } else {

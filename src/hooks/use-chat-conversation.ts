@@ -6,7 +6,15 @@ import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { playAnswerSound } from "@/lib/notification-sound";
 import { getParty } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { cleanText, extractSources, extractStance, type Stance, stripStanceMarker } from "@/lib/sources";
+import {
+  cleanText,
+  extractSources,
+  extractStance,
+  isUngrounded,
+  type Stance,
+  stripStanceMarker,
+  stripUngroundedMarker,
+} from "@/lib/sources";
 import { MAX_HISTORY_ENTRIES } from "@/lib/validation";
 import type { ChatMessage } from "@/types/chat";
 import type { PartyPersona } from "@/types/party";
@@ -105,15 +113,18 @@ export function useChatConversation(): UseChatConversationResult {
 
   const addAssistantMessage = (rawText: string, targetMessageId?: string): void => {
     const sanitized = sanitizeSpeech(rawText);
+    const grounded = !isUngrounded(sanitized);
     const stance = extractStance(sanitized);
-    const cleaned = cleanText(stripStanceMarker(sanitized));
+    const cleaned = cleanText(stripStanceMarker(stripUngroundedMarker(sanitized)));
     if (!cleaned) {
       // The raw reply sanitized down to nothing (e.g. it was entirely a leaked reasoning
       // preamble) - show the in-character fallback instead of leaving the question unanswered.
       addFallbackMessage(targetMessageId);
       return;
     }
-    const sources = extractSources(sanitized);
+    // Trust the route's own [GRUNDAD: NEJ] marker over the model's self-reported [KÄLLA: ...] -
+    // the model can still emit one out of habit even when told there's nothing to cite.
+    const sources = grounded ? extractSources(sanitized) : [];
 
     if (targetMessageId) {
       setChatHistory((prev) =>
@@ -171,7 +182,7 @@ export function useChatConversation(): UseChatConversationResult {
     if (isLoading && completion) {
       const sanitized = sanitizeSpeech(completion);
       setPendingStance(extractStance(sanitized));
-      setPendingText(cleanText(stripStanceMarker(sanitized)));
+      setPendingText(cleanText(stripStanceMarker(stripUngroundedMarker(sanitized))));
     }
   }, [completion, isLoading]);
 

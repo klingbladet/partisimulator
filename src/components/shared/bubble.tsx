@@ -63,15 +63,14 @@ export default function Bubble({
           {text}
         </p>
 
-        {sources.length > 0 && (
+        {/* Only settled once streaming finishes - sources/manifestUrl aren't final until then. */}
+        {!isStreaming && (
           <div className="mt-2.5 space-y-1 border-gray-100 border-t pt-2">
-            <SourcesList className="answer-bubble-source text-xs" sources={sources} />
-          </div>
-        )}
-
-        {manifestUrl && (
-          <div className="mt-2.5 border-gray-100 border-t pt-2">
-            <ManifestLink className="answer-bubble-source text-xs" href={manifestUrl} />
+            {manifestUrl ? (
+              <ManifestLink className="answer-bubble-source text-xs" href={manifestUrl} />
+            ) : (
+              <SourcesList className="answer-bubble-source text-xs" sources={sources} />
+            )}
           </div>
         )}
 

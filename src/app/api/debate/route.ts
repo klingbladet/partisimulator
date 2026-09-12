@@ -2,6 +2,7 @@ import { streamText } from "ai";
 import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { logDuration } from "@/lib/debug-log";
+import { createGroundingMarkerTransform } from "@/lib/grounding-transform";
 import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildDebatePrompt, getMaxSentences } from "@/lib/prompts";
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     const retrievalQuery = buildRetrievalQuery(topic, recentHistory);
     const context = await retrieveContext(nextSpeakerId, retrievalQuery);
+    const grounded = context.length > 0;
 
     const systemPrompt = buildDebatePrompt(party, topic, context, recentHistory, Boolean(isClosingStatement));
 
@@ -66,7 +68,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     const generationStartedAt = Date.now();
     const result = streamText({
       abortSignal: req.signal,
-      experimental_transform: createSentenceLimitTransform(getMaxSentences("debate"), `debate, ${party.id}`),
+      experimental_transform: [
+        createSentenceLimitTransform(getMaxSentences("debate"), `debate, ${party.id}`),
+        createGroundingMarkerTransform(grounded),
+      ],
       maxOutputTokens: 300,
       messages: [{ content: userMessageContent, role: "user" }],
       model: getModel(),

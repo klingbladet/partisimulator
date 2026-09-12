@@ -145,11 +145,7 @@ export default function AnswerBubble({
       {/* Footer - sources always last, at the very end of the card */}
       {!isLoading && (
         <div className="answer-bubble-footer">
-          {manifestUrl ? (
-            <ManifestLink href={manifestUrl} />
-          ) : (
-            <SourcesList emptyLabel="Ingen källa finns" sources={sources} />
-          )}
+          {manifestUrl ? <ManifestLink href={manifestUrl} /> : <SourcesList sources={sources} />}
 
           {hasError && onRegenerate && (
             <div className="mt-2">

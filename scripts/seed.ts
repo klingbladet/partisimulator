@@ -1,17 +1,17 @@
 #!/usr/bin/env tsx
 
 /**
- * PartiSimulator 2026 – Manifest Seed Script
+ * PartiSimulator 2026 - Manifest Seed Script
  *
  * Usage:
- *   1. PDF-filer i scripts/manifests/ (s.pdf, m.pdf, sd.pdf, v.pdf, c.pdf, kd.pdf, l.pdf, mp.pdf)
- *   2. Sätt Supabase-nycklarna i .env.local (och OPENROUTER_API_KEY om EMBEDDINGS_PROVIDER=openrouter)
- *   3. Kör: npm run seed
+ *   1. Add each party's PDF to data/pdfs/ (s.pdf, m.pdf, sd.pdf, v.pdf, c.pdf, kd.pdf, l.pdf, mp.pdf)
+ *   2. Set the Supabase keys in .env (and OPENROUTER_API_KEY if EMBEDDINGS_PROVIDER=openrouter)
+ *   3. Run: pnpm run seed
  *
- * Embeddings körs LOKALT med @xenova/transformers som standard (ingen API-nyckel behövs).
- * Modell: paraphrase-multilingual-MiniLM-L12-v2 (384 dimensioner, stöder svenska)
- * Modellen laddas ner automatiskt vid första körning (~120 MB).
- * Sätt EMBEDDINGS_PROVIDER=openrouter för att köra embeddings via OpenRouter istället.
+ * Embeddings run LOCALLY via @xenova/transformers by default (no API key needed).
+ * Model: paraphrase-multilingual-MiniLM-L12-v2 (384 dimensions, supports Swedish).
+ * The model downloads automatically on first run (~120 MB).
+ * Set EMBEDDINGS_PROVIDER=openrouter to run embeddings through OpenRouter instead.
  */
 
 import * as fs from "node:fs";
@@ -21,8 +21,8 @@ import * as dotenv from "dotenv";
 import pdfParse from "pdf-parse";
 import { createEmbedding } from "../src/lib/embeddings";
 
-// Load env variables from .env.local
-dotenv.config({ path: path.join(process.cwd(), ".env.local") });
+// Load env variables from .env
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -45,7 +45,7 @@ const PARTIES = [
   { id: "parti-mp", pdfFile: "mp.pdf" },
 ];
 
-const MANIFESTS_DIR = path.join(__dirname, "manifests");
+const MANIFESTS_DIR = path.join(__dirname, "..", "data", "pdfs");
 const CHUNK_SIZE = 500; // approximate tokens (4 chars ≈ 1 token)
 const CHUNK_OVERLAP = 50;
 const CHARS_PER_TOKEN = 4;
@@ -84,11 +84,11 @@ async function seedParty(partyId: string, pdfFile: string) {
   const pdfPath = path.join(MANIFESTS_DIR, pdfFile);
 
   if (!fs.existsSync(pdfPath)) {
-    console.warn(`⚠️  PDF saknas: ${pdfPath} – hoppar över ${partyId}`);
+    console.warn(`PDF saknas: ${pdfPath} – hoppar över ${partyId}`);
     return;
   }
 
-  console.log(`\n📄 Bearbetar ${partyId}: ${pdfFile}`);
+  console.log(`\nBearbetar ${partyId}: ${pdfFile}`);
 
   // Parse PDF
   const pdfBuffer = fs.readFileSync(pdfPath);
@@ -140,31 +140,31 @@ async function seedParty(partyId: string, pdfFile: string) {
     }
   }
 
-  console.log(`\n   ✅ Klar! ${successCount}/${chunks.length} chunks laddade upp för ${partyId}`);
+  console.log(`\n   Klar! ${successCount}/${chunks.length} chunks laddade upp för ${partyId}`);
 }
 
 async function main() {
-  console.log("🗳️  PartiSimulator 2026 – Manifest Seeding");
+  console.log("PartiSimulator 2026 – Manifest Seeding");
   console.log("==========================================\n");
   const usesOpenRouterEmbeddings = process.env.EMBEDDINGS_PROVIDER === "openrouter";
   console.log(
     usesOpenRouterEmbeddings
-      ? "📌 Embedding-motor: OpenRouter (openai/text-embedding-3-small)"
-      : "📌 Embedding-motor: Lokal (paraphrase-multilingual-MiniLM-L12-v2)",
+      ? "Embedding-motor: OpenRouter (openai/text-embedding-3-small)"
+      : "Embedding-motor: Lokal (paraphrase-multilingual-MiniLM-L12-v2)",
   );
 
   if (usesOpenRouterEmbeddings && !process.env.OPENROUTER_API_KEY) {
-    console.error("❌ OPENROUTER_API_KEY saknas i .env.local (krävs när EMBEDDINGS_PROVIDER=openrouter)");
+    console.error("OPENROUTER_API_KEY saknas i .env (krävs när EMBEDDINGS_PROVIDER=openrouter)");
     process.exit(1);
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error("❌ Supabase-nycklar saknas i .env.local");
+    console.error("Supabase-nycklar saknas i .env");
     process.exit(1);
   }
 
   if (!fs.existsSync(MANIFESTS_DIR)) {
-    console.error(`❌ Mappen scripts/manifests/ saknas`);
+    console.error("Mappen scripts/manifests/ saknas");
     process.exit(1);
   }
 
@@ -172,7 +172,7 @@ async function main() {
     await seedParty(party.id, party.pdfFile);
   }
 
-  console.log("\n\n🎉 Seeding klar! Alla partiers manifest är uppladdade till Supabase.");
+  console.log("\n\nSeeding klar! Alla partiers manifest är uppladdade till Supabase.");
 }
 
 main().catch(console.error);

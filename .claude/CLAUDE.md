@@ -160,10 +160,6 @@ The same lint-format-code, lint-format-markdown, and spellcheck guards also run 
 
 Keep both hook sets in sync when changing one.
 
-## Where to start?
-
-See the [TODO list](../TODO.md)
-
 ## After each change and before a commit
 
 Write to the [Changelog](../CHANGELOG.md). Please be extremely concise.

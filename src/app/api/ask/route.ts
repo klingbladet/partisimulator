@@ -2,6 +2,7 @@ import { streamText } from "ai";
 import type { NextRequest } from "next/server";
 import { errorResponse } from "@/lib/api-response";
 import { logDuration } from "@/lib/debug-log";
+import { createGroundingMarkerTransform } from "@/lib/grounding-transform";
 import { getModel } from "@/lib/model";
 import { getParty } from "@/lib/parties";
 import { buildOneShotPrompt, getMaxSentences } from "@/lib/prompts";
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     // Retrieve relevant manifest context via RAG (with a 30s safety timeout, see rag.ts)
     const context = await retrieveContext(partyId, question);
+    const grounded = context.length > 0;
 
     // Build the system prompt with party persona + manifest context
     const systemPrompt = buildOneShotPrompt(party, context);
@@ -56,7 +58,10 @@ export async function POST(req: NextRequest): Promise<Response> {
     const generationStartedAt = Date.now();
     const result = streamText({
       abortSignal: req.signal,
-      experimental_transform: createSentenceLimitTransform(getMaxSentences("one-shot"), `ask, ${party.id}`),
+      experimental_transform: [
+        createSentenceLimitTransform(getMaxSentences("one-shot"), `ask, ${party.id}`),
+        createGroundingMarkerTransform(grounded),
+      ],
       maxOutputTokens: 400,
       maxRetries: 0,
       messages,

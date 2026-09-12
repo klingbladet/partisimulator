@@ -16,12 +16,14 @@ disruptivt
 dotenv
 Embedder
 esbuild
+fallowrc
 eslint
 geist
 hackathon
 hnsw
 hugsar
 jsonc
+Kodinlämning
 kodnisse
 lifecycles
 Lintning
@@ -41,6 +43,7 @@ partisimulator
 pdfs
 pgvector
 pnpm
+Pococks
 postcss
 prompta
 refaktorisering
@@ -60,7 +63,9 @@ tsx
 Unkey
 unlayered
 unmuted
+vektoriserat
 vibekoda
+välkommenterad
 webapplikation
 webp
 websearch

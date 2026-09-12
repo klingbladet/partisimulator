@@ -3,7 +3,7 @@ import { buildNoAnswerFallback } from "@/lib/no-answer";
 import { playAnswerSound } from "@/lib/notification-sound";
 import { PARTIES } from "@/lib/parties";
 import { sanitizeSpeech } from "@/lib/sanitize";
-import { cleanText, extractSources } from "@/lib/sources";
+import { cleanText, extractSources, isUngrounded, stripUngroundedMarker } from "@/lib/sources";
 import type { DebateEntry } from "@/types/debate";
 import type { PartyPersona } from "@/types/party";
 
@@ -96,7 +96,8 @@ export function useDebateTranscript(): UseDebateTranscriptResult {
 
     lastSpeakerIdRef.current = speakerId;
 
-    const cleaned = cleanText(rawText);
+    const grounded = !isUngrounded(rawText);
+    const cleaned = cleanText(stripUngroundedMarker(rawText));
     if (!cleaned) {
       if (stoppedRef.current) {
         if (regeneratingEntryIdRef.current === entryId) {
@@ -126,8 +127,11 @@ export function useDebateTranscript(): UseDebateTranscriptResult {
       return;
     }
 
+    // Trust the route's own [GRUNDAD: NEJ] marker over the model's self-reported [KÄLLA: ...] -
+    // the model can still emit one out of habit even when told there's nothing to cite.
+    const sources = grounded ? extractSources(rawText) : [];
     const resolvedHistory = historyRef.current.map((entry) =>
-      entry.id === entryId ? { ...entry, isError: false, sources: extractSources(rawText), text: cleaned } : entry,
+      entry.id === entryId ? { ...entry, isError: false, sources, text: cleaned } : entry,
     );
     setHistory(resolvedHistory);
     clearStreamingState();
